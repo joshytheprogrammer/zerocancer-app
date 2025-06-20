@@ -8,4 +8,4 @@ serve({
   port: Number(port),
 });
 
-console.log(`Server running on http://localhost:${port}`);
+console.log(`Server running locally at http://localhost:${port}`);
