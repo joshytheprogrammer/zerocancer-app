@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 
 const AboutRoute = AboutRouteImport.update({
@@ -18,8 +18,8 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
-  id: '/_public/',
+const publicIndexRoute = publicIndexRouteImport.update({
+  id: '/(public)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -32,31 +32,31 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/': typeof PublicIndexRoute
+  '/': typeof publicIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/': typeof PublicIndexRoute
+  '/': typeof publicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/_public/': typeof PublicIndexRoute
+  '/(public)/': typeof publicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/about' | '/demo/tanstack-query' | '/'
   fileRoutesByTo: FileRoutesByTo
   to: '/about' | '/demo/tanstack-query' | '/'
-  id: '__root__' | '/about' | '/demo/tanstack-query' | '/_public/'
+  id: '__root__' | '/about' | '/demo/tanstack-query' | '/(public)/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
-  PublicIndexRoute: typeof PublicIndexRoute
+  publicIndexRoute: typeof publicIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,11 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/': {
-      id: '/_public/'
+    '/(public)/': {
+      id: '/(public)/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
+      preLoaderRoute: typeof publicIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -88,7 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
-  PublicIndexRoute: PublicIndexRoute,
+  publicIndexRoute: publicIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
