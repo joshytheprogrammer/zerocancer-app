@@ -1,3 +1,4 @@
+import type { User } from "@zerocancer/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getDB } from "./lib/db";

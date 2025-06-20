@@ -8,7 +8,11 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init"
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:reset": "prisma migrate reset --force",
+    "db:push": "prisma db push --force-reset",
+    "db:seed": "prisma db seed",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.0.0",

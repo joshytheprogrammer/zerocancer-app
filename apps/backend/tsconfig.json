@@ -8,7 +8,11 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": "./",
+    "paths": {
+      "@shared/*": ["../../packages/shared/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

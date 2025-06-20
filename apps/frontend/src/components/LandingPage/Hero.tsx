@@ -1,4 +1,6 @@
 import heroImg from '@/assets/images/hero.png'
+// import type { Patients } from '@shared/index'
+import type { User } from '@shared/index'
 
 export default function Hero() {
   return (

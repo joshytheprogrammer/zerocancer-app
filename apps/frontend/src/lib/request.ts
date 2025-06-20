@@ -1,5 +1,6 @@
 import * as t from '@/lib/types'
 import * as endpoints from '@/services/endpoints'
+import type { User } from '@zerocancer/shared'
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
 const api = axios.create({

@@ -1,13 +1,70 @@
 Welcome to your new TanStack app!
 
-# Getting Started
+# Running the Project
 
-To run this application:
+This monorepo uses pnpm workspaces. All commands should be run from the root directory unless otherwise specified.
+
+## 1. Install dependencies for all packages
 
 ```bash
 pnpm install
-pnpm start
 ```
+
+## 2. Start the frontend (Vite + React)
+
+```bash
+cd apps/frontend
+pnpm dev
+```
+
+- The frontend will be available at http://localhost:5173 (or the port Vite chooses).
+
+## 3. Start the backend (Hono.js + Prisma)
+
+```bash
+cd apps/backend
+pnpm dev
+```
+
+- The backend will be available at http://localhost:3000 (or your configured port).
+
+## 4. Shared Types/Utils
+
+- Shared code lives in `packages/shared` and is imported using the `@shared` alias in both frontend and backend.
+
+## 5. Notes
+
+- Only the root `node_modules` is needed; do not run `pnpm install` in subfolders.
+- You can run scripts for all packages from the root using `pnpm -r <script>` (e.g., `pnpm -r build`).
+
+---
+
+# ZeroCancer Monorepo
+
+This project uses a pnpm workspace monorepo for easy onboarding, type sharing, and fullstack development.
+
+## Structure
+
+- `frontend/` – Vite + React + TanStack Router + React Query
+- `backend/` – Hono.js API + Prisma ORM
+- `shared/` – TypeScript types/utilities shared between frontend and backend
+
+## Getting Started
+
+1. **Install dependencies for all packages:**
+   ```bash
+   pnpm install
+   ```
+2. **Run the frontend:**
+   ```bash
+   cd frontend
+   pnpm dev
+   ```
+3. **Run the backend:**
+   ```bash
+   cd backend
+   pnpm dev
+   ```
 
 # Building For Production
 

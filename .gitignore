@@ -3,6 +3,7 @@
 # VITE
 # dependencies
 */node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -53,3 +54,7 @@ awscliv2.zip
 # static files
 static
 dist
+
+# prisma temp db file
+dev.db
+dev.db-journal
