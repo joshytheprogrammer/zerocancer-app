@@ -6,7 +6,7 @@ const app = new Hono();
 
 app.use("*", cors());
 
-app.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS! and more..."));
+app.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));
 
 app.get("/users", async (c) => {
   const db = getDB();
