@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -13,8 +14,13 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import PasswordInput from "@/components/ui/password-input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import RoleSelection from "./RoleSelection"
 
 const formSchema = z.object({
+  role: z.enum(["patient", "donor", "center"], {
+    required_error: "You need to select a role.",
+  }),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
@@ -41,14 +47,27 @@ export default function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold">Welcome back!</h2>
+      <div className="space-y-2">
+        <h2 className="text-3xl font-bold">Sign In</h2>
         <p className="text-muted-foreground">
-          Enter your credentials to access your account.
+          Select your role to access your account.
         </p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel>Sign in as...</FormLabel>
+                <FormControl>
+                  <RoleSelection field={field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"
@@ -87,7 +106,7 @@ export default function LoginForm() {
           />
 
           <Button type="submit" className="w-full">
-            Login
+            Sign In
           </Button>
         </form>
       </Form>

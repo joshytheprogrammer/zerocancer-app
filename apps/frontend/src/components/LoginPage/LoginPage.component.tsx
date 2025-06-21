@@ -26,8 +26,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex items-center justify-center">
-          <div className="w-full max-w-md">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex justify-center">
+          <div className="w-full">
             <LoginForm />
           </div>
         </div>

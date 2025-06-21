@@ -9,17 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PatientRouteImport } from './routes/patient'
+import { Route as CenterRouteImport } from './routes/center'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as PatientIndexRouteImport } from './routes/patient/index'
+import { Route as CenterIndexRouteImport } from './routes/center/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
+import { Route as PatientResultsRouteImport } from './routes/patient/results'
+import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
+import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as CenterVerifyCodeRouteImport } from './routes/center/verify-code'
+import { Route as CenterUploadResultsRouteImport } from './routes/center/upload-results'
+import { Route as CenterStaffRouteImport } from './routes/center/staff'
+import { Route as CenterResultsHistoryRouteImport } from './routes/center/results-history'
+import { Route as CenterReceiptHistoryRouteImport } from './routes/center/receipt-history'
+import { Route as CenterAppointmentsRouteImport } from './routes/center/appointments'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTransactionsRouteImport } from './routes/admin/transactions'
 import { Route as AdminStoreRouteImport } from './routes/admin/store'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminResultsRouteImport } from './routes/admin/results'
 import { Route as AdminReceiptsRouteImport } from './routes/admin/receipts'
+import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
 import { Route as AdminCentersRouteImport } from './routes/admin/centers'
 import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
@@ -27,6 +41,16 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
+const PatientRoute = PatientRouteImport.update({
+  id: '/patient',
+  path: '/patient',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CenterRoute = CenterRouteImport.update({
+  id: '/center',
+  path: '/center',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -36,6 +60,16 @@ const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PatientIndexRoute = PatientIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PatientRoute,
+} as any)
+const CenterIndexRoute = CenterIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CenterRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -47,10 +81,55 @@ const publicIndexRoute = publicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PatientResultsRoute = PatientResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientNotificationsRoute = PatientNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => PatientRoute,
+} as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CenterVerifyCodeRoute = CenterVerifyCodeRouteImport.update({
+  id: '/verify-code',
+  path: '/verify-code',
+  getParentRoute: () => CenterRoute,
+} as any)
+const CenterUploadResultsRoute = CenterUploadResultsRouteImport.update({
+  id: '/upload-results',
+  path: '/upload-results',
+  getParentRoute: () => CenterRoute,
+} as any)
+const CenterStaffRoute = CenterStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => CenterRoute,
+} as any)
+const CenterResultsHistoryRoute = CenterResultsHistoryRouteImport.update({
+  id: '/results-history',
+  path: '/results-history',
+  getParentRoute: () => CenterRoute,
+} as any)
+const CenterReceiptHistoryRoute = CenterReceiptHistoryRouteImport.update({
+  id: '/receipt-history',
+  path: '/receipt-history',
+  getParentRoute: () => CenterRoute,
+} as any)
+const CenterAppointmentsRoute = CenterAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => CenterRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
@@ -80,6 +159,11 @@ const AdminResultsRoute = AdminResultsRouteImport.update({
 const AdminReceiptsRoute = AdminReceiptsRouteImport.update({
   id: '/receipts',
   path: '/receipts',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCentersRoute = AdminCentersRouteImport.update({
@@ -116,21 +200,35 @@ const authLoginRoute = authLoginRouteImport.update({
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/center': typeof CenterRouteWithChildren
+  '/patient': typeof PatientRouteWithChildren
   '/login': typeof authLoginRoute
   '/sign-up': typeof authSignUpRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/center/appointments': typeof CenterAppointmentsRoute
+  '/center/receipt-history': typeof CenterReceiptHistoryRoute
+  '/center/results-history': typeof CenterResultsHistoryRoute
+  '/center/staff': typeof CenterStaffRoute
+  '/center/upload-results': typeof CenterUploadResultsRoute
+  '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/results': typeof PatientResultsRoute
   '/': typeof publicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/center/': typeof CenterIndexRoute
+  '/patient/': typeof PatientIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
@@ -140,56 +238,96 @@ export interface FileRoutesByTo {
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/center/appointments': typeof CenterAppointmentsRoute
+  '/center/receipt-history': typeof CenterReceiptHistoryRoute
+  '/center/results-history': typeof CenterResultsHistoryRoute
+  '/center/staff': typeof CenterStaffRoute
+  '/center/upload-results': typeof CenterUploadResultsRoute
+  '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/results': typeof PatientResultsRoute
   '/': typeof publicIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/center': typeof CenterIndexRoute
+  '/patient': typeof PatientIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/center': typeof CenterRouteWithChildren
+  '/patient': typeof PatientRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/sign-up': typeof authSignUpRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/center/appointments': typeof CenterAppointmentsRoute
+  '/center/receipt-history': typeof CenterReceiptHistoryRoute
+  '/center/results-history': typeof CenterResultsHistoryRoute
+  '/center/staff': typeof CenterStaffRoute
+  '/center/upload-results': typeof CenterUploadResultsRoute
+  '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/results': typeof PatientResultsRoute
   '/(public)/': typeof publicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/center/': typeof CenterIndexRoute
+  '/patient/': typeof PatientIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/about'
     | '/admin'
+    | '/center'
+    | '/patient'
     | '/login'
     | '/sign-up'
     | '/admin/analytics'
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/notifications'
     | '/admin/receipts'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/center/appointments'
+    | '/center/receipt-history'
+    | '/center/results-history'
+    | '/center/staff'
+    | '/center/upload-results'
+    | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/patient/appointments'
+    | '/patient/notifications'
+    | '/patient/results'
     | '/'
     | '/admin/'
+    | '/center/'
+    | '/patient/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
@@ -199,39 +337,67 @@ export interface FileRouteTypes {
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/notifications'
     | '/admin/receipts'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/center/appointments'
+    | '/center/receipt-history'
+    | '/center/results-history'
+    | '/center/staff'
+    | '/center/upload-results'
+    | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/patient/appointments'
+    | '/patient/notifications'
+    | '/patient/results'
     | '/'
     | '/admin'
+    | '/center'
+    | '/patient'
   id:
     | '__root__'
     | '/about'
     | '/admin'
+    | '/center'
+    | '/patient'
     | '/(auth)/login'
     | '/(auth)/sign-up'
     | '/admin/analytics'
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/notifications'
     | '/admin/receipts'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/center/appointments'
+    | '/center/receipt-history'
+    | '/center/results-history'
+    | '/center/staff'
+    | '/center/upload-results'
+    | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/patient/appointments'
+    | '/patient/notifications'
+    | '/patient/results'
     | '/(public)/'
     | '/admin/'
+    | '/center/'
+    | '/patient/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CenterRoute: typeof CenterRouteWithChildren
+  PatientRoute: typeof PatientRouteWithChildren
   authLoginRoute: typeof authLoginRoute
   authSignUpRoute: typeof authSignUpRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
@@ -240,6 +406,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/patient': {
+      id: '/patient'
+      path: '/patient'
+      fullPath: '/patient'
+      preLoaderRoute: typeof PatientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/center': {
+      id: '/center'
+      path: '/center'
+      fullPath: '/center'
+      preLoaderRoute: typeof CenterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -253,6 +433,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/patient/': {
+      id: '/patient/'
+      path: '/'
+      fullPath: '/patient/'
+      preLoaderRoute: typeof PatientIndexRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/center/': {
+      id: '/center/'
+      path: '/'
+      fullPath: '/center/'
+      preLoaderRoute: typeof CenterIndexRouteImport
+      parentRoute: typeof CenterRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -268,12 +462,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/patient/results': {
+      id: '/patient/results'
+      path: '/results'
+      fullPath: '/patient/results'
+      preLoaderRoute: typeof PatientResultsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/notifications': {
+      id: '/patient/notifications'
+      path: '/notifications'
+      fullPath: '/patient/notifications'
+      preLoaderRoute: typeof PatientNotificationsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/appointments': {
+      id: '/patient/appointments'
+      path: '/appointments'
+      fullPath: '/patient/appointments'
+      preLoaderRoute: typeof PatientAppointmentsRouteImport
+      parentRoute: typeof PatientRoute
+    }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
       path: '/demo/tanstack-query'
       fullPath: '/demo/tanstack-query'
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/center/verify-code': {
+      id: '/center/verify-code'
+      path: '/verify-code'
+      fullPath: '/center/verify-code'
+      preLoaderRoute: typeof CenterVerifyCodeRouteImport
+      parentRoute: typeof CenterRoute
+    }
+    '/center/upload-results': {
+      id: '/center/upload-results'
+      path: '/upload-results'
+      fullPath: '/center/upload-results'
+      preLoaderRoute: typeof CenterUploadResultsRouteImport
+      parentRoute: typeof CenterRoute
+    }
+    '/center/staff': {
+      id: '/center/staff'
+      path: '/staff'
+      fullPath: '/center/staff'
+      preLoaderRoute: typeof CenterStaffRouteImport
+      parentRoute: typeof CenterRoute
+    }
+    '/center/results-history': {
+      id: '/center/results-history'
+      path: '/results-history'
+      fullPath: '/center/results-history'
+      preLoaderRoute: typeof CenterResultsHistoryRouteImport
+      parentRoute: typeof CenterRoute
+    }
+    '/center/receipt-history': {
+      id: '/center/receipt-history'
+      path: '/receipt-history'
+      fullPath: '/center/receipt-history'
+      preLoaderRoute: typeof CenterReceiptHistoryRouteImport
+      parentRoute: typeof CenterRoute
+    }
+    '/center/appointments': {
+      id: '/center/appointments'
+      path: '/appointments'
+      fullPath: '/center/appointments'
+      preLoaderRoute: typeof CenterAppointmentsRouteImport
+      parentRoute: typeof CenterRoute
     }
     '/admin/users': {
       id: '/admin/users'
@@ -315,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/receipts'
       fullPath: '/admin/receipts'
       preLoaderRoute: typeof AdminReceiptsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/centers': {
@@ -367,6 +631,7 @@ interface AdminRouteChildren {
   AdminAppointmentsRoute: typeof AdminAppointmentsRoute
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminCentersRoute: typeof AdminCentersRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminReceiptsRoute: typeof AdminReceiptsRoute
   AdminResultsRoute: typeof AdminResultsRoute
   AdminRolesRoute: typeof AdminRolesRoute
@@ -381,6 +646,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAppointmentsRoute: AdminAppointmentsRoute,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminCentersRoute: AdminCentersRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
   AdminReceiptsRoute: AdminReceiptsRoute,
   AdminResultsRoute: AdminResultsRoute,
   AdminRolesRoute: AdminRolesRoute,
@@ -392,9 +658,51 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface CenterRouteChildren {
+  CenterAppointmentsRoute: typeof CenterAppointmentsRoute
+  CenterReceiptHistoryRoute: typeof CenterReceiptHistoryRoute
+  CenterResultsHistoryRoute: typeof CenterResultsHistoryRoute
+  CenterStaffRoute: typeof CenterStaffRoute
+  CenterUploadResultsRoute: typeof CenterUploadResultsRoute
+  CenterVerifyCodeRoute: typeof CenterVerifyCodeRoute
+  CenterIndexRoute: typeof CenterIndexRoute
+}
+
+const CenterRouteChildren: CenterRouteChildren = {
+  CenterAppointmentsRoute: CenterAppointmentsRoute,
+  CenterReceiptHistoryRoute: CenterReceiptHistoryRoute,
+  CenterResultsHistoryRoute: CenterResultsHistoryRoute,
+  CenterStaffRoute: CenterStaffRoute,
+  CenterUploadResultsRoute: CenterUploadResultsRoute,
+  CenterVerifyCodeRoute: CenterVerifyCodeRoute,
+  CenterIndexRoute: CenterIndexRoute,
+}
+
+const CenterRouteWithChildren =
+  CenterRoute._addFileChildren(CenterRouteChildren)
+
+interface PatientRouteChildren {
+  PatientAppointmentsRoute: typeof PatientAppointmentsRoute
+  PatientNotificationsRoute: typeof PatientNotificationsRoute
+  PatientResultsRoute: typeof PatientResultsRoute
+  PatientIndexRoute: typeof PatientIndexRoute
+}
+
+const PatientRouteChildren: PatientRouteChildren = {
+  PatientAppointmentsRoute: PatientAppointmentsRoute,
+  PatientNotificationsRoute: PatientNotificationsRoute,
+  PatientResultsRoute: PatientResultsRoute,
+  PatientIndexRoute: PatientIndexRoute,
+}
+
+const PatientRouteWithChildren =
+  PatientRoute._addFileChildren(PatientRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  CenterRoute: CenterRouteWithChildren,
+  PatientRoute: PatientRouteWithChildren,
   authLoginRoute: authLoginRoute,
   authSignUpRoute: authSignUpRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
