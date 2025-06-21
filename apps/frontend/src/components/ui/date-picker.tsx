@@ -18,7 +18,7 @@ export default function DatePickerComponent() {
       <div className="flex">
         <Group className="w-full">
           <DateInput className="pe-9">
-            {({ segment }) => (
+            {() => (
               <input 
                 type="text" 
                 placeholder="Select date" 
