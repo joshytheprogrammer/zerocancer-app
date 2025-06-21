@@ -3,7 +3,6 @@ import {
   Bell,
   Home,
   LineChart,
-  Package2,
   Users,
   Briefcase,
   FileText,
@@ -11,10 +10,7 @@ import {
   Stethoscope,
   Ticket,
   Store,
-  UserCog,
 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
 
 import logo from '@/assets/images/logo-blue.svg'
 

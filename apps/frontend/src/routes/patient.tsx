@@ -1,7 +1,6 @@
 import { Outlet, createFileRoute, Link } from '@tanstack/react-router'
 import { Bell, Home, Briefcase, FileText } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import logo from '@/assets/images/logo-blue.svg'
 
 export const Route = createFileRoute('/patient')({
