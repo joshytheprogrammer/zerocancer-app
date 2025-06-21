@@ -1,19 +1,21 @@
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useState } from "react"
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import PasswordInput from '@/components/ui/password-input'
+import PhoneInputComponent from '@/components/ui/phone-input'
 import {
   Select,
   SelectContent,
@@ -21,34 +23,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import PasswordInput from "@/components/ui/password-input"
-import PhoneInputComponent from "@/components/ui/phone-input"
-import * as RPNInput from "react-phone-number-input"
-import statesData from "@/constants/states.json"
+import statesData from '@shared/constants/states.json'
+import * as RPNInput from 'react-phone-number-input'
 
 const servicesEnum = z.enum(['screening', 'vaccine', 'treatment'])
 
 const formSchema = z.object({
   centerName: z.string().min(2, {
-    message: "Center name must be at least 2 characters.",
+    message: 'Center name must be at least 2 characters.',
   }),
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: 'Please enter a valid email address.',
   }),
   password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
+    message: 'Password must be at least 8 characters.',
   }),
   phoneNumber: z.string().min(1, {
-    message: "Please enter a phone number.",
+    message: 'Please enter a phone number.',
   }),
   address: z.string().min(5, {
-    message: "Please enter a valid address.",
+    message: 'Please enter a valid address.',
   }),
   state: z.string().min(1, {
-    message: "Please select a state.",
+    message: 'Please select a state.',
   }),
   localGovernment: z.string().min(1, {
-    message: "Please select a local government.",
+    message: 'Please select a local government.',
   }),
   services: z.array(servicesEnum).refine((value) => value.length > 0, {
     message: 'You have to select at least one service.',
@@ -64,7 +64,7 @@ type ScreeningCenterFormProps = {
 export default function ScreeningCenterForm({
   onSubmitSuccess,
 }: ScreeningCenterFormProps) {
-  const [selectedState, setSelectedState] = useState<string>("")
+  const [selectedState, setSelectedState] = useState<string>('')
   const [localGovernments, setLocalGovernments] = useState<
     Array<{ name: string; id: number }>
   >([])
@@ -72,21 +72,21 @@ export default function ScreeningCenterForm({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      centerName: "",
-      email: "",
-      password: "",
-      phoneNumber: "",
-      address: "",
-      state: "",
-      localGovernment: "",
+      centerName: '',
+      email: '',
+      password: '',
+      phoneNumber: '',
+      address: '',
+      state: '',
+      localGovernment: '',
       services: [],
     },
   })
 
   const handleStateChange = (stateName: string) => {
     setSelectedState(stateName)
-    form.setValue("state", stateName)
-    form.setValue("localGovernment", "") // Reset local government when state changes
+    form.setValue('state', stateName)
+    form.setValue('localGovernment', '') // Reset local government when state changes
 
     // Find the selected state and get its local governments
     const selectedStateData = statesData.find(
@@ -100,7 +100,7 @@ export default function ScreeningCenterForm({
   }
 
   function onSubmit(values: FormData) {
-    console.log("Screening Center form submitted:", values)
+    console.log('Screening Center form submitted:', values)
     onSubmitSuccess(values)
   }
 
@@ -201,7 +201,9 @@ export default function ScreeningCenterForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Services Offered</FormLabel>
-              <FormDescription>Select all services offered at your center.</FormDescription>
+              <FormDescription>
+                Select all services offered at your center.
+              </FormDescription>
               <div className="flex flex-wrap gap-2 pt-2">
                 {servicesItems.map((item) => (
                   <Button
@@ -221,7 +223,7 @@ export default function ScreeningCenterForm({
                     {item.label}
                   </Button>
                 ))}
-    </div>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -268,8 +270,8 @@ export default function ScreeningCenterForm({
                     <SelectValue
                       placeholder={
                         selectedState
-                          ? "Select a local government"
-                          : "Select a state first"
+                          ? 'Select a local government'
+                          : 'Select a state first'
                       }
                     />
                   </SelectTrigger>
