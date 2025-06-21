@@ -1,4 +1,5 @@
 import logo from '@/assets/images/logo.svg'
+import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
 export default function Navbar() {
@@ -14,16 +15,16 @@ export default function Navbar() {
         </div>
       </div>
       <div className="hidden md:flex items-center gap-8">
-        <a href="/login">
+        <Link to="/login">
           <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white cursor-pointer">
             Login
           </button>
-        </a>
-        <a href="/sign-up">
+        </Link>
+        <Link to="/sign-up">
           <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
             Sign Up
           </button>
-        </a>
+        </Link>
       </div>
       <div className="md:hidden">
         <button onClick={() => setIsOpen(!isOpen)} className="text-white">
