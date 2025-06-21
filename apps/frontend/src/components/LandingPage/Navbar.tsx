@@ -14,12 +14,16 @@ export default function Navbar() {
         </div>
       </div>
       <div className="hidden md:flex items-center gap-8">
-        <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white">
-          Login
-        </button>
-        <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
-          Sign Up
-        </button>
+        <a href="/login">
+          <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white cursor-pointer">
+            Login
+          </button>
+        </a>
+        <a href="/sign-up">
+          <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
+            Sign Up
+          </button>
+        </a>
       </div>
       <div className="md:hidden">
         <button onClick={() => setIsOpen(!isOpen)} className="text-white">

@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -28,33 +30,57 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
 } as any)
+const authSignUpRoute = authSignUpRouteImport.update({
+  id: '/(auth)/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authLoginRoute = authLoginRouteImport.update({
+  id: '/(auth)/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
+  '/login': typeof authLoginRoute
+  '/sign-up': typeof authSignUpRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof publicIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
+  '/login': typeof authLoginRoute
+  '/sign-up': typeof authSignUpRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof publicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/sign-up': typeof authSignUpRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/(public)/': typeof publicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/about' | '/demo/tanstack-query' | '/'
+  fullPaths: '/about' | '/login' | '/sign-up' | '/demo/tanstack-query' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/demo/tanstack-query' | '/'
-  id: '__root__' | '/about' | '/demo/tanstack-query' | '/(public)/'
+  to: '/about' | '/login' | '/sign-up' | '/demo/tanstack-query' | '/'
+  id:
+    | '__root__'
+    | '/about'
+    | '/(auth)/login'
+    | '/(auth)/sign-up'
+    | '/demo/tanstack-query'
+    | '/(public)/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
+  authLoginRoute: typeof authLoginRoute
+  authSignUpRoute: typeof authSignUpRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   publicIndexRoute: typeof publicIndexRoute
 }
@@ -82,11 +108,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(auth)/sign-up': {
+      id: '/(auth)/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
+  authLoginRoute: authLoginRoute,
+  authSignUpRoute: authSignUpRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   publicIndexRoute: publicIndexRoute,
 }
