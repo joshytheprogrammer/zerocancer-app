@@ -1,0 +1,235 @@
+//// Zerocancer MVP DBML Schema
+//// Docs: https://dbml.dbdiagram.io/docs
+
+//// ========================
+//// USER + PROFILE TABLES
+//// ========================
+
+/*
+  Things to add: 
+
+  - country
+  - lga
+  - states
+  - bank names & detection (probably with paystack)
+  - services that can be rendered w/ their categories e.g 
+      - cervix cancer | category: cancer
+      - polio vaccine | category: vaccine
+
+*/
+
+Table users as U {
+  id varchar [pk]
+  name varchar
+  email varchar [unique]
+  phone varchar
+  password_hash varchar
+  profile user.profiles
+  created_at timestamp
+}
+
+enum user.profiles {
+  patient
+  donor
+  center
+  center_staff
+  sys_admin
+  // sys_finance
+  // sys_support
+  // sys_moderator
+}
+
+Table patient_profiles {
+  id varchar [pk]
+  user_id varchar [unique, ref: > U.id]
+  gender varchar
+  dateOfBirth datetime
+  city varchar
+  state varchar
+}
+
+Table donor_profiles {
+  id varchar [pk]
+  user_id varchar [unique, ref: > U.id]
+  organization_name varchar
+  country varchar
+}
+
+Table service_center {
+  id varchar [pk]
+  // user_id varchar [unique, ref: > U.id]
+  center_name varchar
+  address varchar
+  state varchar
+  lga varchar
+  approved_staff varchar 
+  services varchar [ref: <> screening_types.id]
+  is_approved boolean
+  bank_account varchar
+  bank_name varchar
+}
+
+Table admin_profiles {
+  id varchar [pk]
+  email varchar
+  password_hash varchar
+}
+
+//// ========================
+//// CORE APPLICATION TABLES
+//// ========================
+
+Table screening_types {
+  id varchar [pk]
+  name varchar
+  description varchar
+  screening_type_category_id varchar [ref: > screening_types_categories.id]
+  active bool
+}
+
+// vaccine, screening, cancer, other, etc
+// We could also add this as a simple ENUM and use javascript types
+Table screening_types_categories {
+  id varchar [pk]
+  name varchar
+  description varchar
+}
+
+Table waitlists {
+  id varchar [pk]
+  screening_type_id varchar [ref: > screening_types.id]
+  patient_id varchar [ref: > U.id]
+  status allocation_status
+  joined_at timestamp
+  claimed_at timestamp
+}
+
+enum allocation_status {
+  matched
+  claimed
+  expired
+}
+
+Table donation_campaigns {
+  id varchar [pk]
+  donor_id varchar [ref: > U.id]
+  screening_type_id varchar [ref: < screening_types.id]
+  amount float
+  // num_of_patients int
+  purpose varchar
+  target_gender bool
+  target_age_range varchar // format AGE-AGE
+  target_state varchar
+  target_lga varchar
+  status campaign_status
+  created_at timestamp
+}
+
+enum campaign_status {
+  active
+  completed
+  deleted
+}
+
+Table donation_allocations {
+  id varchar [pk]
+  waitlist_id varchar [ref: - waitlists.id]
+  appointment_id varchar [ref: - appointments.id]
+  patient_id varchar [ref: - U.id]
+  campaign_id varchar [ref: - donation_campaigns.id]
+  // status varchar
+  claimed_at timestamp
+}
+
+Table appointments {
+  id varchar [pk]
+  patient_id varchar [ref: > U.id]
+  results_id varchar [ref: - screening_results.id]
+  verification_details_id varchar [ref: - appointment_verification.id]
+  center_id varchar [ref: > service_center.id]
+  screening_type_id varchar [ref: > screening_types.id]
+  donation_id varchar // optional
+  is_donation bool // we could also check if donation_id is null
+  appointment_date datetime
+  appointment_time timestamp
+  transaction_id varchar [ref: - transactions.id]
+  status appointment_status
+  created_at timestamp
+}
+
+enum appointment_status {
+  scheduled
+  in_progress
+  completed
+  cancelled
+}
+
+Table appointment_verification {
+  id varchar [pk]
+  // appointment_id varchar 
+  verification_code int
+  verified_by varchar [ref: - center_staff.id]
+  // verification_method varchar // code or qr
+  verified_at timestamp
+}
+
+Table screening_results {
+  id varchar [pk]
+  result varchar // probably a url to the files uploaded
+  notes varchar
+  uploaded_by varchar [ref: > center_staff.id]
+  uploaded_at timestamp
+}
+
+Table center_staff {
+  id varchar [pk]
+  center_id varchar [ref: > service_center.approved_staff]
+  role varchar // doctor, nurse, gateman, etc - optional
+  // approved_by varchar [ref: > U.id] 
+  created_at timestamp
+}
+
+Table store_products {
+  id varchar [pk]
+  name varchar
+  description varchar
+  price float
+  stock int
+  // created_by varchar [ref: > U.id]
+  created_at timestamp
+}
+
+Table transactions {
+  id varchar [pk]
+  type transaction_type // 'donation' | 'appointment' | 'payout' | 'refund'
+  status varchar // 'pending' | 'success' | 'failed'
+  amount float
+
+  //all optional depending on transaction type 
+  related_donation_id varchar [ref: > donation_campaigns.id]
+
+  /**
+      if paystack reference doesn't exist and transaction_type = 'payout'
+      mark as `to be paid` for the admin dashboard
+  */
+  payment_reference varchar // paystack transaction id
+  payment_channel varchar // 'paystack', 'manual (by admin)'
+  created_at timestamp
+}
+
+enum transaction_type {
+  donation
+  appointment
+  payout
+  refund
+}
+
+
+
+// Ref: "public"."screening_types"."description" < "public"."screening_types"."id"
+
+// Ref: "public"."service_center"."services" < "public"."service_center"."bank_name"
+
+// Ref: "public"."service_center"."state" < "public"."service_center"."id"
+
+// Ref: "public"."service_center"."address" < "public"."service_center"."lga"

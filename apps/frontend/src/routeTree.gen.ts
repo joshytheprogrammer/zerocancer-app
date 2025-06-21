@@ -9,16 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminTransactionsRouteImport } from './routes/admin/transactions'
+import { Route as AdminStoreRouteImport } from './routes/admin/store'
+import { Route as AdminRolesRouteImport } from './routes/admin/roles'
+import { Route as AdminResultsRouteImport } from './routes/admin/results'
+import { Route as AdminReceiptsRouteImport } from './routes/admin/receipts'
+import { Route as AdminCentersRouteImport } from './routes/admin/centers'
+import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
+import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
@@ -29,6 +51,56 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTransactionsRoute = AdminTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStoreRoute = AdminStoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRolesRoute = AdminRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResultsRoute = AdminResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReceiptsRoute = AdminReceiptsRouteImport.update({
+  id: '/receipts',
+  path: '/receipts',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCentersRoute = AdminCentersRouteImport.update({
+  id: '/centers',
+  path: '/centers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCampaignsRoute = AdminCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
 } as any)
 const authSignUpRoute = authSignUpRouteImport.update({
   id: '/(auth)/sign-up',
@@ -43,42 +115,123 @@ const authLoginRoute = authLoginRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof authLoginRoute
   '/sign-up': typeof authSignUpRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/centers': typeof AdminCentersRoute
+  '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/results': typeof AdminResultsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/store': typeof AdminStoreRoute
+  '/admin/transactions': typeof AdminTransactionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof publicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/sign-up': typeof authSignUpRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/centers': typeof AdminCentersRoute
+  '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/results': typeof AdminResultsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/store': typeof AdminStoreRoute
+  '/admin/transactions': typeof AdminTransactionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof publicIndexRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/sign-up': typeof authSignUpRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/centers': typeof AdminCentersRoute
+  '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/results': typeof AdminResultsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/store': typeof AdminStoreRoute
+  '/admin/transactions': typeof AdminTransactionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/(public)/': typeof publicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/about' | '/login' | '/sign-up' | '/demo/tanstack-query' | '/'
+  fullPaths:
+    | '/about'
+    | '/admin'
+    | '/login'
+    | '/sign-up'
+    | '/admin/analytics'
+    | '/admin/appointments'
+    | '/admin/campaigns'
+    | '/admin/centers'
+    | '/admin/receipts'
+    | '/admin/results'
+    | '/admin/roles'
+    | '/admin/store'
+    | '/admin/transactions'
+    | '/admin/users'
+    | '/demo/tanstack-query'
+    | '/'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/login' | '/sign-up' | '/demo/tanstack-query' | '/'
+  to:
+    | '/about'
+    | '/login'
+    | '/sign-up'
+    | '/admin/analytics'
+    | '/admin/appointments'
+    | '/admin/campaigns'
+    | '/admin/centers'
+    | '/admin/receipts'
+    | '/admin/results'
+    | '/admin/roles'
+    | '/admin/store'
+    | '/admin/transactions'
+    | '/admin/users'
+    | '/demo/tanstack-query'
+    | '/'
+    | '/admin'
   id:
     | '__root__'
     | '/about'
+    | '/admin'
     | '/(auth)/login'
     | '/(auth)/sign-up'
+    | '/admin/analytics'
+    | '/admin/appointments'
+    | '/admin/campaigns'
+    | '/admin/centers'
+    | '/admin/receipts'
+    | '/admin/results'
+    | '/admin/roles'
+    | '/admin/store'
+    | '/admin/transactions'
+    | '/admin/users'
     | '/demo/tanstack-query'
     | '/(public)/'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   authLoginRoute: typeof authLoginRoute
   authSignUpRoute: typeof authSignUpRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
@@ -87,12 +240,26 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/(public)/': {
       id: '/(public)/'
@@ -107,6 +274,76 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/tanstack-query'
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/transactions': {
+      id: '/admin/transactions'
+      path: '/transactions'
+      fullPath: '/admin/transactions'
+      preLoaderRoute: typeof AdminTransactionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/store': {
+      id: '/admin/store'
+      path: '/store'
+      fullPath: '/admin/store'
+      preLoaderRoute: typeof AdminStoreRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/roles': {
+      id: '/admin/roles'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AdminRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/results': {
+      id: '/admin/results'
+      path: '/results'
+      fullPath: '/admin/results'
+      preLoaderRoute: typeof AdminResultsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/receipts': {
+      id: '/admin/receipts'
+      path: '/receipts'
+      fullPath: '/admin/receipts'
+      preLoaderRoute: typeof AdminReceiptsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/centers': {
+      id: '/admin/centers'
+      path: '/centers'
+      fullPath: '/admin/centers'
+      preLoaderRoute: typeof AdminCentersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/campaigns': {
+      id: '/admin/campaigns'
+      path: '/campaigns'
+      fullPath: '/admin/campaigns'
+      preLoaderRoute: typeof AdminCampaignsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/appointments': {
+      id: '/admin/appointments'
+      path: '/appointments'
+      fullPath: '/admin/appointments'
+      preLoaderRoute: typeof AdminAppointmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/(auth)/sign-up': {
       id: '/(auth)/sign-up'
@@ -125,8 +362,39 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
+  AdminCampaignsRoute: typeof AdminCampaignsRoute
+  AdminCentersRoute: typeof AdminCentersRoute
+  AdminReceiptsRoute: typeof AdminReceiptsRoute
+  AdminResultsRoute: typeof AdminResultsRoute
+  AdminRolesRoute: typeof AdminRolesRoute
+  AdminStoreRoute: typeof AdminStoreRoute
+  AdminTransactionsRoute: typeof AdminTransactionsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAppointmentsRoute: AdminAppointmentsRoute,
+  AdminCampaignsRoute: AdminCampaignsRoute,
+  AdminCentersRoute: AdminCentersRoute,
+  AdminReceiptsRoute: AdminReceiptsRoute,
+  AdminResultsRoute: AdminResultsRoute,
+  AdminRolesRoute: AdminRolesRoute,
+  AdminStoreRoute: AdminStoreRoute,
+  AdminTransactionsRoute: AdminTransactionsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   authLoginRoute: authLoginRoute,
   authSignUpRoute: authSignUpRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
