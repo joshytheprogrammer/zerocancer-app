@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -87,7 +86,7 @@ export default function PatientForm() {
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Ngozi Janet" {...field} />
+                <Input placeholder="John Doe" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,7 +100,7 @@ export default function PatientForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="ngozijanet@gmail.com" {...field} />
+                <Input type="email" placeholder="john.doe@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -130,7 +129,7 @@ export default function PatientForm() {
         <FormField
           control={form.control}
           name="phoneNumber"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
@@ -141,59 +140,57 @@ export default function PatientForm() {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>State</FormLabel>
-                <Select onValueChange={handleStateChange} value={selectedState}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a state" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {statesData.map((item) => (
-                      <SelectItem key={item.state.id} value={item.state.name}>
-                        {item.state.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="state"
+          render={() => (
+            <FormItem>
+              <FormLabel>State</FormLabel>
+              <Select onValueChange={handleStateChange} value={selectedState}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {statesData.map((item) => (
+                    <SelectItem key={item.state.id} value={item.state.name}>
+                      {item.state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="localGovernment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Local Government</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedState}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={selectedState ? "Select a local government" : "Select a state first"} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {localGovernments.map((local) => (
-                      <SelectItem key={local.id} value={local.name}>
-                        {local.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="localGovernment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Local Government</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value} disabled={!selectedState}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedState ? "Select a local government" : "Select a state first"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {localGovernments.map((local) => (
+                    <SelectItem key={local.id} value={local.name}>
+                      {local.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <Button type="submit" className="w-full py-6 text-lg">Create Account</Button>
+        <Button type="submit" className="w-full">Create Account</Button>
       </form>
     </Form>
   )

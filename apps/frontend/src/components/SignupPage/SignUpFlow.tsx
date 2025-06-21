@@ -41,7 +41,7 @@ export default function SignUpFlow() {
     </div>
   )
 
-  const renderFormWithBackButton = (FormComponent: React.ComponentType, title: string) => (
+  const renderFormWithBackButton = (FormComponent: React.ComponentType) => (
     <div className='space-y-8'>
       <div className='flex items-center gap-4'>
         <button 
@@ -74,9 +74,9 @@ export default function SignUpFlow() {
         {/* Content - Scrollable */}
         <div className='flex-1 overflow-y-auto p-4 lg:p-8'>
           {selectedType === null && renderUserTypeSelection()}
-          {selectedType === 'patient' && renderFormWithBackButton(PatientForm, 'Patient Registration')}
-          {selectedType === 'donor' && renderFormWithBackButton(DonorForm, 'Donor Registration')}
-          {selectedType === 'screening' && renderFormWithBackButton(ScreeningCenterForm, 'Screening Center Registration')}
+          {selectedType === 'patient' && renderFormWithBackButton(PatientForm)}
+          {selectedType === 'donor' && renderFormWithBackButton(DonorForm)}
+          {selectedType === 'screening' && renderFormWithBackButton(ScreeningCenterForm)}
         </div>
       </div>
     </div>
