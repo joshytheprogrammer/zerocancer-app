@@ -1,6 +1,3 @@
-// Prisma schema for a simple User model
-// You can expand this as needed
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,8 +7,239 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProfileType {
+  PATIENT
+  DONOR
+}
+
+enum AllocationStatus {
+  MATCHED
+  CLAIMED
+  EXPIRED
+}
+
+enum CampaignStatus {
+  ACTIVE
+  COMPLETED
+  DELETED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCEELLED
+}
+
+enum TransactionType {
+  DONATION
+  APPOINTMENT
+  PAYOUT
+  REFUND
+}
+
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  phone          String?
+  passwordHash   String
+  profile        ProfileType @default(PATIENT)
+  createdAt      DateTime @default(now())
+
+  patientProfile PatientProfile?
+  donorProfile   DonorProfile?
+
+  waitlists      Waitlist[]        @relation("UserWaitlists")
+  donationCampaigns DonationCampaign[] @relation("UserDonationCampaigns")
+  donationAllocations DonationAllocation[] @relation("UserDonationAllocations")
+  appointments   Appointment[]     @relation("UserAppointments")
+}
+
+model PatientProfile {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  gender     String?
+  dateOfBirth DateTime
+  city       String?
+  state      String?
+
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model DonorProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  organizationName  String?
+  country           String?
+
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model Admins {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+}
+
+model ServiceCenter {
+  id            String   @id @default(uuid())
+  centerName    String
+  address       String
+  state         String
+  lga           String
+  // approvedStaff CenterStaff[]
+  isApproved    Boolean
+  isSuspended   Boolean
+  bankAccount   String?
+  bankName      String?
+
+  staff         CenterStaff[]
+  appointments  Appointment[]
+  services      ScreeningType[]
+}
+
+model ScreeningType {
+  id                      String   @id @default(uuid())
+  name                    String
+  description             String?
+  screeningTypeCategoryId String
+  active                  Boolean  @default(true)
+
+  category                ScreeningTypeCategory @relation(fields: [screeningTypeCategoryId], references: [id])
+  appointments            Appointment[]
+  waitlists               Waitlist[]
+  campaigns               DonationCampaign[]
+  centers                 ServiceCenter[]
+}
+
+model ScreeningTypeCategory {
+  id          String @id @default(uuid())
+  name        String
+  description String?
+
+  types       ScreeningType[]
+}
+
+model Waitlist {
+  id              String           @id @default(uuid())
+  screeningTypeId String
+  patientId       String
+  status          AllocationStatus
+  joinedAt        DateTime         @default(now())
+  claimedAt       DateTime?
+
+  screening       ScreeningType    @relation(fields: [screeningTypeId], references: [id])
+  patient         User             @relation("UserWaitlists", fields: [patientId], references: [id])
+  allocation      DonationAllocation?
+}
+
+model DonationCampaign {
+  id              String           @id @default(uuid())
+  donorId         String
+  screeningTypeId String
+  amount          Float
+  purpose         String?
+  targetGender    Boolean?
+  targetAgeRange  String?
+  targetState     String?
+  targetLga       String?
+  status          CampaignStatus
+  createdAt       DateTime         @default(now())
+
+  donor           User             @relation("UserDonationCampaigns", fields: [donorId], references: [id])
+  screeningType   ScreeningType    @relation(fields: [screeningTypeId], references: [id])
+  allocations     DonationAllocation[]
+  transactions    Transaction[]    @relation("DonationTransactions")
+}
+
+model DonationAllocation {
+  id            String      @id @default(uuid())
+  waitlistId    String      @unique
+  appointmentId String?
+  patientId     String
+  campaignId    String
+  claimedAt     DateTime?
+
+  waitlist      Waitlist    @relation(fields: [waitlistId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  patient       User        @relation("UserDonationAllocations", fields: [patientId], references: [id])
+  campaign      DonationCampaign @relation(fields: [campaignId], references: [id])
+}
+
+model Appointment {
+  id                      String   @id @default(uuid())
+  patientId               String
+  centerId                String
+  screeningTypeId         String
+  donationId              String?
+  isDonation              Boolean  @default(false)
+  appointmentDate         DateTime
+  appointmentTime         DateTime
+  transactionId           String?
+  status                  AppointmentStatus
+  createdAt               DateTime @default(now())
+
+  patient                 User     @relation("UserAppointments", fields: [patientId], references: [id])
+  center                  ServiceCenter @relation(fields: [centerId], references: [id])
+  screeningType           ScreeningType @relation(fields: [screeningTypeId], references: [id])
+  transaction             Transaction?  @relation("TransactionAppointments", fields: [transactionId], references: [id])
+  verification            AppointmentVerification? @relation("AppointmentVerificationAppointment")
+  result                  ScreeningResult? @relation("ScreeningResultAppointment")
+  allocation              DonationAllocation[]
+}
+
+model AppointmentVerification {
+  id             String   @id @default(uuid())
+  verificationCode Int
+  verifiedBy     String
+  verifiedAt     DateTime
+
+  appointment Appointment @relation("AppointmentVerificationAppointment", fields: [id], references: [id])
+  verifier CenterStaff @relation("StaffVerifications", fields: [verifiedBy], references: [id])
+}
+
+model ScreeningResult {
+  id          String   @id @default(uuid())
+  result      String
+  notes       String?
+  uploadedBy  String
+  uploadedAt  DateTime @default(now())
+
+  appointment Appointment @relation("ScreeningResultAppointment", fields: [id], references: [id])
+  uploader CenterStaff @relation("StaffUploadedResults", fields: [uploadedBy], references: [id])
+}
+
+model CenterStaff {
+  id        String   @id @default(uuid())
+  centerId  String
+  role      String?
+  createdAt DateTime @default(now())
+
+  center    ServiceCenter @relation(fields: [centerId], references: [id])
+  verifications AppointmentVerification[] @relation("StaffVerifications")
+  uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
+}
+
+model StoreProduct {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  createdAt   DateTime @default(now())
+}
+
+model Transaction {
+  id                  String   @id @default(uuid())
+  type                TransactionType
+  status              String
+  amount              Float
+  relatedDonationId   String?
+  paymentReference    String?
+  paymentChannel      String?
+  createdAt           DateTime @default(now())
+
+  donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id])
+  appointments Appointment[] @relation("TransactionAppointments")
 }

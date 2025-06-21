@@ -14,7 +14,11 @@
     "db:seed": "prisma db seed",
     "prisma:studio": "prisma studio"
   },
+  "prisma": {
+    "seed": "tsx src/lib/seed.ts"
+  },
   "dependencies": {
+    "@faker-js/faker": "^9.8.0",
     "@hono/node-server": "^1.0.0",
     "@prisma/client": "^5.0.0",
     "hono": "^4.0.0"
