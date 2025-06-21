@@ -2,6 +2,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useState } from "react"
+import * as RPNInput from "react-phone-number-input"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -41,7 +42,11 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-export default function PatientForm() {
+type PatientFormProps = {
+  onSubmitSuccess: (data: FormData) => void
+}
+
+export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
   const [selectedState, setSelectedState] = useState<string>("")
   const [localGovernments, setLocalGovernments] = useState<Array<{ name: string; id: number }>>([])
 
@@ -73,7 +78,7 @@ export default function PatientForm() {
 
   function onSubmit(values: FormData) {
     console.log("Patient form submitted:", values)
-    // Handle form submission here
+    onSubmitSuccess(values)
   }
 
   return (
@@ -129,11 +134,14 @@ export default function PatientForm() {
         <FormField
           control={form.control}
           name="phoneNumber"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <PhoneInputComponent />
+                <PhoneInputComponent
+                  value={field.value as RPNInput.Value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+"Don't act unless you're 95% sure. Don't remove unless explicitly told."
+
+✅ Be 95% sure before making structural changes, refactors, or applying fixes. If uncertain, ask the user first.
+
+⚠️ Never delete or remove code, files, or logic unless the user explicitly requests it. Preserve context unless removal is clearly intended.
+
+✏️ Prefer non-destructive edits. Comment out instead of deleting if unsure. Use annotations to explain alternatives when relevant.
+
+💬 Always explain major decisions in clear, minimal language — let the user confirm or adjust before finalizing.
+
