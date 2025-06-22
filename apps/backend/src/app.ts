@@ -13,7 +13,14 @@ app.get("/healthz", (c) => c.json({ status: "ok" }));
 
 // ROUTES
 app.route("/auth", authApp);
-app.route("/registration", registerApp);
+app.route("/register", registerApp);
 app.route("/appointment", appointmentApp);
+
+app.notFound((c) => {
+  return c.json(
+    { error: "Not Found", message: "The requested resource was not found." },
+    404
+  );
+});
 
 export default app;
