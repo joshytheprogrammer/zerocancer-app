@@ -28,13 +28,14 @@ export const registerUser = (actor: t.TActors) => `/api/register/${actor}`
 export const loginUser = (actor: t.TActors) =>
   `/api/auth/login${buildQuery({ actor })}`
 export const logoutUser = () => '/api/auth/logout'
+export const authUser = () => '/api/auth/me'
+export const refreshToken = (retry?: boolean) =>
+  `/api/auth/refresh${retry === true ? '?retry=true' : ''}`
+// not-done
 export const forgotPassword = () => '/api/auth/forgot-password'
 export const resetPassword = () => '/api/auth/reset-password'
 export const verifyEmail = () => '/api/auth/verify-email'
 export const resendVerification = () => '/api/auth/resend-verification'
-export const authUser = () => '/api/auth/me'
-export const refreshToken = (retry?: boolean) =>
-  `/api/auth/refresh${retry === true ? '?retry=true' : ''}`
 
 // PATIENT
 export const getAppointments = (page: number = 1, size: number = 20) =>

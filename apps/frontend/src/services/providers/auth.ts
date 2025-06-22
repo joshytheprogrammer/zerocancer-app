@@ -1,4 +1,5 @@
 import * as authService from '@/services/auth.service'
+import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
 import {
   queryOptions,
   useMutation,
@@ -14,7 +15,6 @@ import type {
 } from '@zerocancer/shared/types'
 import type { AxiosError } from 'axios'
 import type { z } from 'zod'
-import { ACCESS_TOKEN_KEY, MutationKeys } from '../keys'
 
 export const useLogin = () => {
   const queryClient = useQueryClient()
