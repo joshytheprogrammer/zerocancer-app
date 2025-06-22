@@ -8,6 +8,7 @@ import {
   TScreeningCenterRegisterResponse,
 } from "@zerocancer/shared/types";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
@@ -129,7 +130,7 @@ registerApp.post(
     });
 
     // When registering, generate and send verification email (example usage):
-    const verifyToken = "aaaaaaa"; //crypto.randomBytes(32).toString("hex");
+    const verifyToken = crypto.randomBytes(32).toString("hex");
 
     await db.emailVerificationToken.create({
       data: {
@@ -230,7 +231,7 @@ registerApp.post(
     });
 
     // When registering, generate and send verification email (example usage):
-    const verifyToken = "aaaaaaa"; //crypto.randomBytes(32).toString("hex");
+    const verifyToken = crypto.randomBytes(32).toString("hex");
 
     await db.emailVerificationToken.create({
       data: {
