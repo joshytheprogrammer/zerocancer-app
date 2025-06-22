@@ -5,7 +5,6 @@ import {
   Calendar,
   Upload,
   CircleDollarSign,
-  ArrowUpRight,
 } from 'lucide-react'
 import {
   Table,
