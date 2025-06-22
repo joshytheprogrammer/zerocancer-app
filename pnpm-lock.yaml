@@ -11,6 +11,9 @@ importers:
       concurrently:
         specifier: ^9.2.0
         version: 9.2.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
   apps/backend:
     dependencies:
@@ -26,6 +29,9 @@ importers:
       '@prisma/client':
         specifier: ^5.0.0
         version: 5.22.0(prisma@5.22.0)
+      '@zerocancer/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2

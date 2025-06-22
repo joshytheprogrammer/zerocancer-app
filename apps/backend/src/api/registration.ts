@@ -1,10 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
+import * as z from "@zerocancer/shared/schemas";
 import {
-  centerSchema,
-  donorSchema,
-  patientSchema,
-} from "@zerocancer/shared/schemas";
-import type {
   TDonorRegisterResponse,
   TErrorResponse,
   TPatientRegisterResponse,
@@ -15,14 +11,13 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
 
-// import { hi } from "@zerocancer/shared/index";
 
 export const registerApp = new Hono();
 
 // Patient Registration
 registerApp.post(
   "/register/patient",
-  zValidator("json", patientSchema, (result, c) => {
+  zValidator("json", z.patientSchema, (result, c) => {
     if (!result.success) throw new HTTPException(400, { cause: result.error });
   }),
   async (c) => {
@@ -70,7 +65,7 @@ registerApp.post(
 // Donor Registration
 registerApp.post(
   "/register/donor",
-  zValidator("json", donorSchema, (result, c) => {
+  zValidator("json", z.donorSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>(
         {
@@ -123,7 +118,7 @@ registerApp.post(
 // Center Registration
 registerApp.post(
   "/register/center",
-  zValidator("json", centerSchema, (result, c) => {
+  zValidator("json", z.centerSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>(
         {

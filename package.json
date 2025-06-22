@@ -7,11 +7,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "concurrently": "^9.2.0"
+    "concurrently": "^9.2.0",
+    "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
-    "backend:dev": "pnpm --filter ./apps/backend dev",
+    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build",
+    "dev": "pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
+    "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev"
   }
 }
