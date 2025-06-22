@@ -65,4 +65,8 @@ export type TRefreshTokenResponse = TDataResponse<{
   // newRefreshToken: string;
 }>;
 
+export type TCheckProfilesResponse = TDataResponse<{
+  profiles: ("PATIENT" | "DONOR")[];
+}>;
+
 export type TActors = "patient" | "donor" | "center";

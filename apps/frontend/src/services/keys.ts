@@ -25,12 +25,16 @@ export enum QueryKeys {
   adminAnalytics = 'adminAnalytics',
   adminStore = 'adminStore',
   adminRoles = 'adminRoles',
+  checkProfiles = 'checkProfiles',
 }
 
 export enum MutationKeys {
   registerPatient = 'registerPatient',
   registerDonor = 'registerDonor',
   registerCenter = 'registerCenter',
+  forgotPassword = 'forgotPassword',
+  resetPassword = 'resetPassword',
+  verifyEmail = 'verifyEmail',
   loginUser = 'loginUser',
   authUser = 'authUser',
   logoutUser = 'logoutUser',

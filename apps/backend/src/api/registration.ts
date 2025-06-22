@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { centerSchema, donorSchema, patientSchema } from "@zerocancer/shared";
 import {
+  TCheckProfilesResponse,
   TDonorRegisterResponse,
   TErrorResponse,
   TPatientRegisterResponse,
@@ -10,8 +11,37 @@ import bcrypt from "bcryptjs";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
+import { sendEmail } from "src/lib/email";
+import { getUserWithProfiles } from "src/lib/utils";
+import { z } from "zod";
 
 export const registerApp = new Hono();
+
+registerApp.post(
+  "/check-profiles",
+  zValidator(
+    "json",
+    z.object({
+      email: z
+        .string()
+        .email({ message: "Please enter a valid email address." }),
+    }),
+    (result) => {
+      if (!result.success)
+        throw new HTTPException(400, { cause: result.error });
+    }
+  ),
+  async (c) => {
+    const { profiles } = await getUserWithProfiles({
+      email: c.req.valid("json").email,
+    });
+    return c.json<TCheckProfilesResponse>({
+      ok: true,
+      message: "Profiles retrieved successfully",
+      data: { profiles },
+    });
+  }
+);
 
 // Patient Registration
 registerApp.post(
@@ -22,8 +52,54 @@ registerApp.post(
   async (c) => {
     const db = getDB();
     const data = c.req.valid("json");
-    const existing = await db.user.findUnique({ where: { email: data.email } });
-    if (existing)
+
+    // Concurrently check if user exists and if center with same email exists
+    const [userResult, existingCenter] = await Promise.all([
+      getUserWithProfiles({ email: data.email }),
+      db.serviceCenter.findUnique({ where: { email: data.email } }),
+    ]);
+
+    if (existingCenter)
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          err_code: "center_already_registered",
+          error: "Email already registered to a center",
+        },
+        409
+      );
+
+    const { user: existingUser, profiles } = userResult;
+
+    // if already has a profile, just update the patient profile
+    if (profiles.includes("DONOR")) {
+      const updatedUser = await db.user.update({
+        where: { id: existingUser?.id },
+        data: {
+          patientProfile: {
+            create: {
+              gender: data.gender,
+              dateOfBirth: data.dateOfBirth,
+              city: data.localGovernment,
+              state: data.state,
+            },
+          },
+        },
+      });
+
+      return c.json<TPatientRegisterResponse>(
+        {
+          ok: true,
+          message: "Patient registered successfully",
+          data: { patientId: updatedUser.id },
+        },
+        201
+      );
+    }
+
+    //  if user already exists with the same email & wasn't planning on creating a new profile
+    // (i.e. not a donor or center), return an error
+    if (existingUser)
       return c.json<TErrorResponse>(
         {
           ok: false,
@@ -32,6 +108,7 @@ registerApp.post(
         },
         409
       );
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const patient = await db.user.create({
       data: {
@@ -39,7 +116,7 @@ registerApp.post(
         email: data.email,
         phone: data.phone,
         passwordHash: hashedPassword,
-        profile: "PATIENT",
+        // profile: "PATIENT",
         patientProfile: {
           create: {
             gender: data.gender,
@@ -50,6 +127,27 @@ registerApp.post(
         },
       },
     });
+
+    // When registering, generate and send verification email (example usage):
+    const verifyToken = "aaaaaaa"; //crypto.randomBytes(32).toString("hex");
+
+    await db.emailVerificationToken.create({
+      data: {
+        userId: patient.id,
+        profileType: "PATIENT",
+        token: verifyToken,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      },
+    });
+
+    await sendEmail({
+      to: patient.email,
+      subject: "Verify your email",
+      html: `<p>Click <a href='${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
+    });
+
     return c.json<TPatientRegisterResponse>(
       {
         ok: true,
@@ -78,8 +176,35 @@ registerApp.post(
   async (c) => {
     const db = getDB();
     const data = c.req.valid("json");
-    const existing = await db.user.findUnique({ where: { email: data.email } });
-    if (existing)
+
+    const { user: existingUser, profiles } = await getUserWithProfiles({
+      email: data.email,
+    });
+
+    // if already has a profile, just update the donor profile
+    if (profiles.includes("PATIENT")) {
+      const updatedUser = await db.user.update({
+        where: { id: existingUser?.id },
+        data: {
+          donorProfile: {
+            create: {
+              organizationName: data.organization || "",
+            },
+          },
+        },
+      });
+
+      return c.json<TPatientRegisterResponse>(
+        {
+          ok: true,
+          message: "Patient registered successfully",
+          data: { patientId: updatedUser.id },
+        },
+        201
+      );
+    }
+    // const existingUser = await db.user.findUnique({ where: { email: data.email } });
+    if (existingUser)
       return c.json<TErrorResponse>(
         {
           ok: false,
@@ -95,7 +220,7 @@ registerApp.post(
         email: data.email,
         passwordHash: hashedPassword,
         phone: data.phone,
-        profile: "DONOR",
+        // profile: "DONOR",
         donorProfile: {
           create: {
             organizationName: data.organization || "",
@@ -103,6 +228,27 @@ registerApp.post(
         },
       },
     });
+
+    // When registering, generate and send verification email (example usage):
+    const verifyToken = "aaaaaaa"; //crypto.randomBytes(32).toString("hex");
+
+    await db.emailVerificationToken.create({
+      data: {
+        userId: donor.id,
+        profileType: "DONOR",
+        token: verifyToken,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      },
+    });
+
+    await sendEmail({
+      to: donor.email,
+      subject: "Verify your email",
+      html: `<p>Click <a href='${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
+    });
+
     return c.json<TDonorRegisterResponse>(
       {
         ok: true,
@@ -131,10 +277,10 @@ registerApp.post(
   async (c) => {
     const db = getDB();
     const data = c.req.valid("json");
-    const existing = await db.serviceCenter.findUnique({
+    const existingUser = await db.serviceCenter.findUnique({
       where: { email: data.email },
     });
-    if (existing)
+    if (existingUser)
       return c.json<TErrorResponse>(
         {
           ok: false,

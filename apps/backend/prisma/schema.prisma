@@ -44,8 +44,10 @@ model User {
   email          String   @unique
   phone          String?
   passwordHash   String
-  profile        ProfileType @default(PATIENT)
+  // profile        ProfileType @default(PATIENT)
   createdAt      DateTime @default(now())
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   patientProfile PatientProfile?
   donorProfile   DonorProfile?
@@ -63,6 +65,8 @@ model PatientProfile {
   dateOfBirth DateTime
   city       String?
   state      String?
+  emailVerified  DateTime?
+
 
   user       User     @relation(fields: [userId], references: [id])
 }
@@ -72,6 +76,8 @@ model DonorProfile {
   userId            String   @unique
   organizationName  String?
   country           String?
+  emailVerified  DateTime?
+
 
   user              User     @relation(fields: [userId], references: [id])
 }
@@ -251,4 +257,21 @@ model Transaction {
 
   donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id])
   appointments Appointment[] @relation("TransactionAppointments")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  profileType ProfileType
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
 }

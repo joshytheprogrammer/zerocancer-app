@@ -23,6 +23,9 @@ export const backendHealth = () => '/api/healthz'
 
 // USER REGISTRATION
 export const registerUser = (actor: t.TActors) => `/api/register/${actor}`
+export const checkProfiles = () => '/api/register/check-profiles'
+// export const checkEmail = (email: string) =>
+//   `/api/register/check-email?email=${encodeURIComponent(email)}`
 
 // AUTHENTICATION
 export const loginUser = (actor: t.TActors) =>

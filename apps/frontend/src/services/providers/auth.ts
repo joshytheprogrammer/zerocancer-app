@@ -64,3 +64,33 @@ export const logOut = () => {
   const { mutate: logout } = useLogout()
   logout()
 }
+
+export const useCheckProfiles = () => {
+  return queryOptions({
+    queryKey: ['checkProfiles'],
+    queryFn: authService.checkProfiles,
+    retry: false,
+  })
+}
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationKey: [MutationKeys.forgotPassword],
+    mutationFn: (email: string) => authService.forgotPassword(email),
+  })
+}
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationKey: [MutationKeys.resetPassword],
+    mutationFn: ({ token, password }: { token: string; password: string }) =>
+      authService.resetPassword(token, password),
+  })
+}
+
+export const useVerifyEmail = () => {
+  return useMutation({
+    mutationKey: [MutationKeys.verifyEmail],
+    mutationFn: (token: string) => authService.verifyEmail(token),
+  })
+}

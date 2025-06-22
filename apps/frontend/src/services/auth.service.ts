@@ -29,6 +29,26 @@ export const logout = async () => {
   return await request.post(endpoints.logoutUser())
 }
 
+// Check profiles
+export const checkProfiles = async () => {
+  return await request.get(endpoints.checkProfiles())
+}
+
+// Forgot password
+export const forgotPassword = async (email: string) => {
+  return await request.post(endpoints.forgotPassword(), { email })
+}
+
+// Reset password
+export const resetPassword = async (token: string, password: string) => {
+  return await request.post(endpoints.resetPassword(), { token, password })
+}
+
+// Verify email
+export const verifyEmail = async (token: string) => {
+  return await request.post(endpoints.verifyEmail(), { token })
+}
+
 // // request password reest
 // export const requestPasswordReset = (params: t.TRequestPasswordResetParams) => {
 //   return request.post(endpoints.requestPasswordReset(), params)

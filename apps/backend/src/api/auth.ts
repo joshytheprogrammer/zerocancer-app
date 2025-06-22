@@ -7,11 +7,14 @@ import type {
   TRefreshTokenResponse,
 } from "@zerocancer/shared/types";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { jwt, sign, verify } from "hono/jwt";
 import { getDB } from "src/lib/db";
+import { sendEmail } from "src/lib/email";
+import { getUserWithProfiles } from "src/lib/utils";
 
 export const authApp = new Hono();
 
@@ -19,7 +22,7 @@ authApp.use(
   "*",
   cors({
     origin: [
-      "http://localhost:5173", // Frontend dev
+      "http://localhost:3000", // Frontend dev
       "https://your-production-domain.com", // Production
     ],
     credentials: true, // Allow cookies
@@ -71,8 +74,17 @@ authApp.post(
       passwordHash = user?.passwordHash;
       id = user?.id;
     } else {
-      user = await db.user.findUnique({ where: { email } });
-      if (!user || user.profile !== actor.toUpperCase()) {
+      let { user: justUser, profiles: userProfiles } =
+        await getUserWithProfiles({
+          email,
+        });
+
+      user = { ...justUser, profiles: userProfiles };
+
+      if (
+        !user ||
+        !userProfiles.includes(actor.toUpperCase() as "PATIENT" | "DONOR")
+      ) {
         return c.json<TErrorResponse>(
           {
             ok: false,
@@ -85,12 +97,14 @@ authApp.post(
       passwordHash = user.passwordHash;
       id = user.id;
     }
+
+    // If user not found or password doesn't match
     if (!user || !(await bcrypt.compare(password, passwordHash))) {
       return c.json<TErrorResponse>(
         {
           ok: false,
           err_code: "invalid_credentials",
-          error: "Invalid email or password.",
+          error: `Invalid ${actor} email or password.`,
         },
         401
       );
@@ -99,7 +113,7 @@ authApp.post(
     const payload = {
       id,
       email: user.email,
-      profile: actor === "center" ? "CENTER" : user.profile,
+      profile: actor === "center" ? "CENTER" : user.profiles[0], // Use first profile for non-center actors
     };
     const token = await sign(
       { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 5 },
@@ -225,4 +239,86 @@ authApp.post("/logout", async (c) => {
   );
   // If storing refresh tokens in DB, mark as revoked
   return c.json({ ok: true, message: "Logged out successfully." });
+});
+
+// POST /api/auth/forgot-password
+// Accepts { email } and sends a reset link if user exists
+authApp.post("/forgot-password", async (c) => {
+  const db = getDB();
+  const { email } = await c.req.json();
+  // Find user by email
+  const user = await db.user.findUnique({ where: { email } });
+  if (!user) {
+    // For security, always return success
+    return c.json({ ok: true });
+  }
+  // Generate token and expiry
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 1000 * 60 * 30); // 30 min
+  await db.passwordResetToken.create({
+    data: { userId: user.id, token, expiresAt: expires },
+  });
+  // Send email
+  const resetUrl = `${
+    process.env.FRONTEND_URL || "http://localhost:3000"
+  }/reset-password?token=${token}`;
+  await sendEmail({
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Click <a href='${resetUrl}'>here</a> to reset your password. This link expires in 30 minutes.</p>`,
+  });
+  return c.json({ ok: true });
+});
+
+// POST /api/auth/reset-password
+// Accepts { token, password }
+authApp.post("/reset-password", async (c) => {
+  const db = getDB();
+  const { token, password } = await c.req.json();
+  const reset = await db.passwordResetToken.findUnique({ where: { token } });
+  if (!reset || reset.expiresAt < new Date()) {
+    return c.json({ ok: false, error: "Invalid or expired token." }, 400);
+  }
+  const hash = await bcrypt.hash(password, 10);
+  await db.user.update({
+    where: { id: reset.userId },
+    data: { passwordHash: hash },
+  });
+  await db.passwordResetToken.delete({ where: { token } });
+  return c.json({ ok: true });
+});
+
+// POST /api/auth/verify-email
+// Accepts { token }
+authApp.post("/verify-email", async (c) => {
+  const db = getDB();
+  const { token } = await c.req.json();
+  const verify = await db.emailVerificationToken.findUnique({
+    where: { token },
+  });
+  if (!verify || verify.expiresAt < new Date()) {
+    return c.json({ ok: false, error: "Invalid or expired token." }, 400);
+  }
+
+  // profile to be verified
+  if (verify.profileType !== "PATIENT" && verify.profileType !== "DONOR") {
+    return c.json(
+      { ok: false, error: "Invalid profile type for email verification." },
+      400
+    );
+  }
+
+  const dbProfile =
+    verify.profileType === "PATIENT" ? "patientProfile" : "donorProfile";
+
+  await db.user.update({
+    where: { id: verify.userId },
+    data: {
+      [dbProfile]: {
+        update: { emailVerified: new Date() },
+      },
+    },
+  });
+  await db.emailVerificationToken.delete({ where: { token } });
+  return c.json({ ok: true });
 });
