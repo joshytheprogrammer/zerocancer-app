@@ -41,15 +41,11 @@ pnpm dev
 
 # ZeroCancer Monorepo
 
-This project uses a pnpm workspace monorepo for easy onboarding, type sharing, and fullstack development.
+A fullstack monorepo using Vite + React + TanStack Router (frontend), Hono.js + Prisma (backend), and shared TypeScript types and Zod schemas.
 
-## Structure
+---
 
-- `frontend/` – Vite + React + TanStack Router + React Query
-- `backend/` – Hono.js API + Prisma ORM
-- `shared/` – TypeScript types/utilities shared between frontend and backend
-
-## Getting Started
+## 🛠️ Getting Started
 
 1. **Install dependencies for all packages:**
    ```bash
@@ -71,34 +67,29 @@ This project uses a pnpm workspace monorepo for easy onboarding, type sharing, a
 To build this application for production:
 
 ```bash
-pnpm build
+# Clone and enter the project directory
+# git clone <repo-url>
+cd zero-cancer/zerocancer
 ```
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### 2. Install dependencies (root only)
 
 ```bash
-pnpm test
+pnpm install
 ```
 
-## Styling
+### 3. Environment setup
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+- Copy `.env.example` to `.env` in `apps/backend` and `apps/frontend` if needed, and fill in required values (e.g., database URL for backend).
 
-## Linting & Formatting
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+### 4. Database setup (backend)
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+pnpm --filter ./apps/backend prisma:generate
+pnpm --filter ./apps/backend db:push
 ```
 
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+### 5. Start the development servers (auto builds shared code!)
 
 ```bash
 pnpx shadcn@latest add button
