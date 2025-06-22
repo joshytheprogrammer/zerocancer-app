@@ -49,6 +49,7 @@ export enum MutationKeys {
   resendReceipt = 'resendReceipt',
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
+  resendVerification = 'resendVerification',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

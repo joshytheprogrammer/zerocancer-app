@@ -49,6 +49,17 @@ export const verifyEmail = async (token: string) => {
   return await request.post(endpoints.verifyEmail(), { token })
 }
 
+// Resend verification email
+export const resendVerification = async (
+  email: string,
+  profileType: string,
+) => {
+  return await request.post(endpoints.resendVerification(), {
+    email,
+    profileType,
+  })
+}
+
 // // request password reest
 // export const requestPasswordReset = (params: t.TRequestPasswordResetParams) => {
 //   return request.post(endpoints.requestPasswordReset(), params)

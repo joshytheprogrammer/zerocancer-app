@@ -94,3 +94,16 @@ export const useVerifyEmail = () => {
     mutationFn: (token: string) => authService.verifyEmail(token),
   })
 }
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationKey: [MutationKeys.resendVerification],
+    mutationFn: ({
+      email,
+      profileType,
+    }: {
+      email: string
+      profileType: string
+    }) => authService.resendVerification(email, profileType),
+  })
+}

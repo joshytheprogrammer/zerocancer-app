@@ -322,3 +322,50 @@ authApp.post("/verify-email", async (c) => {
   await db.emailVerificationToken.delete({ where: { token } });
   return c.json({ ok: true });
 });
+
+// POST /api/auth/resend-verification
+// Accepts { email, profileType }
+authApp.post("/resend-verification", async (c) => {
+  const db = getDB();
+  const { email, profileType } = await c.req.json();
+  // Find user by email
+  const user = await db.user.findUnique({ where: { email } });
+  if (!user) {
+    // For security, always return success
+    return c.json({ ok: true });
+  }
+  // Check if already verified
+  let alreadyVerified = false;
+  if (profileType === "PATIENT") {
+    const patient = await db.patientProfile.findUnique({
+      where: { userId: user.id },
+    });
+    alreadyVerified = !!patient?.emailVerified;
+  } else if (profileType === "DONOR") {
+    const donor = await db.donorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    alreadyVerified = !!donor?.emailVerified;
+  }
+  if (alreadyVerified) {
+    return c.json({ ok: true, message: "Already verified." });
+  }
+  // Generate and send new verification token
+  const verifyToken = crypto.randomBytes(32).toString("hex");
+  await db.emailVerificationToken.create({
+    data: {
+      userId: user.id,
+      profileType,
+      token: verifyToken,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    },
+  });
+  await sendEmail({
+    to: user.email,
+    subject: "Verify your email",
+    html: `<p>Click <a href='${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
+  });
+  return c.json({ ok: true });
+});
