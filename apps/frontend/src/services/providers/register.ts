@@ -10,6 +10,7 @@ import type {
   TScreeningCenterRegisterResponse,
 } from '@shared/types'
 import { useMutation } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
 import { z } from 'zod'
 
 // export const usePatientRegistrationOptions = queryOptions({
@@ -40,7 +41,7 @@ export const useDonorRegistration = () =>
 export const useCenterRegistration = () =>
   useMutation<
     TScreeningCenterRegisterResponse,
-    TErrorResponse,
+    AxiosError<TErrorResponse>,
     z.infer<typeof centerSchema>
   >({
     mutationKey: [MutationKeys.registerCenter],

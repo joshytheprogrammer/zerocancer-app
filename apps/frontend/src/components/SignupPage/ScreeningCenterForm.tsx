@@ -114,7 +114,12 @@ export default function ScreeningCenterForm({
         console.error('Registration failed:', error)
         // Display error message to the use. Use intuitive messages
         toast.error(
-          'Registration failed. Please check your details and try again.',
+          // 'Registration failed. Please check your details and try again.',
+          error.response?.data?.error ||
+            'Registration failed. Please try again.',
+          {
+            description: error.response?.data?.error || 'An error occurred.',
+          },
         )
       },
     })

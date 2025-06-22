@@ -61,11 +61,11 @@ async function main() {
   // --- Seed a Test Donor User ---
   await prisma.user.create({
     data: {
-      name: faker.person.fullName(),
+      fullName: faker.person.fullName(),
       email: faker.internet.email(),
       phone: faker.phone.number({ style: "international" }),
       passwordHash: faker.internet.password(),
-      profile: "donor",
+      profile: "DONOR",
       donorProfile: {
         create: {
           organizationName: "Test Org",
@@ -78,11 +78,11 @@ async function main() {
   // --- Seed a Test Patient User ---
   await prisma.user.create({
     data: {
-      name: "Jane Patient",
+      fullName: "Jane Patient",
       email: "patient@example.com",
       phone: "08022334455",
       passwordHash: faker.internet.password(),
-      profile: "patient",
+      profile: "PATIENT",
       patientProfile: {
         create: {
           gender: "female",
