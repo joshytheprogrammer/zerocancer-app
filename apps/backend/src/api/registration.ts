@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { centerSchema } from "@zerocancer/shared";
+import { centerSchema, donorSchema, patientSchema } from "@zerocancer/shared";
 import {
   TDonorRegisterResponse,
   TErrorResponse,
@@ -13,106 +13,106 @@ import { getDB } from "src/lib/db";
 
 export const registerApp = new Hono();
 
-// // Patient Registration
-// registerApp.post(
-//   "/patient",
-//   zValidator("json", z.patientSchema, (result, c) => {
-//     if (!result.success) throw new HTTPException(400, { cause: result.error });
-//   }),
-//   async (c) => {
-//     const db = getDB();
-//     const data = c.req.valid("json");
-//     const existing = await db.user.findUnique({ where: { email: data.email } });
-//     if (existing)
-//       return c.json<TErrorResponse>(
-//         {
-//           ok: false,
-//           err_code: "patient_already_registered",
-//           error: "Email already registered",
-//         },
-//         409
-//       );
-//     const hashedPassword = await bcrypt.hash(data.password, 10);
-//     const patient = await db.user.create({
-//       data: {
-//         fullName: data.fullName,
-//         email: data.email,
-//         phone: data.phone,
-//         passwordHash: hashedPassword,
-//         profile: "PATIENT",
-//         patientProfile: {
-//           create: {
-//             gender: data.gender,
-//             dateOfBirth: data.dateOfBirth,
-//             city: data.localGovernment,
-//             state: data.state,
-//           },
-//         },
-//       },
-//     });
-//     return c.json<TPatientRegisterResponse>(
-//       {
-//         ok: true,
-//         message: "Patient registered successfully",
-//         data: { patientId: patient.id },
-//       },
-//       201
-//     );
-//   }
-// );
+// Patient Registration
+registerApp.post(
+  "/patient",
+  zValidator("json", patientSchema, (result, c) => {
+    if (!result.success) throw new HTTPException(400, { cause: result.error });
+  }),
+  async (c) => {
+    const db = getDB();
+    const data = c.req.valid("json");
+    const existing = await db.user.findUnique({ where: { email: data.email } });
+    if (existing)
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          err_code: "patient_already_registered",
+          error: "Email already registered",
+        },
+        409
+      );
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const patient = await db.user.create({
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        passwordHash: hashedPassword,
+        profile: "PATIENT",
+        patientProfile: {
+          create: {
+            gender: data.gender,
+            dateOfBirth: data.dateOfBirth,
+            city: data.localGovernment,
+            state: data.state,
+          },
+        },
+      },
+    });
+    return c.json<TPatientRegisterResponse>(
+      {
+        ok: true,
+        message: "Patient registered successfully",
+        data: { patientId: patient.id },
+      },
+      201
+    );
+  }
+);
 
-// // Donor Registration
-// registerApp.post(
-//   "/donor",
-//   zValidator("json", z.donorSchema, (result, c) => {
-//     if (!result.success)
-//       return c.json<TErrorResponse>(
-//         {
-//           ok: false,
-//           err_code: "invalid_donor_data",
-//           error: result.error,
-//         },
-//         400
-//       );
-//   }),
-//   async (c) => {
-//     const db = getDB();
-//     const data = c.req.valid("json");
-//     const existing = await db.user.findUnique({ where: { email: data.email } });
-//     if (existing)
-//       return c.json<TErrorResponse>(
-//         {
-//           ok: false,
-//           err_code: "donor_already_registered",
-//           error: "Email already registered",
-//         },
-//         409
-//       );
-//     const hashedPassword = await bcrypt.hash(data.password, 10);
-//     const donor = await db.user.create({
-//       data: {
-//         fullName: data.fullName,
-//         email: data.email,
-//         passwordHash: hashedPassword,
-//         phone: data.phone,
-//         profile: "DONOR",
-//         donorProfile: {
-//           create: {
-//             organizationName: data.organization || "",
-//           },
-//         },
-//       },
-//     });
-//     return c.json<TDonorRegisterResponse>(
-//       {
-//         ok: true,
-//         message: "Donor registered successfully",
-//         data: { donorId: donor.id },
-//       },
-//       201
-//     );
-//   }
-// );
+// Donor Registration
+registerApp.post(
+  "/donor",
+  zValidator("json", donorSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          err_code: "invalid_donor_data",
+          error: result.error,
+        },
+        400
+      );
+  }),
+  async (c) => {
+    const db = getDB();
+    const data = c.req.valid("json");
+    const existing = await db.user.findUnique({ where: { email: data.email } });
+    if (existing)
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          err_code: "donor_already_registered",
+          error: "Email already registered",
+        },
+        409
+      );
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const donor = await db.user.create({
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        passwordHash: hashedPassword,
+        phone: data.phone,
+        profile: "DONOR",
+        donorProfile: {
+          create: {
+            organizationName: data.organization || "",
+          },
+        },
+      },
+    });
+    return c.json<TDonorRegisterResponse>(
+      {
+        ok: true,
+        message: "Donor registered successfully",
+        data: { donorId: donor.id },
+      },
+      201
+    );
+  }
+);
 
 // Center Registration
 registerApp.post(
