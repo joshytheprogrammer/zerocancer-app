@@ -43,6 +43,7 @@ next-env.d.ts
 dev.nix
 .vscode
 .cursor
+tasks.md
 
 # lockfiles
 package-lock.json

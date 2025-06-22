@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as endpoints from '@/services/endpoints'
-import type * as t from '@shared/types'
+import { ACCESS_TOKEN_KEY } from '@/services/keys'
+import { QueryClient } from '@tanstack/react-query'
+import type * as t from '@zerocancer/shared/types'
 import type { AxiosError, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
+
+const queryClient = new QueryClient()
+axios.defaults.withCredentials = true
 
 async function _get<T>(url: string, options?: AxiosRequestConfig): Promise<T> {
   const response = await axios.get(url, { ...options })
@@ -146,11 +151,12 @@ axios.interceptors.response.use(
             : false,
         )
 
-        const token = response?.token ?? ''
+        const token = response?.data.token ?? ''
 
         if (token) {
+          // Update React Query cache with new access token
+          queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
           originalRequest.headers['Authorization'] = 'Bearer ' + token
-          //   dispatchTokenUpdatedEvent(token)
           processQueue(null, token)
           return await axios(originalRequest)
         } else {
@@ -166,6 +172,20 @@ axios.interceptors.response.use(
 
     return Promise.reject(error)
   },
+)
+
+// Axios request interceptor to attach access token from React Query cache
+axios.interceptors.request.use(
+  (config) => {
+    // Get access token from React Query cache
+    const token = queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
+    if (token) {
+      config.headers = config.headers || {}
+      config.headers['Authorization'] = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
 )
 
 export default {

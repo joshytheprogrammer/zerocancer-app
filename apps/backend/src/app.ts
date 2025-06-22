@@ -1,11 +1,13 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { appointmentApp } from "./api/appointment";
 import { authApp } from "./api/auth";
 import { registerApp } from "./api/registration";
 
 const app = new Hono().basePath("/api/v1");
 
+app.use(logger());
 app.use("*", cors());
 
 app.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));

@@ -31,6 +31,9 @@ export enum MutationKeys {
   registerPatient = 'registerPatient',
   registerDonor = 'registerDonor',
   registerCenter = 'registerCenter',
+  loginUser = 'loginUser',
+  authUser = 'authUser',
+  logoutUser = 'logoutUser',
   joinWaitlist = 'joinWaitlist',
   bookAppointment = 'bookAppointment',
   uploadResult = 'uploadResult',
@@ -43,3 +46,5 @@ export enum MutationKeys {
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
 }
+
+export const ACCESS_TOKEN_KEY = 'accessToken'

@@ -1,15 +1,15 @@
 import * as service from '@/services'
 import { MutationKeys } from '@/services/keys'
+import { useMutation } from '@tanstack/react-query'
 import {
   centerSchema,
   donorSchema,
   patientSchema,
-} from '@shared/schemas/register'
+} from '@zerocancer/shared/schemas/register'
 import type {
   TErrorResponse,
   TScreeningCenterRegisterResponse,
-} from '@shared/types'
-import { useMutation } from '@tanstack/react-query'
+} from '@zerocancer/shared/types'
 import type { AxiosError } from 'axios'
 import { z } from 'zod'
 

@@ -24,8 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCenterRegistration } from '@/services/providers/register'
-import statesData from '@shared/constants/states.json'
-import { centerSchema } from '@shared/schemas/register'
+import statesData from '@zerocancer/shared/constants/states.json'
+import { centerSchema } from '@zerocancer/shared/schemas/register'
 import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
 

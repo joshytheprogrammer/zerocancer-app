@@ -37,12 +37,32 @@ export type TDonorRegisterResponse = TDataResponse<{
   donorId: string;
 }>;
 
-export type TRefreshTokenResponse = {
-  // token: {
+export type TLoginResponse = TDataResponse<{
+  // tokens: {
   //   accessToken: string;
   //   refreshToken: string;
-  // }
+  // };
   token: string;
-};
+  user: {
+    userId: string;
+    fullName: string;
+    email: string;
+    profile: "PATIENT" | "DONOR" | "CENTER";
+  };
+}>;
+
+export type TAuthMeResponse = TDataResponse<{
+  user: {
+    id: string;
+    // fullName: string;
+    email: string;
+    profile: "PATIENT" | "DONOR" | "CENTER";
+  };
+}>;
+
+export type TRefreshTokenResponse = TDataResponse<{
+  token: string;
+  // newRefreshToken: string;
+}>;
 
 export type TActors = "patient" | "donor" | "center";

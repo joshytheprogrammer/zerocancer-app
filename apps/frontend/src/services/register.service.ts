@@ -4,12 +4,12 @@ import {
   centerSchema,
   donorSchema,
   patientSchema,
-} from '@shared/schemas/register'
+} from '@zerocancer/shared/schemas/register'
 import type {
   TDonorRegisterResponse,
   TPatientRegisterResponse,
   TScreeningCenterRegisterResponse,
-} from '@shared/types'
+} from '@zerocancer/shared/types'
 import { z } from 'zod'
 
 export const registerPatient = (

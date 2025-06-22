@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import statesData from '@shared/constants/states.json'
+import statesData from '@zerocancer/shared/constants/states.json'
 
 const formSchema = z.object({
   name: z.string().min(2, {

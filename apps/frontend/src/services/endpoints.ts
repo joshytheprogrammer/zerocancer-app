@@ -1,4 +1,4 @@
-import * as t from '@shared/types'
+import * as t from '@zerocancer/shared/types'
 
 const buildQuery = (params: Record<string, unknown>): string => {
   const query = Object.entries(params)
@@ -32,7 +32,7 @@ export const forgotPassword = () => '/api/auth/forgot-password'
 export const resetPassword = () => '/api/auth/reset-password'
 export const verifyEmail = () => '/api/auth/verify-email'
 export const resendVerification = () => '/api/auth/resend-verification'
-export const authUser = () => '/api/auth/user'
+export const authUser = () => '/api/auth/me'
 export const refreshToken = (retry?: boolean) =>
   `/api/auth/refresh${retry === true ? '?retry=true' : ''}`
 

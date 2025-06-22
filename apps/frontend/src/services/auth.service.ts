@@ -1,22 +1,33 @@
-// import request from '@/lib/request'
-// import * as endpoints from '@/services/endpoints'
-// import * as t from '@/services/types'
+import request from '@/lib/request'
+import * as endpoints from '@/services/endpoints'
+import { loginSchema } from '@zerocancer/shared/schemas/auth'
+import type {
+  TActors,
+  TAuthMeResponse,
+  TLoginResponse,
+} from '@zerocancer/shared/types'
+import type { z } from 'zod'
 
-// export const register = (params: t.TRegisterParams) => {
-//   return request.post(endpoints.register(), params)
-// }
+// Login service
+export const loginUser = async (
+  params: z.infer<typeof loginSchema>,
+  actor: TActors,
+) => {
+  return (await request.post(
+    endpoints.loginUser(actor),
+    params,
+  )) as TLoginResponse
+}
 
-// type TLoginResponse = { access: string; refresh: string }
-// export const login = (params: t.TLoginParams): Promise<TLoginResponse> => {
-//   return request.post(endpoints.login(), params)
-// }
+// Authenticated user service
+export const authUser = async () => {
+  return await request.get<TAuthMeResponse>(endpoints.authUser())
+}
 
-export const authUser = () => {}
-
-// // logout
-// export const logout = () => {
-//   return request.post(endpoints.logout())
-// }
+// logout
+export const logout = async () => {
+  return await request.post(endpoints.logoutUser())
+}
 
 // // request password reest
 // export const requestPasswordReset = (params: t.TRequestPasswordResetParams) => {

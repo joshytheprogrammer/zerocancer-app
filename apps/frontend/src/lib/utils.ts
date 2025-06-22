@@ -1,4 +1,4 @@
-import * as t from '@shared/types'
+import * as t from '@zerocancer/shared/types'
 import axios from 'axios'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'

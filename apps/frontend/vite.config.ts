@@ -19,7 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@shared': resolve(__dirname, '../../packages/shared'),
+      '@zerocancer/shared': resolve(__dirname, '../../packages/shared'),
     },
   },
   server: {
@@ -27,10 +27,10 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000/api/v1',
         rewrite: (path) => path.replace(/^\/api/, ''),
-      }  
+      },
     },
     // proxy: {
-    //   '/api/v1': 'http://localhost:8000',   
+    //   '/api/v1': 'http://localhost:8000',
     // },
   },
 })
