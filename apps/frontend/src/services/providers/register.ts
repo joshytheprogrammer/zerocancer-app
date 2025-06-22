@@ -7,7 +7,9 @@ import {
   patientSchema,
 } from '@zerocancer/shared/schemas/register'
 import type {
+  TDonorRegisterResponse,
   TErrorResponse,
+  TPatientRegisterResponse,
   TScreeningCenterRegisterResponse,
 } from '@zerocancer/shared/types'
 import type { AxiosError } from 'axios'
@@ -23,7 +25,11 @@ import { z } from 'zod'
 // });
 
 export const usePatientRegistration = () =>
-  useMutation({
+  useMutation<
+    TPatientRegisterResponse,
+    AxiosError<TErrorResponse>,
+    z.infer<typeof patientSchema>
+  >({
     mutationKey: [MutationKeys.registerPatient],
     mutationFn: (params: z.infer<typeof patientSchema>) => {
       return service.registerPatient(params)
@@ -31,7 +37,11 @@ export const usePatientRegistration = () =>
   })
 
 export const useDonorRegistration = () =>
-  useMutation({
+  useMutation<
+    TDonorRegisterResponse,
+    AxiosError<TErrorResponse>,
+    z.infer<typeof donorSchema>
+  >({
     mutationKey: [MutationKeys.registerDonor],
     mutationFn: (params: z.infer<typeof donorSchema>) => {
       return service.registerDonor(params)
