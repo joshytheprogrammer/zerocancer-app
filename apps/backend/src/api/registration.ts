@@ -3,17 +3,19 @@ import {
   centerSchema,
   donorSchema,
   patientSchema,
-} from "@shared/schemas/register";
+} from "@zerocancer/shared/schemas";
 import type {
   TDonorRegisterResponse,
   TErrorResponse,
   TPatientRegisterResponse,
   TScreeningCenterRegisterResponse,
-} from "@shared/types";
+} from "@zerocancer/shared/types";
 import bcrypt from "bcryptjs";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
+
+// import { hi } from "@zerocancer/shared/index";
 
 export const registerApp = new Hono();
 

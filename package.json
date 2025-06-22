@@ -6,8 +6,12 @@
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@radix-ui/react-radio-group": "^1.3.7",
-    "@radix-ui/react-select": "^2.2.5"
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
+    "backend:dev": "pnpm --filter ./apps/backend dev",
+    "frontend:dev": "pnpm --filter ./apps/frontend dev"
   }
 }

@@ -8,10 +8,10 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "../../",
+    "rootDir": "./src",
     "baseUrl": "./",
     "paths": {
-      "@shared/*": ["../../packages/shared/*"]
+      "@zerocancer/shared/*": ["../../packages/shared/*"]
     }
   },
   "include": ["src"],
