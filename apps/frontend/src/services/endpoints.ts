@@ -19,76 +19,77 @@ const buildQuery = (params: Record<string, unknown>): string => {
 }
 
 // 🔌 Zerocancer MVP API ROUTES
-export const backendHealth = () => '/healthz/'
+export const backendHealth = () => '/api/healthz'
 
 // USER REGISTRATION
-export const registerUser = (actor: t.TActors) => `/auth/register/${actor}/`
+export const registerUser = (actor: t.TActors) => `/api/register/${actor}`
 
 // AUTHENTICATION
 export const loginUser = (actor: t.TActors) =>
-  `/auth/login/${buildQuery({ actor })}`
-export const logoutUser = () => '/auth/logout/'
-export const forgotPassword = () => '/auth/forgot-password/'
-export const resetPassword = () => '/auth/reset-password/'
-export const verifyEmail = () => '/auth/verify-email/'
-export const resendVerification = () => '/auth/resend-verification/'
-export const authUser = () => '/auth/user/'
+  `/api/auth/login${buildQuery({ actor })}`
+export const logoutUser = () => '/api/auth/logout'
+export const forgotPassword = () => '/api/auth/forgot-password'
+export const resetPassword = () => '/api/auth/reset-password'
+export const verifyEmail = () => '/api/auth/verify-email'
+export const resendVerification = () => '/api/auth/resend-verification'
+export const authUser = () => '/api/auth/user'
 export const refreshToken = (retry?: boolean) =>
   `/api/auth/refresh${retry === true ? '?retry=true' : ''}`
 
 // PATIENT
 export const getAppointments = (page: number = 1, size: number = 20) =>
-  `/patient/appointments/${buildQuery({ page, size })}`
-export const createSelfPayAppointment = () => '/patient/appointments/book/'
-export const getQR = () => '/patient/qr/'
+  `/api/patient/appointments${buildQuery({ page, size })}`
+export const createSelfPayAppointment = () => '/api/patient/appointments/book'
+export const getQR = () => '/api/patient/qr'
 export const getResults = (page: number = 1, size: number = 20) =>
-  `/patient/results/${buildQuery({ page, size })}`
+  `/api/patient/results${buildQuery({ page, size })}`
 export const getWaitlists = (page: number = 1, size: number = 20) =>
-  `/patient/waitlists/${buildQuery({ page, size })}`
-export const joinWaitlist = () => '/patient/waitlists/join/'
-export const selectCenter = () => '/patient/select-center/'
-export const getReceipt = (id: string) => `/patient/receipt/${id}/`
+  `/api/patient/waitlists${buildQuery({ page, size })}`
+export const joinWaitlist = () => '/api/patient/waitlists/join'
+export const selectCenter = () => '/api/patient/select-center'
+export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
 
 // DONOR
-export const donateAnonymous = () => '/donor/donations/anonymous/'
-export const createCampaign = () => '/donor/campaigns/'
+export const donateAnonymous = () => '/api/donor/donations/anonymous'
+export const createCampaign = () => '/api/donor/campaigns'
 export const getCampaigns = (page: number = 1, size: number = 20) =>
-  `/donor/campaigns/${buildQuery({ page, size })}`
-export const getCampaign = (id: string) => `/donor/campaigns/${id}/`
-export const deleteCampaign = (id: string) => `/donor/campaigns/${id}/delete/`
+  `/api/donor/campaigns${buildQuery({ page, size })}`
+export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
+export const deleteCampaign = (id: string) =>
+  `/api/donor/campaigns/${id}/delete`
 export const getDonorReceipts = (page: number = 1, size: number = 20) =>
-  `/donor/receipts/${buildQuery({ page, size })}`
-export const getDonationImpact = () => '/donor/impact/'
+  `/api/donor/receipts${buildQuery({ page, size })}`
+export const getDonationImpact = () => '/api/donor/impact'
 
 // CENTER
 export const getCenterAppointments = (page: number = 1, size: number = 20) =>
-  `/center/appointments/${buildQuery({ page, size })}`
-export const verifyPatientCode = () => '/center/verify/'
+  `/api/center/appointments${buildQuery({ page, size })}`
+export const verifyPatientCode = () => '/api/center/verify'
 export const uploadResults = (page: number = 1, size: number = 20) =>
-  `/center/results/${buildQuery({ page, size })}`
-export const getResultHistory = () => '/center/results-history/'
-export const inviteStaff = () => '/center/staff/invite/'
+  `/api/center/results${buildQuery({ page, size })}`
+export const getResultHistory = () => '/api/center/results-history'
+export const inviteStaff = () => '/api/center/staff/invite'
 export const getCenterReceipts = (page: number = 1, size: number = 20) =>
-  `/center/receipt-history/${buildQuery({ page, size })}/`
+  `/api/center/receipt-history${buildQuery({ page, size })}`
 
 // ADMIN
 export const getUsers = (page: number = 1, size: number = 20) =>
-  `/admin/users/${buildQuery({ page, size })}`
+  `/api/admin/users${buildQuery({ page, size })}`
 export const getCenters = (page: number = 1, size: number = 20) =>
-  `/admin/centers/${buildQuery({ page, size })}`
-export const approveCenter = (id: string) => `/admin/centers/${id}/approve/`
+  `/api/admin/centers${buildQuery({ page, size })}`
+export const approveCenter = (id: string) => `/api/admin/centers/${id}/approve`
 export const getAllCampaigns = (page: number = 1, size: number = 20) =>
-  `/admin/campaigns/${buildQuery({ page, size })}`
+  `/api/admin/campaigns${buildQuery({ page, size })}`
 export const updateCampaignStatus = (id: number) =>
-  `/admin/campaigns/${id}/status/`
+  `/api/admin/campaigns/${id}/status`
 export const getAllAppointments = (page: number = 1, size: number = 20) =>
-  `/admin/appointments/${buildQuery({ page, size })}`
+  `/api/admin/appointments${buildQuery({ page, size })}`
 export const getTransactions = (page: number = 1, size: number = 20) =>
-  `/admin/transactions/${buildQuery({ page, size })}`
+  `/api/admin/transactions${buildQuery({ page, size })}`
 export const getAnalytics = (page: number = 1, size: number = 20) =>
-  `/admin/analytics/${buildQuery({ page, size })}`
+  `/api/admin/analytics${buildQuery({ page, size })}`
 export const getStoreItems = (page: number = 1, size: number = 20) =>
-  `/admin/store/${buildQuery({ page, size })}`
+  `/api/admin/store${buildQuery({ page, size })}`
 export const manageRoles = (page: number = 1, size: number = 20) =>
-  `/admin/roles/${buildQuery({ page, size })}`
-export const resendReceipt = () => '/admin/receipts/resend/'
+  `/api/admin/roles${buildQuery({ page, size })}`
+export const resendReceipt = () => '/api/admin/receipts/resend'
