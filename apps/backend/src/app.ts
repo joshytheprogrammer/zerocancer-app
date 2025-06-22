@@ -1,19 +1,19 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getDB } from "./lib/db";
+import { appointmentApp } from "./api/appointment";
+import { authApp } from "./api/auth";
+import { registerApp } from "./api/registration";
 
-const app = new Hono();
+const app = new Hono().basePath("/api/v1");
 
 app.use("*", cors());
 
 app.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));
+app.get("/healthz", (c) => c.json({ status: "ok" }));
 
-app.get("/users", async (c) => {
-  const db = getDB();
-  const users = await db.user.findMany();
-  return c.json(users);
-});
+// ROUTES
+app.route("/auth", authApp);
+app.route("/registration", registerApp);
+app.route("/appointment", appointmentApp);
 
 export default app;
-
-// To run this app, create an entry file (e.g., server.ts) that imports and starts the server.

@@ -19,11 +19,10 @@ const buildQuery = (params: Record<string, unknown>): string => {
 }
 
 // 🔌 Zerocancer MVP API ROUTES
-export const backendHealth = () => '/health/'
+export const backendHealth = () => '/healthz/'
 
 // USER REGISTRATION
-export const registerUser = (actor: t.TActors) =>
-  `/auth/register/${buildQuery({ actor })}`
+export const registerUser = (actor: t.TActors) => `/auth/register/${actor}/`
 
 // AUTHENTICATION
 export const loginUser = (actor: t.TActors) =>

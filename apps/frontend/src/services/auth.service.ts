@@ -11,10 +11,7 @@
 //   return request.post(endpoints.login(), params)
 // }
 
-// // get user
-// export const getCurrentUser = () => {
-//   return request.get<t.TUser>(endpoints.user())
-// }
+export const authUser = () => {}
 
 // // logout
 // export const logout = () => {

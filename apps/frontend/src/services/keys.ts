@@ -28,6 +28,9 @@ export enum QueryKeys {
 }
 
 export enum MutationKeys {
+  registerPatient = 'registerPatient',
+  registerDonor = 'registerDonor',
+  registerCenter = 'registerCenter',
   joinWaitlist = 'joinWaitlist',
   bookAppointment = 'bookAppointment',
   uploadResult = 'uploadResult',

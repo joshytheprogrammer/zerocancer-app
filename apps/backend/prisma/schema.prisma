@@ -40,7 +40,7 @@ enum TransactionType {
 
 model User {
   id             String   @id @default(uuid())
-  name           String
+  fullName           String
   email          String   @unique
   phone          String?
   passwordHash   String
@@ -84,19 +84,28 @@ model Admins {
 
 model ServiceCenter {
   id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  createdAt     DateTime @default(now())
+  phone         String?
   centerName    String
   address       String
   state         String
   lga           String
   // approvedStaff CenterStaff[]
-  isApproved    Boolean
-  isSuspended   Boolean
   bankAccount   String?
   bankName      String?
+  status        String @default("INACTIVE")
 
   staff         CenterStaff[]
   appointments  Appointment[]
   services      ScreeningType[]
+}
+
+enum ServiceCenterStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 model ScreeningType {

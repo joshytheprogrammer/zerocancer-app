@@ -23,8 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCenterRegistration } from '@/services/providers/register'
 import statesData from '@shared/constants/states.json'
+import { centerSchema } from '@shared/schemas/register'
 import * as RPNInput from 'react-phone-number-input'
+import { toast } from 'sonner'
 
 const servicesEnum = z.enum(['screening', 'vaccine', 'treatment'])
 
@@ -55,7 +58,7 @@ const formSchema = z.object({
   }),
 })
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof centerSchema>
 
 type ScreeningCenterFormProps = {
   onSubmitSuccess: (data: FormData) => void
@@ -64,13 +67,14 @@ type ScreeningCenterFormProps = {
 export default function ScreeningCenterForm({
   onSubmitSuccess,
 }: ScreeningCenterFormProps) {
+  const mutation = useCenterRegistration()
   const [selectedState, setSelectedState] = useState<string>('')
   const [localGovernments, setLocalGovernments] = useState<
     Array<{ name: string; id: number }>
   >([])
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(centerSchema),
     defaultValues: {
       centerName: '',
       email: '',
@@ -101,7 +105,20 @@ export default function ScreeningCenterForm({
 
   function onSubmit(values: FormData) {
     console.log('Screening Center form submitted:', values)
-    onSubmitSuccess(values)
+    mutation.mutate(values, {
+      onSuccess: (data) => {
+        console.log('Registration successful:', data)
+        // onSubmitSuccess(values)
+      },
+      onError: (error) => {
+        console.error('Registration failed:', error)
+        // Display error message to the use. Use intuitive messages
+        toast.error(
+          'Registration failed. Please check your details and try again.',
+        )
+      },
+    })
+    // onSubmitSuccess(values)
   }
 
   const servicesItems = [

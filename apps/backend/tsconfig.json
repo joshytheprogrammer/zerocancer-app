@@ -8,8 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "src",
-    // "types": ["node"],
+    "rootDir": "../../",
     "baseUrl": "./",
     "paths": {
       "@shared/*": ["../../packages/shared/*"]

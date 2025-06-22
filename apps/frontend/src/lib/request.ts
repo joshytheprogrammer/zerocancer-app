@@ -3,7 +3,6 @@ import * as endpoints from '@/services/endpoints'
 import type * as t from '@shared/types'
 import type { AxiosError, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
-import { setTokenHeader } from './utils'
 
 async function _get<T>(url: string, options?: AxiosRequestConfig): Promise<T> {
   const response = await axios.get(url, { ...options })
@@ -87,10 +86,10 @@ const refreshToken = (
 ): Promise<t.TRefreshTokenResponse | undefined> =>
   _post(endpoints.refreshToken(retry))
 
-const dispatchTokenUpdatedEvent = (token: string) => {
-  setTokenHeader(token)
-  window.dispatchEvent(new CustomEvent('tokenUpdated', { detail: token }))
-}
+// const dispatchTokenUpdatedEvent = (token: string) => {
+//   setTokenHeader(token)
+//   window.dispatchEvent(new CustomEvent('tokenUpdated', { detail: token }))
+// }
 
 const processQueue = (
   error: AxiosError | null,
@@ -142,7 +141,7 @@ axios.interceptors.response.use(
       try {
         const response = await refreshToken(
           // Handle edge case where we get a blank screen if the initial 401 error is from a refresh token request
-          originalRequest.url?.includes('api/auth/refresh') === true
+          originalRequest.url?.includes('/auth/refresh') === true
             ? true
             : false,
         )
@@ -151,13 +150,9 @@ axios.interceptors.response.use(
 
         if (token) {
           originalRequest.headers['Authorization'] = 'Bearer ' + token
-          dispatchTokenUpdatedEvent(token)
+          //   dispatchTokenUpdatedEvent(token)
           processQueue(null, token)
           return await axios(originalRequest)
-        } else if (window.location.href.includes('share/')) {
-          console.log(
-            `Refresh token failed from shared link, attempting request to ${originalRequest.url}`,
-          )
         } else {
           window.location.href = '/login'
         }
@@ -184,5 +179,5 @@ export default {
   deleteWithOptions: _deleteWithOptions,
   patch: _patch,
   refreshToken,
-  dispatchTokenUpdatedEvent,
+  //   dispatchTokenUpdatedEvent,
 }
