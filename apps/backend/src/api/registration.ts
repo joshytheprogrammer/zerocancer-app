@@ -56,8 +56,8 @@ registerApp.post(
 
     // Concurrently check if user exists and if center with same email exists
     const [userResult, existingCenter] = await Promise.all([
-      getUserWithProfiles({ email: data.email }),
-      db.serviceCenter.findUnique({ where: { email: data.email } }),
+      getUserWithProfiles({ email: data.email! }),
+      db.serviceCenter.findUnique({ where: { email: data.email! } }),
     ]);
 
     if (existingCenter)
@@ -79,10 +79,10 @@ registerApp.post(
         data: {
           patientProfile: {
             create: {
-              gender: data.gender,
-              dateOfBirth: data.dateOfBirth,
-              city: data.localGovernment,
-              state: data.state,
+              gender: data.gender!,
+              dateOfBirth: data.dateOfBirth!,
+              city: data.localGovernment!,
+              state: data.state!,
             },
           },
         },
@@ -110,20 +110,20 @@ registerApp.post(
         409
       );
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(data.password!, 10);
     const patient = await db.user.create({
       data: {
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
+        fullName: data.fullName!,
+        email: data.email!,
+        phone: data.phone!,
         passwordHash: hashedPassword,
         // profile: "PATIENT",
         patientProfile: {
           create: {
-            gender: data.gender,
-            dateOfBirth: data.dateOfBirth,
-            city: data.localGovernment,
-            state: data.state,
+            gender: data.gender!,
+            dateOfBirth: data.dateOfBirth!,
+            city: data.localGovernment!,
+            state: data.state!,
           },
         },
       },
@@ -179,7 +179,7 @@ registerApp.post(
     const data = c.req.valid("json");
 
     const { user: existingUser, profiles } = await getUserWithProfiles({
-      email: data.email,
+      email: data.email!,
     });
 
     // if already has a profile, just update the donor profile
@@ -214,17 +214,17 @@ registerApp.post(
         },
         409
       );
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(data.password!, 10);
     const donor = await db.user.create({
       data: {
-        fullName: data.fullName,
-        email: data.email,
+        fullName: data.fullName!,
+        email: data.email!,
         passwordHash: hashedPassword,
-        phone: data.phone,
+        phone: data.phone!,
         // profile: "DONOR",
         donorProfile: {
           create: {
-            organizationName: data.organization || "",
+            organizationName: data.organization! || "",
           },
         },
       },
@@ -279,7 +279,7 @@ registerApp.post(
     const db = getDB();
     const data = c.req.valid("json");
     const existingUser = await db.serviceCenter.findUnique({
-      where: { email: data.email },
+      where: { email: data.email! },
     });
     if (existingUser)
       return c.json<TErrorResponse>(
@@ -290,16 +290,16 @@ registerApp.post(
         },
         409
       );
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(data.password!, 10);
     const center = await db.serviceCenter.create({
       data: {
-        email: data.email,
-        passwordHash: hashedPassword,
-        centerName: data.centerName,
-        phone: data.phoneNumber,
-        address: data.address,
-        state: data.state,
-        lga: data.localGovernment,
+        email: data.email!,
+        passwordHash: hashedPassword!,
+        centerName: data.centerName!,
+        phone: data.phoneNumber!,
+        address: data.address!,
+        state: data.state!,
+        lga: data.localGovernment!,
         // services: data.services,
         bankAccount: "", //data?.bankAccount,
       },

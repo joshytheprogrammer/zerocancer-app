@@ -70,13 +70,13 @@ authApp.post(
     let id = "";
 
     if (actor === "center") {
-      user = await db.serviceCenter.findUnique({ where: { email } });
+      user = await db.serviceCenter.findUnique({ where: { email: email! } });
       passwordHash = user?.passwordHash;
       id = user?.id;
     } else {
       let { user: justUser, profiles: userProfiles } =
         await getUserWithProfiles({
-          email,
+          email: email!,
         });
 
       user = { ...justUser, profiles: userProfiles };
@@ -99,7 +99,7 @@ authApp.post(
     }
 
     // If user not found or password doesn't match
-    if (!user || !(await bcrypt.compare(password, passwordHash))) {
+    if (!user || !(await bcrypt.compare(password!, passwordHash!))) {
       return c.json<TErrorResponse>(
         {
           ok: false,
