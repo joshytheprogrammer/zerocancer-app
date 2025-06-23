@@ -50,6 +50,7 @@ export enum MutationKeys {
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
   resendVerification = 'resendVerification',
+  selectCenter = 'selectCenter',
   // Notification mutations
   markNotificationRead = 'markNotificationRead',
   createNotification = 'createNotification',

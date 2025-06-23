@@ -99,4 +99,87 @@ appointmentApp.post("/waitlists/join", async (c) => {
   return c.json({ ok: true, data: { waitlist } });
 });
 
+// GET /api/patient/matches/eligible-centers/:allocationId
+appointmentApp.get("/matches/eligible-centers/:allocationId", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const allocationId = c.req.param("allocationId");
+  // Ensure allocation belongs to this patient and is not yet assigned to an appointment
+  const allocation = await db.donationAllocation.findUnique({
+    where: { id: allocationId },
+    include: { waitlist: true },
+  });
+  if (
+    !allocation ||
+    allocation.patientId !== userId ||
+    allocation.appointmentId
+  ) {
+    return c.json(
+      { ok: false, message: "Invalid or already assigned allocation" },
+      400
+    );
+  }
+  // Find all active centers offering this screening type
+  const screeningTypeId = allocation.waitlist.screeningTypeId;
+  const centers = await db.serviceCenter.findMany({
+    where: {
+      services: { some: { id: screeningTypeId } },
+      status: "ACTIVE",
+    },
+    select: {
+      id: true,
+      centerName: true,
+      address: true,
+      state: true,
+      lga: true,
+    },
+  });
+  return c.json({ ok: true, data: centers });
+});
+
+// POST /api/patient/matches/select-center
+appointmentApp.post("/matches/select-center", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const { allocationId, centerId, appointmentDate, appointmentTime } =
+    await c.req.json();
+  // Validate allocation
+  const allocation = await db.donationAllocation.findUnique({
+    where: { id: allocationId },
+    include: { waitlist: true },
+  });
+  if (
+    !allocation ||
+    allocation.patientId !== userId ||
+    allocation.appointmentId
+  ) {
+    return c.json(
+      { ok: false, message: "Invalid or already assigned allocation" },
+      400
+    );
+  }
+  // Create appointment and link to allocation
+  const appointment = await db.appointment.create({
+    data: {
+      patientId: userId,
+      centerId,
+      screeningTypeId: allocation.waitlist.screeningTypeId,
+      isDonation: true,
+      status: "SCHEDULED",
+      appointmentDate: new Date(appointmentDate),
+      appointmentTime: new Date(appointmentTime),
+      donationId: allocation.campaignId,
+    },
+  });
+  await db.donationAllocation.update({
+    where: { id: allocationId },
+    data: { appointmentId: appointment.id },
+  });
+  return c.json({ ok: true, data: { appointment } });
+});
+
 // To run this app, create an entry file (e.g., server.ts) that imports and starts the server.

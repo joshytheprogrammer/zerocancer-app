@@ -16,3 +16,18 @@ export const bookSelfPayAppointment = async (data: {
 export const joinWaitlist = async (data: { screeningTypeId: string }) => {
   return await request.post(endpoints.joinWaitlist(), data)
 }
+
+// Get eligible centers for a matched allocation
+export const getEligibleCenters = async (allocationId: string) => {
+  return await request.get(endpoints.getEligibleCenters(allocationId))
+}
+
+// Select center for a matched allocation
+export const selectCenter = async (data: {
+  allocationId: string
+  centerId: string
+  appointmentDate: string
+  appointmentTime: string
+}) => {
+  return await request.post(endpoints.selectCenter(), data)
+}

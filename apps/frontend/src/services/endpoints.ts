@@ -51,6 +51,9 @@ export const getWaitlists = (page: number = 1, size: number = 20) =>
 export const joinWaitlist = () => '/api/patient/waitlists/join'
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
+export const getEligibleCenters = (allocationId: string) =>
+  `/api/patient/matches/eligible-centers/${allocationId}`
+export const selectCenterAfterMatch = () => `/api/patient/matches/select-center`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
