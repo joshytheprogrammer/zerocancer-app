@@ -2,6 +2,7 @@ import * as patientService from '@/services/patient.service'
 import {
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
 import { MutationKeys, QueryKeys } from '../keys'
@@ -54,5 +55,17 @@ export function useSelectCenter() {
         queryKey: [QueryKeys.authUser, 'patientAppointments'],
       })
     },
+  })
+}
+
+// Get patient appointments (paginated, filterable)
+export function usePatientAppointments(params: {
+  page?: number
+  size?: number
+  status?: string
+}) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, QueryKeys.patientAppointments, params],
+    queryFn: () => patientService.getPatientAppointments(params),
   })
 }

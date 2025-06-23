@@ -210,4 +210,44 @@ appointmentApp.post("/matches/select-center", async (c) => {
   return c.json({ ok: true, data: { appointment } });
 });
 
+// GET /api/patient/appointments
+appointmentApp.get("/appointments", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const size = parseInt(c.req.query("size") || "20", 10);
+  const status = c.req.query("status");
+  const where: any = {
+    patientId: userId,
+  };
+  if (status) where.status = status;
+  const [appointments, total] = await Promise.all([
+    db.appointment.findMany({
+      skip: (page - 1) * size,
+      take: size,
+      where,
+      orderBy: { appointmentDate: "desc" },
+      include: {
+        center: { select: { id: true, centerName: true, address: true, state: true, lga: true } },
+        screeningType: { select: { id: true, name: true } },
+        transaction: true,
+        result: true,
+      },
+    }),
+    db.appointment.count({ where }),
+  ]);
+  return c.json({
+    ok: true,
+    data: {
+      appointments,
+      page,
+      pageSize: size,
+      total,
+      totalPages: Math.ceil(total / size),
+    },
+  });
+});
+
 // To run this app, create an entry file (e.g., server.ts) that imports and starts the server.

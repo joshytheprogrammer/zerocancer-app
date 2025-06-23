@@ -39,3 +39,8 @@ export const selectCenter = async (data: {
 }) => {
   return await request.post(endpoints.selectCenter(), data)
 }
+
+// Get patient appointments (paginated, filterable)
+export const getPatientAppointments = async (params: { page?: number; size?: number; status?: string }) => {
+  return await request.get(endpoints.getPatientAppointments(params))
+}

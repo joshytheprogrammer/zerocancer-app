@@ -60,6 +60,11 @@ export const getEligibleCenters = (
 ) =>
   `/api/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
 export const selectCenterAfterMatch = () => `/api/patient/matches/select-center`
+export const getPatientAppointments = (params: {
+  page?: number
+  size?: number
+  status?: string
+}) => `/api/patient/appointments${buildQuery(params)}`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
