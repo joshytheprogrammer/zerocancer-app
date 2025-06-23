@@ -70,6 +70,7 @@ export const useCheckProfiles = () => {
     queryKey: ['checkProfiles'],
     queryFn: authService.checkProfiles,
     retry: false,
+    
   })
 }
 

@@ -22,22 +22,13 @@ import {
 import PasswordInput from "@/components/ui/password-input"
 import PhoneInputComponent from "@/components/ui/phone-input"
 import * as RPNInput from "react-phone-number-input"
+import { donorSchema } from '@zerocancer/shared/schemas/register'
+import { useDonorRegistration } from '@/services/providers/register'
+import { toast } from 'sonner'
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-  donorType: z.enum(['individual', 'organization']),
-  phoneNumber: z.string().optional(),
-})
 
-type FormData = z.infer<typeof formSchema>
+
+type FormData = z.infer<typeof donorSchema>
 
 type DonorFormProps = {
   onSubmitSuccess: (data: FormData) => void
@@ -45,21 +36,32 @@ type DonorFormProps = {
 
 export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(donorSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      donorType: 'individual',
-      phoneNumber: "",
+      fullName: '',
+      email: '',
+      password: '',
+      phone: '',
+      organization: '',
     },
   })
 
-  const donorType = form.watch("donorType")
+  const mutation = useDonorRegistration()
 
   function onSubmit(values: FormData) {
-    console.log("Donor form submitted:", values)
-    onSubmitSuccess(values)
+    mutation.mutate(values, {
+      onSuccess: (data) => {
+        onSubmitSuccess(values)
+      },
+      onError: (error) => {
+        toast.error(
+          error.response?.data?.error || 'Registration failed. Please try again.',
+          {
+            description: error.response?.data?.error || 'An error occurred.',
+          },
+        )
+      },
+    })
   }
 
   return (
@@ -67,50 +69,17 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="donorType"
+          name="fullName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Donor Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a donor type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="organization">Organization</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                {donorType === 'organization'
-                  ? 'Organization Name'
-                  : 'Full Name'}
-              </FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={
-                    donorType === 'organization'
-                      ? 'Your Company LLC'
-                      : 'John Doe'
-                  }
-                  {...field}
-                />
+                <Input placeholder="John Doe" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="email"
@@ -118,17 +87,12 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input
-                  type="email"
-                  placeholder="john.doe@example.com"
-                  {...field}
-                />
+                <Input type="email" placeholder="john.doe@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="password"
@@ -147,13 +111,12 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
-          name="phoneNumber"
+          name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number (Optional)</FormLabel>
+              <FormLabel>Phone Number</FormLabel>
               <FormControl>
                 <PhoneInputComponent
                   value={field.value as RPNInput.Value}
@@ -164,7 +127,19 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="organization"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Organization Name (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Your Company LLC" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full">
           Create Account
         </Button>

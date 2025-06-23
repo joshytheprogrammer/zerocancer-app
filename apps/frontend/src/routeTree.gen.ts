@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as CenterRouteImport } from './routes/center'
@@ -38,12 +40,15 @@ import { Route as AdminCentersRouteImport } from './routes/admin/centers'
 import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
-import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
-import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
-import { Route as authSignUpPatientRouteImport } from './routes/(auth)/sign-up/patient'
-import { Route as authSignUpDonorRouteImport } from './routes/(auth)/sign-up/donor'
-import { Route as authSignUpCenterRouteImport } from './routes/(auth)/sign-up/center'
-import { Route as authSignUpAppRouteImport } from './routes/(auth)/sign-up/app'
+import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
+import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
+import { Route as authSignUpLayoutPatientRouteImport } from './routes/(auth)/sign-up/_layout/patient'
+import { Route as authSignUpLayoutDonorRouteImport } from './routes/(auth)/sign-up/_layout/donor'
+import { Route as authSignUpLayoutCenterRouteImport } from './routes/(auth)/sign-up/_layout/center'
+
+const authSignUpRouteImport = createFileRoute('/(auth)/sign-up')()
 
 const PatientRoute = PatientRouteImport.update({
   id: '/patient',
@@ -63,6 +68,11 @@ const AdminRoute = AdminRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authSignUpRoute = authSignUpRouteImport.update({
+  id: '/(auth)/sign-up',
+  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientIndexRoute = PatientIndexRouteImport.update({
@@ -190,35 +200,39 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
-const authSignUpIndexRoute = authSignUpIndexRouteImport.update({
-  id: '/(auth)/sign-up/',
-  path: '/sign-up/',
+const authVerifyEmailRoute = authVerifyEmailRouteImport.update({
+  id: '/(auth)/verify-email',
+  path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
-const authLoginIndexRoute = authLoginIndexRouteImport.update({
-  id: '/(auth)/login/',
-  path: '/login/',
+const authLoginRoute = authLoginRouteImport.update({
+  id: '/(auth)/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const authSignUpPatientRoute = authSignUpPatientRouteImport.update({
-  id: '/(auth)/sign-up/patient',
-  path: '/sign-up/patient',
-  getParentRoute: () => rootRouteImport,
+const authSignUpLayoutRouteRoute = authSignUpLayoutRouteRouteImport.update({
+  id: '/_layout',
+  getParentRoute: () => authSignUpRoute,
 } as any)
-const authSignUpDonorRoute = authSignUpDonorRouteImport.update({
-  id: '/(auth)/sign-up/donor',
-  path: '/sign-up/donor',
-  getParentRoute: () => rootRouteImport,
+const authSignUpLayoutIndexRoute = authSignUpLayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => authSignUpLayoutRouteRoute,
 } as any)
-const authSignUpCenterRoute = authSignUpCenterRouteImport.update({
-  id: '/(auth)/sign-up/center',
-  path: '/sign-up/center',
-  getParentRoute: () => rootRouteImport,
+const authSignUpLayoutPatientRoute = authSignUpLayoutPatientRouteImport.update({
+  id: '/patient',
+  path: '/patient',
+  getParentRoute: () => authSignUpLayoutRouteRoute,
 } as any)
-const authSignUpAppRoute = authSignUpAppRouteImport.update({
-  id: '/(auth)/sign-up/app',
-  path: '/sign-up/app',
-  getParentRoute: () => rootRouteImport,
+const authSignUpLayoutDonorRoute = authSignUpLayoutDonorRouteImport.update({
+  id: '/donor',
+  path: '/donor',
+  getParentRoute: () => authSignUpLayoutRouteRoute,
+} as any)
+const authSignUpLayoutCenterRoute = authSignUpLayoutCenterRouteImport.update({
+  id: '/center',
+  path: '/center',
+  getParentRoute: () => authSignUpLayoutRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -226,6 +240,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/center': typeof CenterRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
+  '/login': typeof authLoginRoute
+  '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -251,15 +267,16 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
   '/patient/': typeof PatientIndexRoute
-  '/sign-up/app': typeof authSignUpAppRoute
-  '/sign-up/center': typeof authSignUpCenterRoute
-  '/sign-up/donor': typeof authSignUpDonorRoute
-  '/sign-up/patient': typeof authSignUpPatientRoute
-  '/login': typeof authLoginIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
+  '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
+  '/sign-up/center': typeof authSignUpLayoutCenterRoute
+  '/sign-up/donor': typeof authSignUpLayoutDonorRoute
+  '/sign-up/patient': typeof authSignUpLayoutPatientRoute
+  '/sign-up/': typeof authSignUpLayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
+  '/login': typeof authLoginRoute
+  '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -285,12 +302,10 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/center': typeof CenterIndexRoute
   '/patient': typeof PatientIndexRoute
-  '/sign-up/app': typeof authSignUpAppRoute
-  '/sign-up/center': typeof authSignUpCenterRoute
-  '/sign-up/donor': typeof authSignUpDonorRoute
-  '/sign-up/patient': typeof authSignUpPatientRoute
-  '/login': typeof authLoginIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
+  '/sign-up': typeof authSignUpLayoutIndexRoute
+  '/sign-up/center': typeof authSignUpLayoutCenterRoute
+  '/sign-up/donor': typeof authSignUpLayoutDonorRoute
+  '/sign-up/patient': typeof authSignUpLayoutPatientRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -298,6 +313,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/center': typeof CenterRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -323,12 +340,12 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
   '/patient/': typeof PatientIndexRoute
-  '/(auth)/sign-up/app': typeof authSignUpAppRoute
-  '/(auth)/sign-up/center': typeof authSignUpCenterRoute
-  '/(auth)/sign-up/donor': typeof authSignUpDonorRoute
-  '/(auth)/sign-up/patient': typeof authSignUpPatientRoute
-  '/(auth)/login/': typeof authLoginIndexRoute
-  '/(auth)/sign-up/': typeof authSignUpIndexRoute
+  '/(auth)/sign-up': typeof authSignUpRouteWithChildren
+  '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
+  '/(auth)/sign-up/_layout/center': typeof authSignUpLayoutCenterRoute
+  '/(auth)/sign-up/_layout/donor': typeof authSignUpLayoutDonorRoute
+  '/(auth)/sign-up/_layout/patient': typeof authSignUpLayoutPatientRoute
+  '/(auth)/sign-up/_layout/': typeof authSignUpLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -337,6 +354,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/center'
     | '/patient'
+    | '/login'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
     | '/admin/campaigns'
@@ -362,15 +381,16 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/center/'
     | '/patient/'
-    | '/sign-up/app'
+    | '/sign-up'
     | '/sign-up/center'
     | '/sign-up/donor'
     | '/sign-up/patient'
-    | '/login'
-    | '/sign-up'
+    | '/sign-up/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
+    | '/login'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
     | '/admin/campaigns'
@@ -396,18 +416,18 @@ export interface FileRouteTypes {
     | '/admin'
     | '/center'
     | '/patient'
-    | '/sign-up/app'
+    | '/sign-up'
     | '/sign-up/center'
     | '/sign-up/donor'
     | '/sign-up/patient'
-    | '/login'
-    | '/sign-up'
   id:
     | '__root__'
     | '/about'
     | '/admin'
     | '/center'
     | '/patient'
+    | '/(auth)/login'
+    | '/(auth)/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
     | '/admin/campaigns'
@@ -433,12 +453,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/center/'
     | '/patient/'
-    | '/(auth)/sign-up/app'
-    | '/(auth)/sign-up/center'
-    | '/(auth)/sign-up/donor'
-    | '/(auth)/sign-up/patient'
-    | '/(auth)/login/'
-    | '/(auth)/sign-up/'
+    | '/(auth)/sign-up'
+    | '/(auth)/sign-up/_layout'
+    | '/(auth)/sign-up/_layout/center'
+    | '/(auth)/sign-up/_layout/donor'
+    | '/(auth)/sign-up/_layout/patient'
+    | '/(auth)/sign-up/_layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -446,14 +466,11 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   CenterRoute: typeof CenterRouteWithChildren
   PatientRoute: typeof PatientRouteWithChildren
+  authLoginRoute: typeof authLoginRoute
+  authVerifyEmailRoute: typeof authVerifyEmailRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   publicIndexRoute: typeof publicIndexRoute
-  authSignUpAppRoute: typeof authSignUpAppRoute
-  authSignUpCenterRoute: typeof authSignUpCenterRoute
-  authSignUpDonorRoute: typeof authSignUpDonorRoute
-  authSignUpPatientRoute: typeof authSignUpPatientRoute
-  authLoginIndexRoute: typeof authLoginIndexRoute
-  authSignUpIndexRoute: typeof authSignUpIndexRoute
+  authSignUpRoute: typeof authSignUpRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -484,6 +501,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/sign-up': {
+      id: '/(auth)/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patient/': {
@@ -661,47 +685,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/(auth)/sign-up/': {
-      id: '/(auth)/sign-up/'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof authSignUpIndexRouteImport
+    '/(auth)/verify-email': {
+      id: '/(auth)/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof authVerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(auth)/login/': {
-      id: '/(auth)/login/'
+    '/(auth)/login': {
+      id: '/(auth)/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof authLoginIndexRouteImport
+      preLoaderRoute: typeof authLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(auth)/sign-up/patient': {
-      id: '/(auth)/sign-up/patient'
-      path: '/sign-up/patient'
+    '/(auth)/sign-up/_layout': {
+      id: '/(auth)/sign-up/_layout'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpLayoutRouteRouteImport
+      parentRoute: typeof authSignUpRoute
+    }
+    '/(auth)/sign-up/_layout/': {
+      id: '/(auth)/sign-up/_layout/'
+      path: '/'
+      fullPath: '/sign-up/'
+      preLoaderRoute: typeof authSignUpLayoutIndexRouteImport
+      parentRoute: typeof authSignUpLayoutRouteRoute
+    }
+    '/(auth)/sign-up/_layout/patient': {
+      id: '/(auth)/sign-up/_layout/patient'
+      path: '/patient'
       fullPath: '/sign-up/patient'
-      preLoaderRoute: typeof authSignUpPatientRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof authSignUpLayoutPatientRouteImport
+      parentRoute: typeof authSignUpLayoutRouteRoute
     }
-    '/(auth)/sign-up/donor': {
-      id: '/(auth)/sign-up/donor'
-      path: '/sign-up/donor'
+    '/(auth)/sign-up/_layout/donor': {
+      id: '/(auth)/sign-up/_layout/donor'
+      path: '/donor'
       fullPath: '/sign-up/donor'
-      preLoaderRoute: typeof authSignUpDonorRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof authSignUpLayoutDonorRouteImport
+      parentRoute: typeof authSignUpLayoutRouteRoute
     }
-    '/(auth)/sign-up/center': {
-      id: '/(auth)/sign-up/center'
-      path: '/sign-up/center'
+    '/(auth)/sign-up/_layout/center': {
+      id: '/(auth)/sign-up/_layout/center'
+      path: '/center'
       fullPath: '/sign-up/center'
-      preLoaderRoute: typeof authSignUpCenterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(auth)/sign-up/app': {
-      id: '/(auth)/sign-up/app'
-      path: '/sign-up/app'
-      fullPath: '/sign-up/app'
-      preLoaderRoute: typeof authSignUpAppRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof authSignUpLayoutCenterRouteImport
+      parentRoute: typeof authSignUpLayoutRouteRoute
     }
   }
 }
@@ -778,19 +809,47 @@ const PatientRouteChildren: PatientRouteChildren = {
 const PatientRouteWithChildren =
   PatientRoute._addFileChildren(PatientRouteChildren)
 
+interface authSignUpLayoutRouteRouteChildren {
+  authSignUpLayoutCenterRoute: typeof authSignUpLayoutCenterRoute
+  authSignUpLayoutDonorRoute: typeof authSignUpLayoutDonorRoute
+  authSignUpLayoutPatientRoute: typeof authSignUpLayoutPatientRoute
+  authSignUpLayoutIndexRoute: typeof authSignUpLayoutIndexRoute
+}
+
+const authSignUpLayoutRouteRouteChildren: authSignUpLayoutRouteRouteChildren = {
+  authSignUpLayoutCenterRoute: authSignUpLayoutCenterRoute,
+  authSignUpLayoutDonorRoute: authSignUpLayoutDonorRoute,
+  authSignUpLayoutPatientRoute: authSignUpLayoutPatientRoute,
+  authSignUpLayoutIndexRoute: authSignUpLayoutIndexRoute,
+}
+
+const authSignUpLayoutRouteRouteWithChildren =
+  authSignUpLayoutRouteRoute._addFileChildren(
+    authSignUpLayoutRouteRouteChildren,
+  )
+
+interface authSignUpRouteChildren {
+  authSignUpLayoutRouteRoute: typeof authSignUpLayoutRouteRouteWithChildren
+}
+
+const authSignUpRouteChildren: authSignUpRouteChildren = {
+  authSignUpLayoutRouteRoute: authSignUpLayoutRouteRouteWithChildren,
+}
+
+const authSignUpRouteWithChildren = authSignUpRoute._addFileChildren(
+  authSignUpRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   CenterRoute: CenterRouteWithChildren,
   PatientRoute: PatientRouteWithChildren,
+  authLoginRoute: authLoginRoute,
+  authVerifyEmailRoute: authVerifyEmailRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   publicIndexRoute: publicIndexRoute,
-  authSignUpAppRoute: authSignUpAppRoute,
-  authSignUpCenterRoute: authSignUpCenterRoute,
-  authSignUpDonorRoute: authSignUpDonorRoute,
-  authSignUpPatientRoute: authSignUpPatientRoute,
-  authLoginIndexRoute: authLoginIndexRoute,
-  authSignUpIndexRoute: authSignUpIndexRoute,
+  authSignUpRoute: authSignUpRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

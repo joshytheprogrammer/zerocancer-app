@@ -29,34 +29,6 @@ import { centerSchema } from '@zerocancer/shared/schemas/register'
 import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
 
-const servicesEnum = z.enum(['screening', 'vaccine', 'treatment'])
-
-const formSchema = z.object({
-  centerName: z.string().min(2, {
-    message: 'Center name must be at least 2 characters.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
-  }),
-  phoneNumber: z.string().min(1, {
-    message: 'Please enter a phone number.',
-  }),
-  address: z.string().min(5, {
-    message: 'Please enter a valid address.',
-  }),
-  state: z.string().min(1, {
-    message: 'Please select a state.',
-  }),
-  localGovernment: z.string().min(1, {
-    message: 'Please select a local government.',
-  }),
-  services: z.array(servicesEnum).refine((value) => value.length > 0, {
-    message: 'You have to select at least one service.',
-  }),
-})
 
 type FormData = z.infer<typeof centerSchema>
 

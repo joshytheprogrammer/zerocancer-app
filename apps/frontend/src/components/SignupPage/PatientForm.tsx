@@ -24,29 +24,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import statesData from '@zerocancer/shared/constants/states.json'
+import { patientSchema } from '@zerocancer/shared/schemas/register'
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: 'Name must be at least 2 characters.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
-  }),
-  phoneNumber: z.string().min(1, {
-    message: 'Please enter your phone number.',
-  }),
-  state: z.string().min(1, {
-    message: 'Please select a state.',
-  }),
-  localGovernment: z.string().min(1, {
-    message: 'Please select a local government.',
-  }),
-})
+import { Calendar as ShadCalendar } from '@/components/ui/calendar'
+import { Label as ShadLabel } from '@/components/ui/label'
+import {
+  Popover as ShadPopover,
+  PopoverContent as ShadPopoverContent,
+  PopoverTrigger as ShadPopoverTrigger,
+} from '@/components/ui/popover'
+import { ChevronDownIcon } from 'lucide-react'
+import { usePatientRegistration } from '@/services/providers/register'
+import { toast } from 'sonner'
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof patientSchema>
 
 type PatientFormProps = {
   onSubmitSuccess: (data: FormData) => void
@@ -58,13 +49,19 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
     Array<{ name: string; id: number }>
   >([])
 
+  const mutation = usePatientRegistration()
+
+  const formSchema = patientSchema
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      fullName: '',
       email: '',
       password: '',
-      phoneNumber: '',
+      phone: '',
+      dateOfBirth: '',
+      gender: 'male',
       state: '',
       localGovernment: '',
     },
@@ -87,8 +84,19 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
   }
 
   function onSubmit(values: FormData) {
-    console.log('Patient form submitted:', values)
-    onSubmitSuccess(values)
+    mutation.mutate(values, {
+      onSuccess: (data) => {
+        onSubmitSuccess(values)
+      },
+      onError: (error) => {
+        toast.error(
+          error.response?.data?.error || 'Registration failed. Please try again.',
+          {
+            description: error.response?.data?.error || 'An error occurred.',
+          },
+        )
+      },
+    })
   }
 
   return (
@@ -96,7 +104,7 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="name"
+          name="fullName"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Full Name</FormLabel>
@@ -145,82 +153,150 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
           )}
         />
 
-        <FormField
+        {/* Phone, State, Local Government, Gender in a 2-column grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <PhoneInputComponent
+                      value={field.value as RPNInput.Value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
           control={form.control}
-          name="phoneNumber"
+          name="dateOfBirth"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Date of Birth</FormLabel>
               <FormControl>
-                <PhoneInputComponent
-                  value={field.value as RPNInput.Value}
-                  onChange={field.onChange}
-                />
+                <div>
+                  <ShadPopover>
+                    <ShadPopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="date"
+                        className="w-full justify-between font-normal"
+                      >
+                        {field.value ? new Date(field.value).toLocaleDateString() : "Select date"}
+                        <ChevronDownIcon />
+                      </Button>
+                    </ShadPopoverTrigger>
+                    <ShadPopoverContent className="w-auto overflow-hidden p-0" align="start">
+                      <ShadCalendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        captionLayout="dropdown"
+                        onSelect={(date: Date | undefined) => {
+                          field.onChange(date ? date.toISOString().split('T')[0] : '')
+                        }}
+                      />
+                    </ShadPopoverContent>
+                  </ShadPopover>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+          <div>
+            <FormField
+              control={form.control}
+              name="state"
+              render={() => (
+                <FormItem>
+                  <FormLabel>State</FormLabel>
+                  <Select onValueChange={handleStateChange} value={selectedState}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {statesData.map((item) => (
+                        <SelectItem key={item.state.id} value={item.state.name}>
+                          {item.state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div>
+            <FormField
+              control={form.control}
+              name="localGovernment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Local Government</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!selectedState}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            selectedState
+                              ? 'Select a local government'
+                              : 'Select a state first'
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {localGovernments.map((local) => (
+                        <SelectItem key={local.id} value={local.name}>
+                          {local.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div>
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gender</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
-        <FormField
-          control={form.control}
-          name="state"
-          render={() => (
-            <FormItem>
-              <FormLabel>State</FormLabel>
-              <Select onValueChange={handleStateChange} value={selectedState}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a state" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {statesData.map((item) => (
-                    <SelectItem key={item.state.id} value={item.state.name}>
-                      {item.state.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="localGovernment"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Local Government</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                disabled={!selectedState}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        selectedState
-                          ? 'Select a local government'
-                          : 'Select a state first'
-                      }
-                    />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {localGovernments.map((local) => (
-                    <SelectItem key={local.id} value={local.name}>
-                      {local.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
 
         <Button type="submit" className="w-full">
           Create Account

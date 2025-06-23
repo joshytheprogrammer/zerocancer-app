@@ -8,7 +8,7 @@ export const actorSchema = z.enum(["patient", "donor", "center"], {
   errorMap: () => {
     return {
       message:
-        "Actor type is required and must be one of: patient, donor, center.",
+        "Fuck you Nigga. You are not allowed to be here.",
     };
   },
 });
