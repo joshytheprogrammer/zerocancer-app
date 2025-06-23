@@ -13,6 +13,13 @@ export const useBookSelfPayAppointment = () => {
   })
 }
 
+export const useJoinWaitlist = () => {
+  return useMutation({
+    mutationKey: ['joinWaitlist'],
+    mutationFn: patientService.joinWaitlist,
+  })
+}
+
 // Get eligible centers for a matched allocation
 export const useEligibleCenters = (
   allocationId: string,
