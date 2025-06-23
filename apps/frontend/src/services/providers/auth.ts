@@ -25,7 +25,7 @@ export const useLogin = () => {
   >({
     mutationKey: [MutationKeys.loginUser],
     mutationFn: ({ params, actor }) => authService.loginUser(params, actor),
-    onSuccess: (data) => {
+    onSettled: (data) => {
       if (data?.data?.token) {
         // Store access token in React Query cache
         queryClient.setQueryData([ACCESS_TOKEN_KEY], data.data.token)
@@ -46,7 +46,7 @@ export const useAuthUser = () =>
     retry: false,
   })
 
-export const useLogout = () => {
+const useLogout = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   return useMutation({

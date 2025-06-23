@@ -65,7 +65,7 @@ async function main() {
       email: faker.internet.email(),
       phone: faker.phone.number({ style: "international" }),
       passwordHash: faker.internet.password(),
-      profile: "DONOR",
+      // profile: "DONOR",
       donorProfile: {
         create: {
           organizationName: "Test Org",
@@ -82,7 +82,7 @@ async function main() {
       email: "patient@example.com",
       phone: "08022334455",
       passwordHash: faker.internet.password(),
-      profile: "PATIENT",
+      // profile: "PATIENT",
       patientProfile: {
         create: {
           gender: "female",
