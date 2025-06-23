@@ -49,6 +49,22 @@ async function main() {
     ],
   });
 
+  // --- Seed General Campaigns ---
+  await prisma.donationCampaign.create({
+    data: {
+      id: "general-donor-pool",
+      donorId: "general-public",
+      availableAmount: 10000, // Example amount
+      reservedAmount: 0,
+      initialAmount: 10000,
+      // amount: 1000,
+      // name: "General Health Awareness",
+      // description: "Campaign to raise awareness about general health screenings.",
+      // screeningTypeId: "general",
+      status: "ACTIVE",
+    },
+  });
+
   // --- Seed Admin ---
   await prisma.admins.create({
     data: {

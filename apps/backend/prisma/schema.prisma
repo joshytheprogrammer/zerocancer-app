@@ -13,6 +13,7 @@ enum ProfileType {
 }
 
 enum AllocationStatus {
+  PENDING
   MATCHED
   CLAIMED
   EXPIRED
@@ -56,6 +57,7 @@ model User {
   donationCampaigns DonationCampaign[] @relation("UserDonationCampaigns")
   donationAllocations DonationAllocation[] @relation("UserDonationAllocations")
   appointments   Appointment[]     @relation("UserAppointments")
+  notifications    NotificationRecipient[]
 }
 
 model PatientProfile {
@@ -124,7 +126,7 @@ model ScreeningType {
   category                ScreeningTypeCategory @relation(fields: [screeningTypeCategoryId], references: [id])
   appointments            Appointment[]
   waitlists               Waitlist[]
-  campaigns               DonationCampaign[]
+  campaigns               DonationCampaign[] @relation("DonationCampaignScreeningTypes")
   centers                 ServiceCenter[]
 }
 
@@ -152,8 +154,9 @@ model Waitlist {
 model DonationCampaign {
   id              String           @id @default(uuid())
   donorId         String
-  screeningTypeId String
-  amount          Float
+  initialAmount   Float
+  availableAmount Float
+  reservedAmount  Float
   purpose         String?
   targetGender    Boolean?
   targetAgeRange  String?
@@ -163,9 +166,9 @@ model DonationCampaign {
   createdAt       DateTime         @default(now())
 
   donor           User             @relation("UserDonationCampaigns", fields: [donorId], references: [id])
-  screeningType   ScreeningType    @relation(fields: [screeningTypeId], references: [id])
   allocations     DonationAllocation[]
   transactions    Transaction[]    @relation("DonationTransactions")
+  screeningTypes  ScreeningType[]  @relation("DonationCampaignScreeningTypes")
 }
 
 model DonationAllocation {
@@ -274,4 +277,24 @@ model EmailVerificationToken {
   profileType ProfileType
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  title     String
+  message   String
+  data      Json?
+  createdAt DateTime @default(now())
+  recipients NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id             String   @id @default(uuid())
+  notificationId String
+  userId         String
+  read           Boolean  @default(false)
+  readAt         DateTime?
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 }

@@ -11,3 +11,8 @@ export const bookSelfPayAppointment = async (data: {
 }) => {
   return await request.post(endpoints.createSelfPayAppointment(), data)
 }
+
+// Join donation-based waitlist
+export const joinWaitlist = async (data: { screeningTypeId: string }) => {
+  return await request.post(endpoints.joinWaitlist(), data)
+}

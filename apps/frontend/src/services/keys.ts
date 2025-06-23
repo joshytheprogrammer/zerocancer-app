@@ -50,6 +50,9 @@ export enum MutationKeys {
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
   resendVerification = 'resendVerification',
+  // Notification mutations
+  markNotificationRead = 'markNotificationRead',
+  createNotification = 'createNotification',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

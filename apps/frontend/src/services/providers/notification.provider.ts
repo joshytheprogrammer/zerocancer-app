@@ -1,0 +1,36 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { MutationKeys, QueryKeys } from '../keys'
+import * as notificationService from '../notification.service'
+
+export function useNotifications() {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'notifications'],
+    queryFn: notificationService.getNotifications,
+  })
+}
+
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: [MutationKeys.markNotificationRead],
+    mutationFn: notificationService.markNotificationRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.authUser, 'notifications'],
+      })
+    },
+  })
+}
+
+export function useCreateNotification() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: [MutationKeys.createNotification],
+    mutationFn: notificationService.createNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.authUser, 'notifications'],
+      })
+    },
+  })
+}

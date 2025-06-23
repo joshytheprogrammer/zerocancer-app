@@ -96,3 +96,9 @@ export const getStoreItems = (page: number = 1, size: number = 20) =>
 export const manageRoles = (page: number = 1, size: number = 20) =>
   `/api/admin/roles${buildQuery({ page, size })}`
 export const resendReceipt = () => '/api/admin/receipts/resend'
+
+// Notification endpoints
+export const getNotifications = () => `/api/notifications`
+export const markNotificationRead = (notificationRecipientId: string) =>
+  `/api/notifications/${notificationRecipientId}/read`
+export const createNotification = () => `/api/notifications`

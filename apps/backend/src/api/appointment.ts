@@ -73,4 +73,30 @@ appointmentApp.post("/appointments/book", async (c) => {
   return c.json({ ok: true, data: { appointment } });
 });
 
+// POST /api/patient/waitlists/join
+appointmentApp.post("/waitlists/join", async (c) => {
+  const db = getDB();
+  const { screeningTypeId } = await c.req.json();
+
+  const payload = c.get("jwtPayload");
+  if (!payload) {
+    return c.json({ ok: false, message: "Unauthorized" }, 401);
+  }
+
+  const patientId = payload.id; // Assuming JWT payload contains userId
+  if (!patientId) {
+    return c.json({ ok: false, message: "User ID not found in token" }, 401);
+  }
+  // Create waitlist entry
+  const waitlist = await db.waitlist.create({
+    data: {
+      screeningTypeId,
+      patientId,
+      status: "PENDING",
+    },
+  });
+
+  return c.json({ ok: true, data: { waitlist } });
+});
+
 // To run this app, create an entry file (e.g., server.ts) that imports and starts the server.
