@@ -1,5 +1,9 @@
 import * as patientService from '@/services/patient.service'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { MutationKeys, QueryKeys } from '../keys'
 
 export const useBookSelfPayAppointment = () => {
@@ -10,13 +14,27 @@ export const useBookSelfPayAppointment = () => {
 }
 
 // Get eligible centers for a matched allocation
-export function useEligibleCenters(allocationId: string) {
-  return useQuery({
-    queryKey: [QueryKeys.authUser, 'eligibleCenters', allocationId],
-    queryFn: () => patientService.getEligibleCenters(allocationId),
+export const useEligibleCenters = (
+  allocationId: string,
+  page = 1,
+  size = 20,
+  state?: string,
+  lga?: string,
+) =>
+  queryOptions({
+    queryKey: [
+      QueryKeys.authUser,
+      'eligibleCenters',
+      allocationId,
+      page,
+      size,
+      state,
+      lga,
+    ],
+    queryFn: () =>
+      patientService.getEligibleCenters(allocationId, page, size, state, lga),
     enabled: !!allocationId,
   })
-}
 
 // Select center for a matched allocation
 export function useSelectCenter() {

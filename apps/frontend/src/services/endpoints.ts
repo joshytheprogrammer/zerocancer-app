@@ -40,63 +40,69 @@ export const verifyEmail = () => '/api/auth/verify-email'
 export const resendVerification = () => '/api/auth/resend-verification'
 
 // PATIENT
-export const getAppointments = (page: number = 1, size: number = 20) =>
+export const getAppointments = (page = 1, size = 20) =>
   `/api/patient/appointments${buildQuery({ page, size })}`
 export const createSelfPayAppointment = () => '/api/patient/appointments/book'
 export const getQR = () => '/api/patient/qr'
-export const getResults = (page: number = 1, size: number = 20) =>
+export const getResults = (page = 1, size = 20) =>
   `/api/patient/results${buildQuery({ page, size })}`
-export const getWaitlists = (page: number = 1, size: number = 20) =>
+export const getWaitlists = (page = 1, size = 20) =>
   `/api/patient/waitlists${buildQuery({ page, size })}`
 export const joinWaitlist = () => '/api/patient/waitlists/join'
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
-export const getEligibleCenters = (allocationId: string) =>
-  `/api/patient/matches/eligible-centers/${allocationId}`
+export const getEligibleCenters = (
+  allocationId: string,
+  page = 1,
+  size = 20,
+  state?: string,
+  lga?: string,
+) =>
+  `/api/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
 export const selectCenterAfterMatch = () => `/api/patient/matches/select-center`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
 export const createCampaign = () => '/api/donor/campaigns'
-export const getCampaigns = (page: number = 1, size: number = 20) =>
+export const getCampaigns = (page = 1, size = 20) =>
   `/api/donor/campaigns${buildQuery({ page, size })}`
 export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
 export const deleteCampaign = (id: string) =>
   `/api/donor/campaigns/${id}/delete`
-export const getDonorReceipts = (page: number = 1, size: number = 20) =>
+export const getDonorReceipts = (page = 1, size = 20) =>
   `/api/donor/receipts${buildQuery({ page, size })}`
 export const getDonationImpact = () => '/api/donor/impact'
 
 // CENTER
-export const getCenterAppointments = (page: number = 1, size: number = 20) =>
+export const getCenterAppointments = (page = 1, size = 20) =>
   `/api/center/appointments${buildQuery({ page, size })}`
 export const verifyPatientCode = () => '/api/center/verify'
-export const uploadResults = (page: number = 1, size: number = 20) =>
+export const uploadResults = (page = 1, size = 20) =>
   `/api/center/results${buildQuery({ page, size })}`
 export const getResultHistory = () => '/api/center/results-history'
 export const inviteStaff = () => '/api/center/staff/invite'
-export const getCenterReceipts = (page: number = 1, size: number = 20) =>
+export const getCenterReceipts = (page = 1, size = 20) =>
   `/api/center/receipt-history${buildQuery({ page, size })}`
 
 // ADMIN
-export const getUsers = (page: number = 1, size: number = 20) =>
+export const getUsers = (page = 1, size = 20) =>
   `/api/admin/users${buildQuery({ page, size })}`
-export const getCenters = (page: number = 1, size: number = 20) =>
+export const getCenters = (page = 1, size = 20) =>
   `/api/admin/centers${buildQuery({ page, size })}`
 export const approveCenter = (id: string) => `/api/admin/centers/${id}/approve`
-export const getAllCampaigns = (page: number = 1, size: number = 20) =>
+export const getAllCampaigns = (page = 1, size = 20) =>
   `/api/admin/campaigns${buildQuery({ page, size })}`
 export const updateCampaignStatus = (id: number) =>
   `/api/admin/campaigns/${id}/status`
-export const getAllAppointments = (page: number = 1, size: number = 20) =>
+export const getAllAppointments = (page = 1, size = 20) =>
   `/api/admin/appointments${buildQuery({ page, size })}`
-export const getTransactions = (page: number = 1, size: number = 20) =>
+export const getTransactions = (page = 1, size = 20) =>
   `/api/admin/transactions${buildQuery({ page, size })}`
-export const getAnalytics = (page: number = 1, size: number = 20) =>
+export const getAnalytics = (page = 1, size = 20) =>
   `/api/admin/analytics${buildQuery({ page, size })}`
-export const getStoreItems = (page: number = 1, size: number = 20) =>
+export const getStoreItems = (page = 1, size = 20) =>
   `/api/admin/store${buildQuery({ page, size })}`
-export const manageRoles = (page: number = 1, size: number = 20) =>
+export const manageRoles = (page = 1, size = 20) =>
   `/api/admin/roles${buildQuery({ page, size })}`
 export const resendReceipt = () => '/api/admin/receipts/resend'
 

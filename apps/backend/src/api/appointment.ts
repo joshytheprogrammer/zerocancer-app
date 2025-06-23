@@ -106,6 +106,10 @@ appointmentApp.get("/matches/eligible-centers/:allocationId", async (c) => {
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
   const userId = payload.id;
   const allocationId = c.req.param("allocationId");
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const size = parseInt(c.req.query("size") || "20", 10);
+  const state = c.req.query("state");
+  const lga = c.req.query("lga");
   // Ensure allocation belongs to this patient and is not yet assigned to an appointment
   const allocation = await db.donationAllocation.findUnique({
     where: { id: allocationId },
@@ -123,20 +127,44 @@ appointmentApp.get("/matches/eligible-centers/:allocationId", async (c) => {
   }
   // Find all active centers offering this screening type
   const screeningTypeId = allocation.waitlist.screeningTypeId;
-  const centers = await db.serviceCenter.findMany({
-    where: {
-      services: { some: { id: screeningTypeId } },
-      status: "ACTIVE",
-    },
-    select: {
-      id: true,
-      centerName: true,
-      address: true,
-      state: true,
-      lga: true,
+  const [centers, total] = await Promise.all([
+    db.serviceCenter.findMany({
+      skip: (page - 1) * size,
+      take: size,
+      where: {
+        services: { some: { id: screeningTypeId } },
+        state: state || undefined,
+        lga: lga || undefined,
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+        centerName: true,
+        address: true,
+        state: true,
+        lga: true,
+      },
+    }),
+    db.serviceCenter.count({
+      where: {
+        services: { some: { id: screeningTypeId } },
+        state: state || undefined,
+        lga: lga || undefined,
+        status: "ACTIVE",
+      },
+    }),
+  ]);
+
+  return c.json({
+    ok: true,
+    data: {
+      centers,
+      page,
+      pageSize: size,
+      total,
+      totalPages: Math.ceil(centers.length / size),
     },
   });
-  return c.json({ ok: true, data: centers });
 });
 
 // POST /api/patient/matches/select-center

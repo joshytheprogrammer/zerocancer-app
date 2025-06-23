@@ -18,8 +18,16 @@ export const joinWaitlist = async (data: { screeningTypeId: string }) => {
 }
 
 // Get eligible centers for a matched allocation
-export const getEligibleCenters = async (allocationId: string) => {
-  return await request.get(endpoints.getEligibleCenters(allocationId))
+export const getEligibleCenters = async (
+  allocationId: string,
+  page = 1,
+  size = 20,
+  state: string | undefined,
+  lga: string | undefined,
+) => {
+  return await request.get(
+    endpoints.getEligibleCenters(allocationId, page, size, state, lga),
+  )
 }
 
 // Select center for a matched allocation
