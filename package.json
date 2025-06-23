@@ -16,6 +16,7 @@
     "dev": "pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
     "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
-    "prisma:generate": "pnpm --filter ./apps/backend prisma:generate"
+    "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
+    "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build"
   }
 }
