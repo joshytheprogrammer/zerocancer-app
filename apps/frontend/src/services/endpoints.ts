@@ -34,7 +34,6 @@ export const logoutUser = () => '/api/auth/logout'
 export const authUser = () => '/api/auth/me'
 export const refreshToken = (retry?: boolean) =>
   `/api/auth/refresh${retry === true ? '?retry=true' : ''}`
-// not-done
 export const forgotPassword = () => '/api/auth/forgot-password'
 export const resetPassword = () => '/api/auth/reset-password'
 export const verifyEmail = () => '/api/auth/verify-email'

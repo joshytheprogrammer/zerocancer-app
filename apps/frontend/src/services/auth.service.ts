@@ -1,6 +1,6 @@
 import request from '@/lib/request'
 import * as endpoints from '@/services/endpoints'
-import { loginSchema } from '@zerocancer/shared/schemas/auth'
+import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type {
   TActors,
   TAuthMeResponse,

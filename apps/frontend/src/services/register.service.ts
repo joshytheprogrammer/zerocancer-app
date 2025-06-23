@@ -4,7 +4,7 @@ import {
   centerSchema,
   donorSchema,
   patientSchema,
-} from '@zerocancer/shared/schemas/register'
+} from '@zerocancer/shared/schemas/register.schema'
 import type {
   TDonorRegisterResponse,
   TPatientRegisterResponse,

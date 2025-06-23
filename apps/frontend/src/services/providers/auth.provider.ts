@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import type { loginSchema } from '@zerocancer/shared/schemas/auth'
+import type { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type {
   TActors,
   TAuthMeResponse,
@@ -70,7 +70,6 @@ export const useCheckProfiles = () => {
     queryKey: ['checkProfiles'],
     queryFn: authService.checkProfiles,
     retry: false,
-    
   })
 }
 

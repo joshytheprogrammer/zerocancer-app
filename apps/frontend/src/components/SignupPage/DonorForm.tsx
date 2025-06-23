@@ -1,8 +1,8 @@
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -10,8 +10,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import PasswordInput from '@/components/ui/password-input'
+import PhoneInputComponent from '@/components/ui/phone-input'
 import {
   Select,
   SelectContent,
@@ -19,14 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import PasswordInput from "@/components/ui/password-input"
-import PhoneInputComponent from "@/components/ui/phone-input"
-import * as RPNInput from "react-phone-number-input"
-import { donorSchema } from '@zerocancer/shared/schemas/register'
-import { useDonorRegistration } from '@/services/providers/register'
+import { useDonorRegistration } from '@/services/providers/register.provider'
+import { donorSchema } from '@zerocancer/shared/schemas/register.schema'
+import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
-
-
 
 type FormData = z.infer<typeof donorSchema>
 
@@ -55,7 +53,8 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.error || 'Registration failed. Please try again.',
+          error.response?.data?.error ||
+            'Registration failed. Please try again.',
           {
             description: error.response?.data?.error || 'An error occurred.',
           },
@@ -87,7 +86,11 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="john.doe@example.com" {...field} />
+                <Input
+                  type="email"
+                  placeholder="john.doe@example.com"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

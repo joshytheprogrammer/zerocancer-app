@@ -23,12 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCenterRegistration } from '@/services/providers/register'
+import { useCenterRegistration } from '@/services/providers/register.provider'
 import statesData from '@zerocancer/shared/constants/states.json'
-import { centerSchema } from '@zerocancer/shared/schemas/register'
+import { centerSchema } from '@zerocancer/shared/schemas/register.schema'
 import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
-
 
 type FormData = z.infer<typeof centerSchema>
 

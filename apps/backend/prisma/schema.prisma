@@ -248,7 +248,7 @@ model StoreProduct {
 model Transaction {
   id                  String   @id @default(uuid())
   type                TransactionType
-  status              String
+  status              String // change this to an enum with e.g., "PENDING", "COMPLETED", "FAILED"
   amount              Float
   relatedDonationId   String?
   paymentReference    String?

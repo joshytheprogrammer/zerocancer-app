@@ -12,11 +12,13 @@ import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { jwt, sign, verify } from "hono/jwt";
+import { Variables } from "hono/types";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
+import { THonoAppVariables } from "src/lib/types";
 import { getUserWithProfiles } from "src/lib/utils";
 
-export const authApp = new Hono();
+export const authApp = new Hono<{ Variables: THonoAppVariables }>();
 
 authApp.use(
   "*",

@@ -1,8 +1,8 @@
+import { useVerifyEmail } from '@/services/providers/auth.provider'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { useVerifyEmail } from '@/services/providers/auth'
-import { toast } from 'sonner'
 import type { AxiosError } from 'axios'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 const verifyEmailSearchSchema = z.object({
@@ -30,7 +30,9 @@ function RouteComponent() {
           if (err?.response?.data?.error) {
             toast.error(err.response.data.error)
           } else {
-            toast.error('Verification failed. The link may be invalid or expired.')
+            toast.error(
+              'Verification failed. The link may be invalid or expired.',
+            )
           }
         },
       })
@@ -38,22 +40,33 @@ function RouteComponent() {
   }, [token])
 
   if (!token) {
-    return <div className="text-center text-lg mt-8">No verification token provided.</div>
+    return (
+      <div className="text-center text-lg mt-8">
+        No verification token provided.
+      </div>
+    )
   }
 
   if (verifyEmail.isPending) {
-    return <div className="text-center text-lg mt-8">Verifying your email...</div>
+    return (
+      <div className="text-center text-lg mt-8">Verifying your email...</div>
+    )
   }
 
   if (verifyEmail.isSuccess) {
-    return <div className="text-center text-lg mt-8 text-green-600">Your email has been successfully verified! You can now log in.</div>
+    return (
+      <div className="text-center text-lg mt-8 text-green-600">
+        Your email has been successfully verified! You can now log in.
+      </div>
+    )
   }
 
   if (verifyEmail.isError) {
     const err = verifyEmail.error as AxiosError<any>
     return (
       <div className="text-center text-lg mt-8 text-red-600">
-        {err?.response?.data?.error || 'Verification failed. The link may be invalid or expired.'}
+        {err?.response?.data?.error ||
+          'Verification failed. The link may be invalid or expired.'}
       </div>
     )
   }

@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import statesData from '@zerocancer/shared/constants/states.json'
-import { patientSchema } from '@zerocancer/shared/schemas/register'
+import { patientSchema } from '@zerocancer/shared/schemas/register.schema'
 
 import { Calendar as ShadCalendar } from '@/components/ui/calendar'
 import { Label as ShadLabel } from '@/components/ui/label'
@@ -33,8 +33,8 @@ import {
   PopoverContent as ShadPopoverContent,
   PopoverTrigger as ShadPopoverTrigger,
 } from '@/components/ui/popover'
+import { usePatientRegistration } from '@/services/providers/register.provider'
 import { ChevronDownIcon } from 'lucide-react'
-import { usePatientRegistration } from '@/services/providers/register'
 import { toast } from 'sonner'
 
 type FormData = z.infer<typeof patientSchema>
@@ -90,7 +90,8 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.error || 'Registration failed. Please try again.',
+          error.response?.data?.error ||
+            'Registration failed. Please try again.',
           {
             description: error.response?.data?.error || 'An error occurred.',
           },
@@ -174,41 +175,50 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
             />
           </div>
           <FormField
-          control={form.control}
-          name="dateOfBirth"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date of Birth</FormLabel>
-              <FormControl>
-                <div>
-                  <ShadPopover>
-                    <ShadPopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        id="date"
-                        className="w-full justify-between font-normal"
+            control={form.control}
+            name="dateOfBirth"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date of Birth</FormLabel>
+                <FormControl>
+                  <div>
+                    <ShadPopover>
+                      <ShadPopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          id="date"
+                          className="w-full justify-between font-normal"
+                        >
+                          {field.value
+                            ? new Date(field.value).toLocaleDateString()
+                            : 'Select date'}
+                          <ChevronDownIcon />
+                        </Button>
+                      </ShadPopoverTrigger>
+                      <ShadPopoverContent
+                        className="w-auto overflow-hidden p-0"
+                        align="start"
                       >
-                        {field.value ? new Date(field.value).toLocaleDateString() : "Select date"}
-                        <ChevronDownIcon />
-                      </Button>
-                    </ShadPopoverTrigger>
-                    <ShadPopoverContent className="w-auto overflow-hidden p-0" align="start">
-                      <ShadCalendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        captionLayout="dropdown"
-                        onSelect={(date: Date | undefined) => {
-                          field.onChange(date ? date.toISOString().split('T')[0] : '')
-                        }}
-                      />
-                    </ShadPopoverContent>
-                  </ShadPopover>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                        <ShadCalendar
+                          mode="single"
+                          selected={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          captionLayout="dropdown"
+                          onSelect={(date: Date | undefined) => {
+                            field.onChange(
+                              date ? date.toISOString().split('T')[0] : '',
+                            )
+                          }}
+                        />
+                      </ShadPopoverContent>
+                    </ShadPopover>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div>
             <FormField
               control={form.control}
@@ -216,7 +226,10 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
               render={() => (
                 <FormItem>
                   <FormLabel>State</FormLabel>
-                  <Select onValueChange={handleStateChange} value={selectedState}>
+                  <Select
+                    onValueChange={handleStateChange}
+                    value={selectedState}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a state" />
@@ -295,8 +308,6 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
             />
           </div>
         </div>
-
-        
 
         <Button type="submit" className="w-full">
           Create Account
