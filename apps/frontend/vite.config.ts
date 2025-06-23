@@ -26,7 +26,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target:
-          import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+          process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
