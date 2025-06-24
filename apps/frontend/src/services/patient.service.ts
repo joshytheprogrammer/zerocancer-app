@@ -58,3 +58,29 @@ export const getCheckInCode = async (appointmentId: string) => {
 export const verifyCheckInCode = async (code: string) => {
   return await request.get(endpoints.verifyCheckInCode(code))
 }
+
+// Get patient screening results (paginated)
+export const getPatientResults = async (params: {
+  page?: number
+  size?: number
+}) => {
+  return await request.get(endpoints.getPatientResults(params))
+}
+
+// Get a specific screening result
+export const getPatientResult = async (id: string) => {
+  return await request.get(endpoints.getPatientResult(id))
+}
+
+// Get patient receipts (paginated)
+export const getPatientReceipts = async (params: {
+  page?: number
+  size?: number
+}) => {
+  return await request.get(endpoints.getPatientReceipts(params))
+}
+
+// Get a specific receipt
+export const getPatientReceipt = async (id: string) => {
+  return await request.get(endpoints.getPatientReceipt(id))
+}

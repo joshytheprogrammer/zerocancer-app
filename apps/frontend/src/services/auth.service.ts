@@ -4,6 +4,7 @@ import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type {
   TActors,
   TAuthMeResponse,
+  TCheckProfilesResponse,
   TLoginResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
@@ -21,7 +22,15 @@ export const loginUser = async (
 
 // Authenticated user service
 export const authUser = async () => {
-  return await request.get<TAuthMeResponse>(endpoints.authUser())
+  try {
+    // Attempt to get the authenticated user
+    return await request.get<TAuthMeResponse>(endpoints.authUser())
+  } catch (error) {
+    // If the request fails, return null
+    console.error('Error fetching authenticated user:', error)
+    return null
+  }
+  // return await request.get<TAuthMeResponse>(endpoints.authUser())
 }
 
 // logout
@@ -31,7 +40,7 @@ export const logout = async () => {
 
 // Check profiles
 export const checkProfiles = async () => {
-  return await request.get(endpoints.checkProfiles())
+  return await request.get<TCheckProfilesResponse>(endpoints.checkProfiles())
 }
 
 // Forgot password

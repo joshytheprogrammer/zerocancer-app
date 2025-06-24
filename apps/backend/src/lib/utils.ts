@@ -1,4 +1,6 @@
+import { PrismaClient } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
+import { patientAppointmentApp } from "src/api/appointments/patient.appointment";
 import { getDB } from "./db";
 
 export async function getUserWithProfiles({ email }: { email: string }) {
@@ -211,4 +213,20 @@ export async function createNotificationForUsers({
       },
     },
   });
+}
+// Utility: check if patient can join waitlist for a screening type
+export async function canJoinWaitlist(
+  db: PrismaClient,
+  patientId: string,
+  screeningTypeId: string
+) {
+  // No active (PENDING or MATCHED) waitlist for this screening type
+  const active = await db.waitlist.findFirst({
+    where: {
+      patientId,
+      screeningTypeId,
+      status: { in: ["PENDING", "MATCHED"] },
+    },
+  });
+  return !active;
 }

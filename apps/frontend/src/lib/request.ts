@@ -91,11 +91,6 @@ const refreshToken = (
 ): Promise<t.TRefreshTokenResponse | undefined> =>
   _post(endpoints.refreshToken(retry))
 
-// const dispatchTokenUpdatedEvent = (token: string) => {
-//   setTokenHeader(token)
-//   window.dispatchEvent(new CustomEvent('tokenUpdated', { detail: token }))
-// }
-
 const processQueue = (
   error: AxiosError | null,
   token: string | null = null,
@@ -125,11 +120,11 @@ axios.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    if (
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
-      console.warn('401 error, refreshing token', error.response.data)
+    if (error.response.status === 401 && !originalRequest._retry) {
+      console.warn(
+        '401 error, refreshing token & retry is false',
+        error.response.data,
+      )
       originalRequest._retry = true
 
       if (isRefreshing) {
@@ -138,13 +133,13 @@ axios.interceptors.response.use(
           const token = await new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject })
           })
+          // queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
           originalRequest.headers['Authorization'] = 'Bearer ' + token
           return await axios(originalRequest)
         } catch (err) {
           return Promise.reject(err)
         }
       }
-
       isRefreshing = true
 
       try {
@@ -155,9 +150,9 @@ axios.interceptors.response.use(
             : false,
         )
 
-        const token = response?.data.token ?? ''
+        const token = response?.data?.token ?? ''
 
-        if (token) {
+        if (!!token) {
           // Update React Query cache with new access token
           queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
           originalRequest.headers['Authorization'] = 'Bearer ' + token

@@ -1,30 +1,27 @@
 import * as authService from '@/services/auth.service'
 import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
 import {
+  QueryClient,
   queryOptions,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
-import type {
-  TActors,
-  TAuthMeResponse,
-  TErrorResponse,
-  TLoginResponse,
-} from '@zerocancer/shared/types'
-import type { AxiosError } from 'axios'
+import type { TActors } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 
 export const useLogin = () => {
   const queryClient = useQueryClient()
-  return useMutation<
-    TLoginResponse,
-    AxiosError<TErrorResponse>,
-    { params: z.infer<typeof loginSchema>; actor: TActors }
-  >({
+  return useMutation({
     mutationKey: [MutationKeys.loginUser],
-    mutationFn: ({ params, actor }) => authService.loginUser(params, actor),
+    mutationFn: ({
+      params,
+      actor,
+    }: {
+      params: z.infer<typeof loginSchema>
+      actor: TActors
+    }) => authService.loginUser(params, actor),
     onSettled: (data) => {
       if (data?.data?.token) {
         // Store access token in React Query cache
@@ -34,17 +31,36 @@ export const useLogin = () => {
   })
 }
 
-export const getAccessToken = () => {
-  const queryClient = useQueryClient()
-  return queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
-}
+// export const getAccessToken = () => {
+//   const queryClient = useQueryClient()
+//   return queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
+// }
 
 export const useAuthUser = () =>
-  queryOptions<TAuthMeResponse, AxiosError<TErrorResponse>>({
+  queryOptions({
     queryKey: ['authUser'],
     queryFn: authService.authUser,
+    // throwOnError
+    throwOnError: false,
     retry: false,
   })
+
+export const isAuthMiddleware = async (
+  queryClient: QueryClient,
+  actor?: TActors,
+) => {
+  const auth = await queryClient.ensureQueryData(useAuthUser())
+
+  if (!actor) {
+    return !!auth && !!auth.data
+  }
+
+  if (auth?.data?.user?.profile !== actor.toUpperCase()) {
+    return false
+  }
+
+  return !!auth && !!auth.data
+}
 
 const useLogout = () => {
   const queryClient = useQueryClient()
@@ -55,7 +71,7 @@ const useLogout = () => {
     onSuccess: () => {
       // Remove access token and user data from React Query cache
       queryClient.clear()
-      navigate({ to: '/login', replace: true, reloadDocument: true })
+      navigate({ to: '/', replace: true, reloadDocument: true })
     },
   })
 }
