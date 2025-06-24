@@ -30,7 +30,7 @@ export const useLogin = () => {
   })
 }
 
-export const useAccessToken = () => {
+export const getAccessToken = () => {
   const queryClient = useQueryClient()
   return queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
 }
