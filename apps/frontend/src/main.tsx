@@ -1,14 +1,16 @@
+import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
-import './styles.css'
+import type { TErrorResponse } from '@zerocancer/shared/types/index.ts'
+import type { AxiosError } from 'axios'
 import reportWebVitals from './reportWebVitals.ts'
+import './styles.css'
 
 // Create a new router instance
 const router = createRouter({
@@ -26,6 +28,13 @@ const router = createRouter({
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
+  }
+}
+
+// Register the default error instance for type safety
+declare module '@tanstack/react-query' {
+  interface Register {
+    defaultError: AxiosError<TErrorResponse>
   }
 }
 

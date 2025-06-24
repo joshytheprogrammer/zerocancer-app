@@ -4,6 +4,7 @@ import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type {
   TActors,
   TAuthMeResponse,
+  TCheckProfilesResponse,
   TLoginResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
@@ -31,7 +32,7 @@ export const logout = async () => {
 
 // Check profiles
 export const checkProfiles = async () => {
-  return await request.get(endpoints.checkProfiles())
+  return await request.get<TCheckProfilesResponse>(endpoints.checkProfiles())
 }
 
 // Forgot password

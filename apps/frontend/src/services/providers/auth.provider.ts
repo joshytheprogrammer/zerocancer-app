@@ -7,24 +7,20 @@ import {
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
-import type {
-  TActors,
-  TAuthMeResponse,
-  TErrorResponse,
-  TLoginResponse,
-} from '@zerocancer/shared/types'
-import type { AxiosError } from 'axios'
+import type { TActors } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 
 export const useLogin = () => {
   const queryClient = useQueryClient()
-  return useMutation<
-    TLoginResponse,
-    AxiosError<TErrorResponse>,
-    { params: z.infer<typeof loginSchema>; actor: TActors }
-  >({
+  return useMutation({
     mutationKey: [MutationKeys.loginUser],
-    mutationFn: ({ params, actor }) => authService.loginUser(params, actor),
+    mutationFn: ({
+      params,
+      actor,
+    }: {
+      params: z.infer<typeof loginSchema>
+      actor: TActors
+    }) => authService.loginUser(params, actor),
     onSettled: (data) => {
       if (data?.data?.token) {
         // Store access token in React Query cache
@@ -40,7 +36,7 @@ export const useAccessToken = () => {
 }
 
 export const useAuthUser = () =>
-  queryOptions<TAuthMeResponse, AxiosError<TErrorResponse>>({
+  queryOptions({
     queryKey: ['authUser'],
     queryFn: authService.authUser,
     retry: false,
