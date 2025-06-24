@@ -5,17 +5,9 @@ import { toast } from 'sonner'
 export const Route = createFileRoute('/(auth)')({
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    const isAuth = await isAuthMiddleware(context.queryClient)
+    const { isAuth } = await isAuthMiddleware(context.queryClient)
 
-    if (isAuth) {
-      // doesn't work
-      toast.error('You are already authenticated.', {
-        duration: 10000,
-        // position: 'top-center',
-      })
-      return redirect({ to: `/` })
-      // Redirect to home if already authenticated
-    }
+    if (isAuth) return redirect({ to: `/` })
 
     return null
   },

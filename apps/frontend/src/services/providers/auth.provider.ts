@@ -51,15 +51,18 @@ export const isAuthMiddleware = async (
 ) => {
   const auth = await queryClient.ensureQueryData(useAuthUser())
 
+  const isAuth = !!auth && !!auth.data
+  const profile = auth?.data?.user?.profile
+
   if (!actor) {
-    return !!auth && !!auth.data
+    return { isAuth, profile }
   }
 
   if (auth?.data?.user?.profile !== actor.toUpperCase()) {
-    return false
+    return { isAuth, profile }
   }
 
-  return !!auth && !!auth.data
+  return { isAuth, profile }
 }
 
 const useLogout = () => {

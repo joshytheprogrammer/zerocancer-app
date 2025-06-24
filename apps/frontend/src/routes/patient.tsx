@@ -1,10 +1,25 @@
-import { Outlet, createFileRoute, Link } from '@tanstack/react-router'
-import { Bell, Home, Briefcase, FileText } from 'lucide-react'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
+import { Bell, Briefcase, FileText, Home } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
+import { isAuthMiddleware } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
+  beforeLoad: async ({ context }) => {
+    const { isAuth, profile } = await isAuthMiddleware(
+      context.queryClient,
+      'patient',
+    )
+
+    if (!isAuth) return redirect({ to: `/` })
+
+    if (profile === 'DONOR') return redirect({ to: '/donor' })
+
+    if (profile === 'CENTER') return redirect({ to: '/center' })
+
+    return null
+  },
 })
 
 function PatientLayout() {
@@ -13,7 +28,10 @@ function PatientLayout() {
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[70px] lg:px-6">
-            <Link to="/patient" className="flex items-center gap-2 font-semibold">
+            <Link
+              to="/patient"
+              className="flex items-center gap-2 font-semibold"
+            >
               <img src={logo} alt="ZeroCancer" className="h-12" />
             </Link>
           </div>
@@ -63,4 +81,4 @@ function PatientLayout() {
       </div>
     </div>
   )
-} 
+}
