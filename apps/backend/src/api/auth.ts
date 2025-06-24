@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { jwt, sign, verify } from "hono/jwt";
 import { Variables } from "hono/types";
@@ -112,11 +113,14 @@ authApp.post(
       JWT_TOKEN_SECRET
     ); // 7 days
 
-    // Set refresh token as httpOnly, secure cookie
-    c.header(
-      "Set-Cookie",
-      `refreshToken=${refreshToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=None; Secure`
-    );
+    // Set refresh token as httpOnly, secure cookie using Hono's setCookie
+    setCookie(c, "refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+    });
 
     return c.json<TLoginResponse>({
       ok: true,
@@ -155,13 +159,8 @@ authApp.get(
 // POST /api/auth/refresh
 authApp.post("/refresh", async (c) => {
   const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
-  // Get refresh token from cookie
-  const cookieHeader = c.req.header("Cookie") || "";
-  const refreshToken = cookieHeader
-    .split(";")
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith("refreshToken="))
-    ?.split("=")[1];
+  // Get refresh token from cookie using Hono's getCookie
+  const refreshToken = getCookie(c, "refreshToken");
   if (!refreshToken) {
     return c.json<TErrorResponse>(
       {
@@ -195,10 +194,14 @@ authApp.post("/refresh", async (c) => {
       JWT_TOKEN_SECRET
     );
 
-    c.header(
-      "Set-Cookie",
-      `refreshToken=${newRefreshToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=None; Secure`
-    );
+    // Set new refresh token as httpOnly, secure cookie using Hono's setCookie
+    setCookie(c, "refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+    });
 
     return c.json<TRefreshTokenResponse>({
       ok: true,
@@ -220,11 +223,14 @@ authApp.post("/refresh", async (c) => {
 
 // POST /api/auth/logout
 authApp.post("/logout", async (c) => {
-  // Clear the refresh token cookie
-  c.header(
-    "Set-Cookie",
-    "refreshToken=; HttpOnly; Path=/; Max-Age=0; SameSite=None; Secure"
-  );
+  // Clear the refresh token cookie using Hono's setCookie
+  setCookie(c, "refreshToken", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    maxAge: 0,
+  });
   // If storing refresh tokens in DB, mark as revoked
   return c.json({ ok: true, message: "Logged out successfully." });
 });
