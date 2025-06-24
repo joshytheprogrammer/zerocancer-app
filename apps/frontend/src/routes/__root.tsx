@@ -39,18 +39,18 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     //   },
     // ],
   }),
-  loader: async () => {
-    const a = await request.get(authUser())
-    console.log('a', a)
-    return null
-  },
+  // loader: async () => {
+  //   const a = await request.get(authUser())
+  //   console.log('a', a)
+  //   return null
+  // },
   component: () => (
     <>
       <HeadContent />
       {/* <Header /> */}
 
       <Outlet />
-      <Toaster />
+      <Toaster richColors/>
       <TanStackRouterDevtools />
 
       <TanStackQueryLayout />

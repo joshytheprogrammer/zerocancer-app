@@ -44,6 +44,7 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
+import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
@@ -222,6 +223,11 @@ const authVerifyEmailRoute = authVerifyEmailRouteImport.update({
   path: '/verify-email',
   getParentRoute: () => authRouteRoute,
 } as any)
+const authResetPasswordRoute = authResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => authRouteRoute,
+} as any)
 const authLoginRoute = authLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/donor': typeof DonorRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
   '/login': typeof authLoginRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/': typeof publicIndexRoute
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   '/donor': typeof DonorRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
+  '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/donor'
     | '/patient'
     | '/login'
+    | '/reset-password'
     | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/login'
+    | '/reset-password'
     | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/donor'
     | '/patient'
     | '/(auth)/login'
+    | '/(auth)/reset-password'
     | '/(auth)/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -741,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authVerifyEmailRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/(auth)/reset-password': {
+      id: '/(auth)/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordRouteImport
+      parentRoute: typeof authRouteRoute
+    }
     '/(auth)/login': {
       id: '/(auth)/login'
       path: '/login'
@@ -819,12 +838,14 @@ const authSignUpRouteWithChildren = authSignUpRoute._addFileChildren(
 
 interface authRouteRouteChildren {
   authLoginRoute: typeof authLoginRoute
+  authResetPasswordRoute: typeof authResetPasswordRoute
   authVerifyEmailRoute: typeof authVerifyEmailRoute
   authSignUpRoute: typeof authSignUpRouteWithChildren
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
   authLoginRoute: authLoginRoute,
+  authResetPasswordRoute: authResetPasswordRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
   authSignUpRoute: authSignUpRouteWithChildren,
 }
