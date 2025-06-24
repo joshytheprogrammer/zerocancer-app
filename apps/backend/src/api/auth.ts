@@ -20,20 +20,6 @@ import { getUserWithProfiles } from "src/lib/utils";
 
 export const authApp = new Hono<{ Variables: THonoAppVariables }>();
 
-authApp.use(
-  "*",
-  cors({
-    origin: [
-      "http://localhost:3000", // Frontend dev
-      "https://your-production-domain.com", // Production
-    ],
-    credentials: true, // Allow cookies
-    allowHeaders: ["Content-Type", "Authorization"],
-    exposeHeaders: ["Set-Cookie"],
-    maxAge: 86400,
-  })
-);
-
 // POST /api/auth/login?actor=patient|donor|center
 authApp.post(
   "/login",
