@@ -65,10 +65,15 @@ export const getPatientAppointments = (params: {
   size?: number
   status?: string
 }) => `/api/patient/appointments${buildQuery(params)}`
+export const getPatientResult = (id: string) => `/api/patient/results/${id}`
+export const getPatientResults = (params: { page?: number; size?: number }) =>
+  `/api/patient/results${buildQuery({
+    page: params.page ?? 1,
+    size: params.size ?? 20,
+  })}`
 // Get check-in code for an appointment
 export const getCheckInCode = (appointmentId: string) =>
   `/api/patient/appointments/${appointmentId}/checkin-code`
-
 // Center verifies a check-in code
 export const verifyCheckInCode = (code: string) =>
   `/api/center/appointments/verify-checkin/${code}`
@@ -123,3 +128,11 @@ export const getNotifications = () => `/api/notifications`
 export const markNotificationRead = (notificationRecipientId: string) =>
   `/api/notifications/${notificationRecipientId}/read`
 export const createNotification = () => `/api/notifications`
+
+export const getPatientReceipts = (params: { page?: number; size?: number }) =>
+  `/api/patient/receipts${buildQuery({
+    page: params.page ?? 1,
+    size: params.size ?? 20,
+  })}`
+
+export const getPatientReceipt = (id: string) => `/api/patient/receipts/${id}`

@@ -87,3 +87,37 @@ export function useVerifyCheckInCode(code: string) {
     enabled: !!code,
   })
 }
+
+// Get patient screening results (paginated)
+export function usePatientResults(params: { page?: number; size?: number }) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'patientResults', params],
+    queryFn: () => patientService.getPatientResults(params),
+  })
+}
+
+// Get a specific screening result
+export function usePatientResult(id: string) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'patientResult', id],
+    queryFn: () => patientService.getPatientResult(id),
+    enabled: !!id,
+  })
+}
+
+// Get patient receipts (paginated)
+export function usePatientReceipts(params: { page?: number; size?: number }) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'patientReceipts', params],
+    queryFn: () => patientService.getPatientReceipts(params),
+  })
+}
+
+// Get a specific receipt
+export function usePatientReceipt(id: string) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'patientReceipt', id],
+    queryFn: () => patientService.getPatientReceipt(id),
+    enabled: !!id,
+  })
+}
