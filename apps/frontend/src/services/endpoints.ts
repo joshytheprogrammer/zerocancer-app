@@ -65,6 +65,13 @@ export const getPatientAppointments = (params: {
   size?: number
   status?: string
 }) => `/api/patient/appointments${buildQuery(params)}`
+// Get check-in code for an appointment
+export const getCheckInCode = (appointmentId: string) =>
+  `/api/patient/appointments/${appointmentId}/checkin-code`
+
+// Center verifies a check-in code
+export const verifyCheckInCode = (code: string) =>
+  `/api/center/appointments/verify-checkin/${code}`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'

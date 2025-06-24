@@ -69,3 +69,21 @@ export function usePatientAppointments(params: {
     queryFn: () => patientService.getPatientAppointments(params),
   })
 }
+
+// Get check-in code for an appointment
+export function useCheckInCode(appointmentId: string) {
+  return useQuery({
+    queryKey: [QueryKeys.authUser, 'checkInCode', appointmentId],
+    queryFn: () => patientService.getCheckInCode(appointmentId),
+    enabled: !!appointmentId,
+  })
+}
+
+// Center verifies a check-in code
+export function useVerifyCheckInCode(code: string) {
+  return useQuery({
+    queryKey: ['verifyCheckInCode', code],
+    queryFn: () => patientService.verifyCheckInCode(code),
+    enabled: !!code,
+  })
+}

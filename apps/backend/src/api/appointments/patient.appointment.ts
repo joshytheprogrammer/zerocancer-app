@@ -3,13 +3,15 @@ import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
-export const appointmentApp = new Hono<{ Variables: THonoAppVariables }>();
+export const patientAppointmentApp = new Hono<{
+  Variables: THonoAppVariables;
+}>();
 
 // Middleware to ensure user is authenticated
-appointmentApp.use(authMiddleware());
+patientAppointmentApp.use(authMiddleware());
 
 // POST /api/patient/appointments/book
-appointmentApp.post("/appointments/book", async (c) => {
+patientAppointmentApp.post("/book", async (c) => {
   const db = getDB();
   const {
     screeningTypeId,
@@ -74,7 +76,7 @@ appointmentApp.post("/appointments/book", async (c) => {
 });
 
 // POST /api/patient/waitlists/join
-appointmentApp.post("/waitlists/join", async (c) => {
+patientAppointmentApp.post("/waitlists/join", async (c) => {
   const db = getDB();
   const { screeningTypeId } = await c.req.json();
 
@@ -100,75 +102,78 @@ appointmentApp.post("/waitlists/join", async (c) => {
 });
 
 // GET /api/patient/matches/eligible-centers/:allocationId
-appointmentApp.get("/matches/eligible-centers/:allocationId", async (c) => {
-  const db = getDB();
-  const payload = c.get("jwtPayload");
-  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
-  const allocationId = c.req.param("allocationId");
-  const page = parseInt(c.req.query("page") || "1", 10);
-  const size = parseInt(c.req.query("size") || "20", 10);
-  const state = c.req.query("state");
-  const lga = c.req.query("lga");
-  // Ensure allocation belongs to this patient and is not yet assigned to an appointment
-  const allocation = await db.donationAllocation.findUnique({
-    where: { id: allocationId },
-    include: { waitlist: true },
-  });
-  if (
-    !allocation ||
-    allocation.patientId !== userId ||
-    allocation.appointmentId
-  ) {
-    return c.json(
-      { ok: false, message: "Invalid or already assigned allocation" },
-      400
-    );
-  }
-  // Find all active centers offering this screening type
-  const screeningTypeId = allocation.waitlist.screeningTypeId;
-  const [centers, total] = await Promise.all([
-    db.serviceCenter.findMany({
-      skip: (page - 1) * size,
-      take: size,
-      where: {
-        services: { some: { id: screeningTypeId } },
-        state: state || undefined,
-        lga: lga || undefined,
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        centerName: true,
-        address: true,
-        state: true,
-        lga: true,
-      },
-    }),
-    db.serviceCenter.count({
-      where: {
-        services: { some: { id: screeningTypeId } },
-        state: state || undefined,
-        lga: lga || undefined,
-        status: "ACTIVE",
-      },
-    }),
-  ]);
+patientAppointmentApp.get(
+  "/matches/eligible-centers/:allocationId",
+  async (c) => {
+    const db = getDB();
+    const payload = c.get("jwtPayload");
+    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+    const userId = payload.id;
+    const allocationId = c.req.param("allocationId");
+    const page = parseInt(c.req.query("page") || "1", 10);
+    const size = parseInt(c.req.query("size") || "20", 10);
+    const state = c.req.query("state");
+    const lga = c.req.query("lga");
+    // Ensure allocation belongs to this patient and is not yet assigned to an appointment
+    const allocation = await db.donationAllocation.findUnique({
+      where: { id: allocationId },
+      include: { waitlist: true },
+    });
+    if (
+      !allocation ||
+      allocation.patientId !== userId ||
+      allocation.appointmentId
+    ) {
+      return c.json(
+        { ok: false, message: "Invalid or already assigned allocation" },
+        400
+      );
+    }
+    // Find all active centers offering this screening type
+    const screeningTypeId = allocation.waitlist.screeningTypeId;
+    const [centers, total] = await Promise.all([
+      db.serviceCenter.findMany({
+        skip: (page - 1) * size,
+        take: size,
+        where: {
+          services: { some: { id: screeningTypeId } },
+          state: state || undefined,
+          lga: lga || undefined,
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+          centerName: true,
+          address: true,
+          state: true,
+          lga: true,
+        },
+      }),
+      db.serviceCenter.count({
+        where: {
+          services: { some: { id: screeningTypeId } },
+          state: state || undefined,
+          lga: lga || undefined,
+          status: "ACTIVE",
+        },
+      }),
+    ]);
 
-  return c.json({
-    ok: true,
-    data: {
-      centers,
-      page,
-      pageSize: size,
-      total,
-      totalPages: Math.ceil(centers.length / size),
-    },
-  });
-});
+    return c.json({
+      ok: true,
+      data: {
+        centers,
+        page,
+        pageSize: size,
+        total,
+        totalPages: Math.ceil(centers.length / size),
+      },
+    });
+  }
+);
 
 // POST /api/patient/matches/select-center
-appointmentApp.post("/matches/select-center", async (c) => {
+patientAppointmentApp.post("/matches/select-center", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
@@ -211,7 +216,7 @@ appointmentApp.post("/matches/select-center", async (c) => {
 });
 
 // GET /api/patient/appointments
-appointmentApp.get("/appointments", async (c) => {
+patientAppointmentApp.get("/", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
@@ -230,7 +235,15 @@ appointmentApp.get("/appointments", async (c) => {
       where,
       orderBy: { appointmentDate: "desc" },
       include: {
-        center: { select: { id: true, centerName: true, address: true, state: true, lga: true } },
+        center: {
+          select: {
+            id: true,
+            centerName: true,
+            address: true,
+            state: true,
+            lga: true,
+          },
+        },
         screeningType: { select: { id: true, name: true } },
         transaction: true,
         result: true,
@@ -250,4 +263,39 @@ appointmentApp.get("/appointments", async (c) => {
   });
 });
 
-// To run this app, create an entry file (e.g., server.ts) that imports and starts the server.
+// GET /api/patient/appointments/:id/checkin-code
+patientAppointmentApp.get("/:id/checkin-code", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const id = c.req.param("id");
+  const appointment = await db.appointment.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      patientId: true,
+      checkInCode: true,
+      checkInCodeExpiresAt: true,
+      appointmentDate: true,
+      status: true,
+    },
+  });
+  if (!appointment || appointment.patientId !== userId) {
+    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+  }
+  // Optionally, check if code is expired
+  if (
+    appointment.checkInCodeExpiresAt &&
+    new Date() > appointment.checkInCodeExpiresAt
+  ) {
+    return c.json({ ok: false, message: "Check-in code expired" }, 410);
+  }
+  return c.json({
+    ok: true,
+    data: {
+      checkInCode: appointment.checkInCode,
+      expiresAt: appointment.checkInCodeExpiresAt,
+    },
+  });
+});

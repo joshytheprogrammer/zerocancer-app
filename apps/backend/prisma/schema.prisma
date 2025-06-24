@@ -197,6 +197,8 @@ model Appointment {
   transactionId           String?
   status                  AppointmentStatus
   createdAt               DateTime @default(now())
+  checkInCode             String   @unique @default(uuid())
+  checkInCodeExpiresAt    DateTime?
 
   patient                 User     @relation("UserAppointments", fields: [patientId], references: [id])
   center                  ServiceCenter @relation(fields: [centerId], references: [id])

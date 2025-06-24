@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { appointmentApp } from "./api/appointment";
+import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
 import { registerApp } from "./api/registration";
 

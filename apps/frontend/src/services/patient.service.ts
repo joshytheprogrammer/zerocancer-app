@@ -41,6 +41,20 @@ export const selectCenter = async (data: {
 }
 
 // Get patient appointments (paginated, filterable)
-export const getPatientAppointments = async (params: { page?: number; size?: number; status?: string }) => {
+export const getPatientAppointments = async (params: {
+  page?: number
+  size?: number
+  status?: string
+}) => {
   return await request.get(endpoints.getPatientAppointments(params))
+}
+
+// Get check-in code for an appointment
+export const getCheckInCode = async (appointmentId: string) => {
+  return await request.get(endpoints.getCheckInCode(appointmentId))
+}
+
+// Center verifies a check-in code
+export const verifyCheckInCode = async (code: string) => {
+  return await request.get(endpoints.verifyCheckInCode(code))
 }
