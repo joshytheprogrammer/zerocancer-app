@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
@@ -8,7 +9,7 @@ export const patientAppointmentApp = new Hono<{
 }>();
 
 // Middleware to ensure user is authenticated
-patientAppointmentApp.use(authMiddleware());
+patientAppointmentApp.use(authMiddleware("patient"));
 
 // POST /api/patient/appointments/book
 patientAppointmentApp.post("/book", async (c) => {
@@ -57,6 +58,9 @@ patientAppointmentApp.post("/book", async (c) => {
       isDonation: false,
       status: "SCHEDULED",
       transactionId: transaction.id, // Link appointment to transaction
+      checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
+      checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+
       // Store paymentReference, generate receipt, etc.
       // transaction: {
       //   create: {
@@ -206,6 +210,8 @@ patientAppointmentApp.post("/matches/select-center", async (c) => {
       appointmentDate: new Date(appointmentDate),
       appointmentTime: new Date(appointmentTime),
       donationId: allocation.campaignId,
+      checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
+      checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
   });
   await db.donationAllocation.update({
@@ -261,6 +267,140 @@ patientAppointmentApp.get("/", async (c) => {
       totalPages: Math.ceil(total / size),
     },
   });
+});
+
+// GET /api/patient/results
+patientAppointmentApp.get("/patient/results", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const size = parseInt(c.req.query("size") || "20", 10);
+  const [results, total] = await Promise.all([
+    db.screeningResult.findMany({
+      where: { appointment: { patientId: userId } },
+      skip: (page - 1) * size,
+      take: size,
+      orderBy: { uploadedAt: "desc" },
+      include: {
+        appointment: {
+          select: {
+            id: true,
+            appointmentDate: true,
+            screeningType: { select: { name: true } },
+          },
+        },
+        uploader: { select: { id: true, centerId: true } },
+      },
+    }),
+    db.screeningResult.count({ where: { appointment: { patientId: userId } } }),
+  ]);
+  return c.json({
+    ok: true,
+    data: {
+      results,
+      page,
+      pageSize: size,
+      total,
+      totalPages: Math.ceil(total / size),
+    },
+  });
+});
+
+// GET /api/patient/results/:id
+patientAppointmentApp.get("/patient/results/:id", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const id = c.req.param("id");
+  const result = await db.screeningResult.findUnique({
+    where: { id },
+    include: {
+      appointment: {
+        select: {
+          id: true,
+          patientId: true,
+          appointmentDate: true,
+          screeningType: { select: { name: true } },
+        },
+      },
+      uploader: { select: { id: true, centerId: true } },
+    },
+  });
+  if (!result || result.appointment.patientId !== userId) {
+    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+  }
+  // TODO: If result file is stored, add download URL here
+  return c.json({ ok: true, data: result });
+});
+
+// GET /api/patient/receipts
+patientAppointmentApp.get("/patient/receipts", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const size = parseInt(c.req.query("size") || "20", 10);
+  const [receipts, total] = await Promise.all([
+    db.transaction.findMany({
+      where: { appointments: { some: { patientId: userId } } },
+      skip: (page - 1) * size,
+      take: size,
+      orderBy: { createdAt: "desc" },
+      include: {
+        appointments: {
+          select: {
+            id: true,
+            appointmentDate: true,
+            screeningType: { select: { name: true } },
+          },
+        },
+      },
+    }),
+    db.transaction.count({
+      where: { appointments: { some: { patientId: userId } } },
+    }),
+  ]);
+  return c.json({
+    ok: true,
+    data: {
+      receipts,
+      page,
+      pageSize: size,
+      total,
+      totalPages: Math.ceil(total / size),
+    },
+  });
+});
+
+// GET /api/patient/receipts/:id
+patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  const userId = payload.id;
+  const id = c.req.param("id");
+  const receipt = await db.transaction.findUnique({
+    where: { id },
+    include: {
+      appointments: {
+        select: {
+          id: true,
+          patientId: true,
+          appointmentDate: true,
+          screeningType: { select: { name: true } },
+        },
+      },
+    },
+  });
+  if (!receipt || !receipt.appointments.some((a) => a.patientId === userId)) {
+    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+  }
+  // TODO: If receipt file is stored, add download URL here
+  return c.json({ ok: true, data: receipt });
 });
 
 // GET /api/patient/appointments/:id/checkin-code
