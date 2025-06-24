@@ -22,7 +22,15 @@ export const loginUser = async (
 
 // Authenticated user service
 export const authUser = async () => {
-  return await request.get<TAuthMeResponse>(endpoints.authUser())
+  try {
+    // Attempt to get the authenticated user
+    return await request.get<TAuthMeResponse>(endpoints.authUser())
+  } catch (error) {
+    // If the request fails, return null
+    console.error('Error fetching authenticated user:', error)
+    return null
+  }
+  // return await request.get<TAuthMeResponse>(endpoints.authUser())
 }
 
 // logout

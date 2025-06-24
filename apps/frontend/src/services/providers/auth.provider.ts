@@ -1,6 +1,7 @@
 import * as authService from '@/services/auth.service'
 import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
 import {
+  QueryClient,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -30,17 +31,36 @@ export const useLogin = () => {
   })
 }
 
-export const getAccessToken = () => {
-  const queryClient = useQueryClient()
-  return queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
-}
+// export const getAccessToken = () => {
+//   const queryClient = useQueryClient()
+//   return queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
+// }
 
 export const useAuthUser = () =>
   queryOptions({
     queryKey: ['authUser'],
     queryFn: authService.authUser,
+    // throwOnError
+    throwOnError: false,
     retry: false,
   })
+
+export const isAuthMiddleware = async (
+  queryClient: QueryClient,
+  actor?: TActors,
+) => {
+  const auth = await queryClient.ensureQueryData(useAuthUser())
+
+  if (!actor) {
+    return !!auth && !!auth.data
+  }
+
+  if (auth?.data?.user?.profile !== actor.toUpperCase()) {
+    return false
+  }
+
+  return !!auth && !!auth.data
+}
 
 const useLogout = () => {
   const queryClient = useQueryClient()
@@ -51,7 +71,7 @@ const useLogout = () => {
     onSuccess: () => {
       // Remove access token and user data from React Query cache
       queryClient.clear()
-      navigate({ to: '/login', replace: true, reloadDocument: true })
+      navigate({ to: '/', replace: true, reloadDocument: true })
     },
   })
 }

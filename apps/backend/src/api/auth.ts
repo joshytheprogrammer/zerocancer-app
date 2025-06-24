@@ -160,6 +160,7 @@ authApp.get(
 // POST /api/auth/refresh
 authApp.post("/refresh", async (c) => {
   const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+  const query = c.req.query();
   // Get refresh token from cookie using Hono's getCookie
   const refreshToken = getCookie(c, "refreshToken");
   if (!refreshToken) {
@@ -169,9 +170,30 @@ authApp.post("/refresh", async (c) => {
         err_code: "missing_refresh_token",
         error: "No refresh token provided.",
       },
-      401
+      403
+    );
+  } else if (query?.retry) {
+    // Retrying from a refresh token request that failed (401)
+    return c.json<TErrorResponse>(
+      {
+        ok: false,
+        err_code: "no_session",
+        error: "No session found",
+      },
+      403
     );
   }
+  // else {
+  //   return c.json<TErrorResponse>(
+  //     {
+  //       ok: false,
+  //       err_code: "refresh_token_expired",
+  //       error: "Refresh token expired or not found for this user",
+  //     },
+  //     401
+  //   );
+  // }
+
   try {
     const payload = await verify(refreshToken, JWT_TOKEN_SECRET);
     // Optionally check if token is revoked/expired in DB
