@@ -125,11 +125,15 @@ axios.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    if (error.response.status === 401 && !originalRequest._retry) {
-      console.warn('401 error, refreshing token')
+    if (
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      console.warn('401 error, refreshing token', error.response.data)
       originalRequest._retry = true
 
       if (isRefreshing) {
+        console.warn('isRefreshing', isRefreshing)
         try {
           const token = await new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject })

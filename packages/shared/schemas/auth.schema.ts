@@ -4,11 +4,12 @@ export const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(6, { message: "Password is required." }),
 });
+
 export const actorSchema = z.enum(["patient", "donor", "center"], {
   errorMap: () => {
     return {
       message:
-        "Fuck you Nigga. You are not allowed to be here.",
+        "You are not allowed to be here.",
     };
   },
 });

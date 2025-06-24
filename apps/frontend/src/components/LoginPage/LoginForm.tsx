@@ -1,8 +1,10 @@
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useState, useEffect } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { isAxiosError } from 'axios'
+import { useNavigate } from '@tanstack/react-router'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -10,37 +12,126 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import PasswordInput from "@/components/ui/password-input"
-import RoleSelection from "./RoleSelection"
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import PasswordInput from '@/components/ui/password-input'
+import RoleSelection from './RoleSelection'
+import { useLogin, useForgotPassword } from '@/services/providers/auth.provider'
+import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
+import type { z } from 'zod'
+import { toast } from 'sonner'
 
-const formSchema = z.object({
-  role: z.enum(["patient", "donor", "center"], {
-    required_error: "You need to select a role.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(1, {
-    message: "Password is required.",
-  }),
-})
-
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotSent, setForgotSent] = useState(false)
+  const [role, setRole] = useState<'patient' | 'donor' | 'center'>('patient')
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: 'raphaelgbaorun@gmail.com',
+      password: 'Raphael@22',
     },
   })
 
+  const loginMutation = useLogin()
+  const forgotPasswordMutation = useForgotPassword()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loginMutation.status === 'error') {
+      let msg = 'Login failed. Please try again.'
+      if (isAxiosError(loginMutation.error)) {
+        const data = loginMutation.error.response?.data
+        if (data && typeof data === 'object') {
+          msg = JSON.stringify(data)
+        }
+      }
+      toast.error(msg)
+    }
+  }, [loginMutation.status])
+
+  useEffect(() => {
+    if (forgotPasswordMutation.status === 'error') {
+      let msg = 'Failed to send reset email.'
+      if (isAxiosError(forgotPasswordMutation.error)) {
+        const data = forgotPasswordMutation.error.response?.data
+        if (data && typeof data === 'object') {
+          msg = JSON.stringify(data)
+        }
+      }
+      toast.error(msg)
+    }
+  }, [forgotPasswordMutation.status])
+
   function onSubmit(values: FormData) {
-    console.log("Login form submitted:", values)
-    // Handle login logic here
+    loginMutation.mutate({
+      params: {
+        email: values.email,
+        password: values.password,
+      },
+      actor: role,
+    }, {
+      onSuccess: () => {
+        toast.success('Login successful')
+        navigate({ to: `/${role}` })
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.error || 'Login failed. Please try again.')
+      },
+    })
+  }
+
+  function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    forgotPasswordMutation.mutate(forgotEmail, {
+      onSuccess: () => setForgotSent(true),
+    })
+  }
+
+  if (showForgot) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold">Forgot Password</h2>
+          <p className="text-muted-foreground">
+            Enter your email to receive a password reset link.
+          </p>
+        </div>
+        <form onSubmit={handleForgotPassword} className="space-y-4">
+          <Input
+            type="email"
+            placeholder="john.doe@example.com"
+            value={forgotEmail}
+            onChange={(e) => setForgotEmail(e.target.value)}
+            required
+          />
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={forgotPasswordMutation.status === 'pending'}
+          >
+            {forgotPasswordMutation.status === 'pending'
+              ? 'Sending...'
+              : 'Send Reset Link'}
+          </Button>
+          {forgotSent && (
+            <div className="text-green-600 text-sm">
+              Reset link sent! Check your email.
+            </div>
+          )}
+        </form>
+        <Button
+          variant="link"
+          className="w-full"
+          onClick={() => setShowForgot(false)}
+        >
+          Back to Sign In
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -51,21 +142,21 @@ export default function LoginForm() {
           Select your role to access your account.
         </p>
       </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2">Sign in as...</label>
+        <RoleSelection
+          field={{
+            value: role,
+            onChange: (value: string) =>
+              setRole(value as 'patient' | 'donor' | 'center'),
+            name: 'role',
+            onBlur: () => {},
+            ref: () => {},
+          }}
+        />
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>Sign in as...</FormLabel>
-                <FormControl>
-                  <RoleSelection field={field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <FormField
             control={form.control}
             name="email"
@@ -102,9 +193,20 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-
-          <Button type="submit" className="w-full">
-            Sign In
+          <div className="flex justify-end">
+            <button
+              className=" text-primary cursor-pointer"
+              onClick={() => setShowForgot(true)}
+            >
+              Forgot Password?
+            </button>
+          </div>
+          <Button
+            type="submit"
+            disabled={loginMutation.status === 'pending'}
+            className="w-full"
+          >
+            {loginMutation.status === 'pending' ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
       </Form>

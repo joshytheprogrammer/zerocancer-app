@@ -17,6 +17,7 @@ import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
 import { THonoAppVariables } from "src/lib/types";
 import { getUserWithProfiles } from "src/lib/utils";
+import { z } from "zod";
 
 export const authApp = new Hono<{ Variables: THonoAppVariables }>();
 
@@ -34,7 +35,7 @@ authApp.post(
         400
       );
   }),
-  zValidator("query", actorSchema, (result, c) => {
+  zValidator("query", z.object({ actor: actorSchema }), (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>(
         {
@@ -51,7 +52,7 @@ authApp.post(
 
     const db = getDB();
     const { email, password } = c.req.valid("json");
-    const actor = c.req.valid("query");
+    const { actor } = c.req.valid("query");
 
     let user: any = null;
     let passwordHash = "";
@@ -79,7 +80,7 @@ authApp.post(
             err_code: "invalid_credentials",
             error: "Invalid email or password.",
           },
-          401
+          400
         );
       }
       passwordHash = user.passwordHash;
@@ -94,7 +95,7 @@ authApp.post(
           err_code: "invalid_credentials",
           error: `Invalid ${actor} email or password.`,
         },
-        401
+        400
       );
     }
 

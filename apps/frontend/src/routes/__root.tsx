@@ -9,6 +9,8 @@ import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 
 import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
+import request from '@/lib/request.ts'
+import { authUser } from '@/services/endpoints.ts'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -37,6 +39,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     //   },
     // ],
   }),
+  loader: async () => {
+    const a = await request.get(authUser())
+    console.log('a', a)
+    return null
+  },
   component: () => (
     <>
       <HeadContent />
