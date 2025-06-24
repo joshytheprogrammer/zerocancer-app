@@ -197,7 +197,7 @@ model Appointment {
   transactionId           String?
   status                  AppointmentStatus
   createdAt               DateTime @default(now())
-  checkInCode             String   @unique @default(uuid())
+  checkInCode             String   @unique
   checkInCodeExpiresAt    DateTime?
 
   patient                 User     @relation("UserAppointments", fields: [patientId], references: [id])
@@ -211,7 +211,6 @@ model Appointment {
 
 model AppointmentVerification {
   id             String   @id @default(uuid())
-  verificationCode Int
   verifiedBy     String
   verifiedAt     DateTime
 
