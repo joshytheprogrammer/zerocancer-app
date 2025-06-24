@@ -1,7 +1,9 @@
+import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
+import { canJoinWaitlist } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const patientAppointmentApp = new Hono<{
@@ -93,6 +95,20 @@ patientAppointmentApp.post("/waitlists/join", async (c) => {
   if (!patientId) {
     return c.json({ ok: false, message: "User ID not found in token" }, 401);
   }
+
+  // Check eligibility to join waitlist
+  const canJoin = await canJoinWaitlist(db, patientId, screeningTypeId);
+  if (!canJoin) {
+    return c.json(
+      {
+        ok: false,
+        message:
+          "You already have an active waitlist entry for this screening type.",
+      },
+      400
+    );
+  }
+
   // Create waitlist entry
   const waitlist = await db.waitlist.create({
     data: {
