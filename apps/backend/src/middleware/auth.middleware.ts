@@ -15,7 +15,7 @@ import { THonoAppVariables } from "src/lib/types";
 //     return jwtMiddleware(c, next);
 //   });
 
-export const authMiddleware = (actor?: TActors | "center_staff") =>
+export const authMiddleware = (actor?: (TActors | "center_staff")[]) =>
   createMiddleware<{ Variables: THonoAppVariables }>(async (c, next) => {
     const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
 
@@ -31,7 +31,9 @@ export const authMiddleware = (actor?: TActors | "center_staff") =>
 
     // Check profile in payload
     const payload = c.get("jwtPayload");
-    if (!payload || payload.profile !== actor.toUpperCase()) {
+    const profile = payload?.profile?.toLowerCase();
+    const allowed = actor.map((a) => a.toLowerCase());
+    if (!profile || !allowed.includes(profile)) {
       return c.json({ ok: false, message: "Forbidden: actor mismatch" }, 403);
     }
 

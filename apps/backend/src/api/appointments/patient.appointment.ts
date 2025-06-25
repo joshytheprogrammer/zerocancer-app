@@ -33,7 +33,7 @@ export const patientAppointmentApp = new Hono<{
 }>();
 
 // Middleware to ensure user is authenticated
-patientAppointmentApp.use(authMiddleware("patient"));
+patientAppointmentApp.use(authMiddleware(["patient"]));
 
 // POST /api/patient/appointments/book
 patientAppointmentApp.post(
