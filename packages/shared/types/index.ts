@@ -289,3 +289,32 @@ export type TCenterStaffLoginResponse = TDataResponse<{
     centerId: string;
   };
 }>;
+
+export type TCenterAppointment = {
+  id: string;
+  patient: { id: string; fullName: string };
+  screeningType: { id: string; name: string };
+  status: string;
+  [key: string]: any;
+};
+
+export type TGetCenterAppointmentsResponse = {
+  ok: boolean;
+  data: {
+    appointments: TCenterAppointment[];
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+export type TGetCenterAppointmentByIdResponse = {
+  ok: boolean;
+  data: TCenterAppointment;
+};
+
+export type TCancelCenterAppointmentResponse = {
+  ok: boolean;
+  data: { id: string };
+};

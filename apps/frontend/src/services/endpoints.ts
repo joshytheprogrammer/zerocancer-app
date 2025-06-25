@@ -91,14 +91,22 @@ export const getDonorReceipts = (page = 1, size = 20) =>
 export const getDonationImpact = () => '/api/donor/impact'
 
 // CENTER
-export const getCenterAppointments = (page = 1, size = 20) =>
-  `/api/center/appointments${buildQuery({ page, size })}`
-export const verifyPatientCode = () => '/api/center/verify'
-export const uploadResults = (page = 1, size = 20) =>
-  `/api/center/results${buildQuery({ page, size })}`
-export const getResultHistory = () => '/api/center/results-history'
-export const getCenterReceipts = (page = 1, size = 20) =>
-  `/api/center/receipt-history${buildQuery({ page, size })}`
+export const getCenterAppointments = (params: {
+  page?: number
+  pageSize?: number
+  screeningType?: string
+}) =>
+  `/api/center/appointments${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    screeningType: params.screeningType ?? undefined,
+  })}`
+
+export const getCenterAppointmentById = (id: string) =>
+  `/api/center/appointments/${id}`
+
+export const cancelCenterAppointment = (id: string) =>
+  `/api/center/appointments/${id}/cancel`
 
 // ADMIN
 export const getUsers = (page = 1, size = 20) =>

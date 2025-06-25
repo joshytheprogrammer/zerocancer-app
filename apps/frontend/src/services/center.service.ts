@@ -6,15 +6,52 @@ import {
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
+import {
+  getCenterAppointmentsSchema,
+  getCenterAppointmentByIdSchema,
+  cancelCenterAppointmentSchema,
+} from '@zerocancer/shared/schemas/appointment.schema'
 import type {
   TCenterStaffForgotPasswordResponse,
   TCenterStaffLoginResponse,
   TCenterStaffResetPasswordResponse,
   TCreateCenterStaffPasswordResponse,
   TInviteStaffResponse,
+  TGetCenterAppointmentsResponse,
+  TGetCenterAppointmentByIdResponse,
+  TCancelCenterAppointmentResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 import * as endpoints from './endpoints'
+
+// --- Appointment Management ---
+
+export const getCenterAppointments = async (
+  params: z.infer<typeof getCenterAppointmentsSchema>,
+): Promise<TGetCenterAppointmentsResponse> => {
+  const res = await request.get(endpoints.getCenterAppointments(params))
+  return res as TGetCenterAppointmentsResponse
+}
+
+export const getCenterAppointmentById = async (
+  id: string,
+): Promise<TGetCenterAppointmentByIdResponse> => {
+  const res = await request.get(endpoints.getCenterAppointmentById(id))
+  return res as TGetCenterAppointmentByIdResponse
+}
+
+export const cancelCenterAppointment = async (
+  id: string,
+  params: z.infer<typeof cancelCenterAppointmentSchema>,
+): Promise<TCancelCenterAppointmentResponse> => {
+  const res = await request.post(
+    endpoints.cancelCenterAppointment(id),
+    params,
+  )
+  return res as TCancelCenterAppointmentResponse
+}
+
+// --- Staff Management ---
 
 export const inviteStaff = async (
   params: z.infer<typeof inviteStaffSchema>,

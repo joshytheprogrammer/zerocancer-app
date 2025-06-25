@@ -29,7 +29,7 @@ enum AppointmentStatus {
   SCHEDULED
   IN_PROGRESS
   COMPLETED
-  CANCEELLED
+  CANCELLED
 }
 
 enum TransactionType {
@@ -199,6 +199,8 @@ model Appointment {
   transactionId           String?
   status                  AppointmentStatus
   createdAt               DateTime @default(now())
+  cancellationReason   String?
+  cancellationDate     DateTime?
   checkInCode             String   @unique
   checkInCodeExpiresAt    DateTime?
 

@@ -29,7 +29,7 @@ export const centerApp = new Hono();
 // POST /invite-staff - Invite staff by email
 centerApp.post(
   "/staff/invite",
-  authMiddleware("center"),
+  authMiddleware(["center"]),
   zValidator("json", inviteStaffSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -223,11 +223,9 @@ centerApp.post(
         401
       );
     }
-    // Generate JWT (implement your own token logic)
-    // const token = "TODO_GENERATE_JWT"; // Replace with real JWT logic
 
     const payload = {
-      centerId: centerId!,
+      id: centerId!,
       email: email!,
       profile: "CENTER_STAFF",
     };

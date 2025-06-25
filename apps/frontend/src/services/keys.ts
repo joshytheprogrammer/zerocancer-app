@@ -34,6 +34,7 @@ export enum QueryKeys {
   screeningTypesCategory = 'screeningTypesCategory',
   screeningType = 'screeningType',
   screeningTypeByName = 'screeningTypeByName',
+  centerAppointmentById = 'centerAppointmentById',
 }
 
 export enum MutationKeys {
@@ -66,6 +67,8 @@ export enum MutationKeys {
   centerStaffForgotPassword = 'centerStaffForgotPassword',
   centerStaffResetPassword = 'centerStaffResetPassword',
   centerStaffLogin = 'centerStaffLogin',
+  // Appointment mutations
+  cancelCenterAppointment = 'cancelCenterAppointment',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
