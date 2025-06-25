@@ -66,8 +66,8 @@ authApp.post(
 
     if (actor === "center") {
       user = await db.serviceCenter.findUnique({ where: { email: email! } });
-      passwordHash = user?.passwordHash;
-      id = user?.id;
+      passwordHash = user?.passwordHash!;
+      id = user?.id!;
     } else {
       let { user: justUser, profiles: userProfiles } =
         await getUserWithProfiles({
@@ -99,8 +99,8 @@ authApp.post(
           400
         );
       }
-      passwordHash = user.passwordHash;
-      id = user.id;
+      passwordHash = user.passwordHash!;
+      id = user.id!
     }
 
     // If user not found or password doesn't match
@@ -116,8 +116,8 @@ authApp.post(
     }
 
     const payload = {
-      id,
-      email: user.email,
+      id: id!,
+      email: user.email!,
       profile: actor === "center" ? "CENTER" : user.profiles[0], // Use first profile for non-center actors
     };
     const token = await sign(
@@ -143,9 +143,9 @@ authApp.post(
       data: {
         token,
         user: {
-          userId: id,
-          fullName: user.fullName,
-          email: user.email,
+          userId: id!,
+          fullName: user.fullName!,
+          email: user.email!,
           profile: payload.profile,
         },
       },
@@ -171,7 +171,7 @@ authApp.get(
     
     // Fetch user data from database to get full name
     const user = await db.user.findUnique({
-      where: { id: jwtPayload.id },
+      where: { id: jwtPayload.id! },
       select: { id: true, fullName: true, email: true }
     });
     
@@ -186,9 +186,9 @@ authApp.get(
       ok: true, 
       data: { 
         user: {
-          id: user.id,
-          fullName: user.fullName,
-          email: user.email,
+          id: user.id!,
+          fullName: user.fullName!,
+          email: user.email!,
           profile: jwtPayload.profile
         } 
       } 
@@ -238,9 +238,9 @@ authApp.post("/refresh", async (c) => {
     // Optionally check if token is revoked/expired in DB
     const newAccessToken = await sign(
       {
-        id: payload.id,
-        email: payload.email,
-        profile: payload.profile,
+        id: payload.id!,
+        email: payload.email!,
+        profile: payload.profile!,
         exp: Math.floor(Date.now() / 1000) + 60 * 5,
       },
       JWT_TOKEN_SECRET
@@ -248,9 +248,9 @@ authApp.post("/refresh", async (c) => {
 
     const newRefreshToken = await sign(
       {
-        id: payload.id,
-        email: payload.email,
-        profile: payload.profile,
+        id: payload.id!,
+        email: payload.email!,
+        profile: payload.profile!,
         exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
       },
       JWT_TOKEN_SECRET
@@ -315,7 +315,7 @@ authApp.post("/forgot-password", async (c) => {
   const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + 1000 * 60 * 30); // 30 min
   await db.passwordResetToken.create({
-    data: { userId: user.id, token, expiresAt: expires },
+    data: { userId: user.id!, token, expiresAt: expires },
   });
   // Send email
   const resetUrl = `$
@@ -343,7 +343,7 @@ authApp.post("/reset-password", async (c) => {
   }
   const hash = await bcrypt.hash(password, 10);
   await db.user.update({
-    where: { id: reset.userId },
+    where: { id: reset.userId! },
     data: { passwordHash: hash },
   });
   await db.passwordResetToken.delete({ where: { token } });
@@ -380,7 +380,7 @@ authApp.post("/verify-email", async (c) => {
     verify.profileType === "PATIENT" ? "patientProfile" : "donorProfile";
 
   await db.user.update({
-    where: { id: verify.userId },
+    where: { id: verify.userId! },
     data: {
       [dbProfile]: {
         update: { emailVerified: new Date() },
@@ -407,12 +407,12 @@ authApp.post("/resend-verification", async (c) => {
   let alreadyVerified = false;
   if (profileType === "PATIENT") {
     const patient = await db.patientProfile.findUnique({
-      where: { userId: user.id },
+      where: { userId: user.id! },
     });
     alreadyVerified = !!patient?.emailVerified;
   } else if (profileType === "DONOR") {
     const donor = await db.donorProfile.findUnique({
-      where: { userId: user.id },
+      where: { userId: user.id! },
     });
     alreadyVerified = !!donor?.emailVerified;
   }
@@ -426,14 +426,14 @@ authApp.post("/resend-verification", async (c) => {
   const verifyToken = crypto.randomBytes(32).toString("hex");
   await db.emailVerificationToken.create({
     data: {
-      userId: user.id,
+      userId: user.id!,
       profileType,
       token: verifyToken,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
     },
   });
   await sendEmail({
-    to: user.email,
+    to: user.email!,
     subject: "Verify your email",
     html: `<p>Click <a href='$
       {process.env.FRONTEND_URL || "http://localhost:3000"}
