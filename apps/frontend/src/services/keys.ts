@@ -65,6 +65,7 @@ export enum MutationKeys {
   createNotification = 'createNotification',
   centerStaffForgotPassword = 'centerStaffForgotPassword',
   centerStaffResetPassword = 'centerStaffResetPassword',
+  centerStaffLogin = 'centerStaffLogin',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

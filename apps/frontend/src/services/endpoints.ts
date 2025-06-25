@@ -97,8 +97,6 @@ export const verifyPatientCode = () => '/api/center/verify'
 export const uploadResults = (page = 1, size = 20) =>
   `/api/center/results${buildQuery({ page, size })}`
 export const getResultHistory = () => '/api/center/results-history'
-export const inviteStaff = () => '/api/center/staff/invite'
-export const createCenterStaffPassword = () => '/api/center/create-new-password'
 export const getCenterReceipts = (page = 1, size = 20) =>
   `/api/center/receipt-history${buildQuery({ page, size })}`
 
@@ -166,5 +164,10 @@ export const getScreeningTypeByName = (name: string) =>
   `/api/screening-types/by-name/${encodeURIComponent(name)}`
 
 // CENTER STAFF
-export const centerStaffForgotPassword = () => '/api/center/staff/forgot-password'
+export const centerStaffForgotPassword = () =>
+  '/api/center/staff/forgot-password'
 export const centerStaffResetPassword = () => '/api/center/staff/reset-password'
+export const inviteStaff = () => '/api/center/staff/invite'
+export const createCenterStaffPassword = () =>
+  '/api/center/staff/create-new-password'
+export const centerStaffLogin = () => '/api/center/staff/login'

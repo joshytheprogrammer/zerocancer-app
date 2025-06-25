@@ -2,11 +2,13 @@ import { zValidator } from "@hono/zod-validator";
 import { inviteStaffSchema } from "@zerocancer/shared/schemas/center.schema";
 import {
   centerStaffForgotPasswordSchema,
+  centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
 } from "@zerocancer/shared/schemas/centerStaff.schema";
 import type {
   TCenterStaffForgotPasswordResponse,
+  TCenterStaffLoginResponse,
   TCenterStaffResetPasswordResponse,
   TCreateCenterStaffPasswordResponse,
   TErrorResponse,
@@ -14,19 +16,20 @@ import type {
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { setCookie } from "hono/cookie";
+import { sign } from "hono/jwt";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
-import { hashPassword } from "src/lib/utils";
+import { comparePassword, hashPassword } from "src/lib/utils";
+import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const centerApp = new Hono();
 
-centerApp.get("/", (c) => {
-  return c.json({ ok: true, message: "Welcome to the Center API" });
-});
-
 // POST /invite-staff - Invite staff by email
 centerApp.post(
-  "/invite-staff",
+  "/staff/invite",
+  authMiddleware("center"),
   zValidator("json", inviteStaffSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -62,7 +65,7 @@ centerApp.post(
 
 // POST /create-new-password - Center staff sets password using invite token
 centerApp.post(
-  "/create-new-password",
+  "/staff/create-new-password",
   zValidator("json", createCenterStaffPasswordSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -186,6 +189,77 @@ centerApp.post(
     return c.json<TCenterStaffResetPasswordResponse>({
       ok: true,
       data: { message: "Password reset successful" },
+    });
+  }
+);
+
+// POST /staff/login - Center staff login
+centerApp.post(
+  "/staff/login",
+  zValidator("json", centerStaffLoginSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+
+    const db = getDB();
+    const { centerId, email, password } = c.req.valid("json");
+    // Find staff
+    const staff = await db.centerStaff.findFirst({
+      where: { centerId, email },
+    });
+    if (!staff || !staff.passwordHash) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid credentials" },
+        401
+      );
+    }
+    // Compare password
+    const valid = await comparePassword(password, staff.passwordHash);
+    if (!valid) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid credentials" },
+        401
+      );
+    }
+    // Generate JWT (implement your own token logic)
+    // const token = "TODO_GENERATE_JWT"; // Replace with real JWT logic
+
+    const payload = {
+      centerId: centerId!,
+      email: email!,
+      profile: "CENTER_STAFF",
+    };
+    const token = await sign(
+      { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 5 },
+      JWT_TOKEN_SECRET
+    );
+    const refreshToken = await sign(
+      { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
+      JWT_TOKEN_SECRET
+    ); // 7 days
+
+    // Set refresh token as httpOnly, secure cookie using Hono's setCookie
+    setCookie(c, "refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+    });
+
+    return c.json<TCenterStaffLoginResponse>({
+      ok: true,
+      data: {
+        token,
+        user: {
+          userId: staff.id,
+          email: staff.email,
+          profile: "CENTER_STAFF",
+          centerId: staff.centerId,
+        },
+      },
     });
   }
 );

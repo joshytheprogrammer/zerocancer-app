@@ -25,3 +25,9 @@ export const useCenterStaffResetPassword = () =>
     mutationKey: [MutationKeys.centerStaffResetPassword],
     mutationFn: centerService.centerStaffResetPassword,
   })
+
+export const useCenterStaffLogin = () =>
+  useMutation({
+    mutationKey: [MutationKeys.centerStaffLogin],
+    mutationFn: centerService.centerStaffLogin,
+  })

@@ -2,11 +2,13 @@ import request from '@/lib/request'
 import { inviteStaffSchema } from '@zerocancer/shared/schemas/center.schema'
 import {
   centerStaffForgotPasswordSchema,
+  centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
 import type {
   TCenterStaffForgotPasswordResponse,
+  TCenterStaffLoginResponse,
   TCenterStaffResetPasswordResponse,
   TCreateCenterStaffPasswordResponse,
   TInviteStaffResponse,
@@ -40,4 +42,11 @@ export const centerStaffResetPassword = async (
 ): Promise<TCenterStaffResetPasswordResponse> => {
   const res = await request.post(endpoints.centerStaffResetPassword(), params)
   return res as TCenterStaffResetPasswordResponse
+}
+
+export const centerStaffLogin = async (
+  params: z.infer<typeof centerStaffLoginSchema>,
+): Promise<TCenterStaffLoginResponse> => {
+  const res = await request.post(endpoints.centerStaffLogin(), params)
+  return res as TCenterStaffLoginResponse
 }

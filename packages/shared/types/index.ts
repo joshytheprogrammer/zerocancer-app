@@ -273,5 +273,19 @@ export type TCreateCenterStaffPasswordResponse = TDataResponse<{
   staffId: string;
 }>;
 
-export type TCenterStaffForgotPasswordResponse = TDataResponse<{ message: string }>;
-export type TCenterStaffResetPasswordResponse = TDataResponse<{ message: string }>;
+export type TCenterStaffForgotPasswordResponse = TDataResponse<{
+  message: string;
+}>;
+export type TCenterStaffResetPasswordResponse = TDataResponse<{
+  message: string;
+}>;
+
+export type TCenterStaffLoginResponse = TDataResponse<{
+  token: string;
+  user: {
+    userId: string;
+    email: string;
+    profile: "CENTER_STAFF";
+    centerId: string;
+  };
+}>;

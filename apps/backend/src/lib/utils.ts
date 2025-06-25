@@ -32,6 +32,13 @@ export const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, 10);
 };
 
+export const comparePassword = async (
+  password: string,
+  hash: string
+): Promise<boolean> => {
+  return await bcrypt.compare(password, hash);
+};
+
 /**
  * Rules for waitlistMatcherAlg:
   ZeroCancer Matching Algorithm (Finalized)
