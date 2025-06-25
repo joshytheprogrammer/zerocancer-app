@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import { PrismaClient } from "@prisma/client";
 import {
   bookSelfPayAppointmentSchema,
   getPatientAppointmentsSchema,
@@ -7,7 +6,7 @@ import {
   getPatientResultsSchema,
   joinWaitlistSchema,
   selectCenterSchema,
-} from "@zerocancer/shared/schemas/register.schema";
+} from "@zerocancer/shared";
 import type {
   TBookSelfPayAppointmentResponse,
   TErrorResponse,

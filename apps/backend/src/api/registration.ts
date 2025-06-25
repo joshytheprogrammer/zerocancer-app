@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { centerSchema, donorSchema, patientSchema } from "@zerocancer/shared";
-import { checkProfilesSchema } from "@zerocancer/shared/schemas/register.schema";
+import { checkProfilesSchema } from "@zerocancer/shared";
 import {
   TCheckProfilesResponse,
   TDonorRegisterResponse,

@@ -4,7 +4,7 @@ import {
   getCenterAppointmentByIdSchema,
   getCenterAppointmentsSchema,
   rescheduleCenterAppointmentSchema,
-} from "@zerocancer/shared/schemas/appointment.schema";
+} from "@zerocancer/shared";
 import type {
   TDataResponse,
   TErrorResponse,

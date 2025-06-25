@@ -4,7 +4,7 @@ import {
   getScreeningTypesQuerySchema,
   screeningTypeCategorySchema,
   screeningTypeSchema,
-} from "@zerocancer/shared/schemas/screeningType.schema";
+} from "@zerocancer/shared";
 import type {
   TGetScreeningTypeCategoriesResponse,
   TGetScreeningTypeResponse,

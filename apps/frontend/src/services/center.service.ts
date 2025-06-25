@@ -8,7 +8,7 @@ import {
 } from '@zerocancer/shared/schemas/centerStaff.schema'
 import {
   getCenterAppointmentsSchema,
-  getCenterAppointmentByIdSchema,
+  // getCenterAppointmentByIdSchema,
   cancelCenterAppointmentSchema,
 } from '@zerocancer/shared/schemas/appointment.schema'
 import type {
