@@ -163,6 +163,38 @@ export type TCenterSummary = {
   lga: string;
 };
 
+export type TCenter = {
+  id: string;
+  email: string;
+  centerName: string;
+  address: string;
+  state: string;
+  lga: string;
+  phone: string | null;
+  bankAccount: string | null;
+  bankName: string | null;
+  status: string;
+  createdAt: string;
+  services: Array<{
+    id: string;
+    name: string;
+  }>;
+  staff: Array<{
+    id: string;
+    email: string;
+  }>;
+};
+
+export type TGetCentersResponse = TDataResponse<{
+  centers: TCenter[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
+export type TGetCenterByIdResponse = TDataResponse<TCenter>;
+
 export type TPatientResult = {
   id: string;
   appointment: {

@@ -1,28 +1,60 @@
 import request from '@/lib/request'
-import { inviteStaffSchema } from '@zerocancer/shared/schemas/center.schema'
+import {
+  // getCenterAppointmentByIdSchema,
+  cancelCenterAppointmentSchema,
+  getCenterAppointmentsSchema,
+} from '@zerocancer/shared/schemas/appointment.schema'
+import {
+  getCenterByIdSchema,
+  getCentersQuerySchema,
+  inviteStaffSchema,
+} from '@zerocancer/shared/schemas/center.schema'
 import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
-import {
-  getCenterAppointmentsSchema,
-  // getCenterAppointmentByIdSchema,
-  cancelCenterAppointmentSchema,
-} from '@zerocancer/shared/schemas/appointment.schema'
 import type {
+  TCancelCenterAppointmentResponse,
   TCenterStaffForgotPasswordResponse,
   TCenterStaffLoginResponse,
   TCenterStaffResetPasswordResponse,
   TCreateCenterStaffPasswordResponse,
-  TInviteStaffResponse,
-  TGetCenterAppointmentsResponse,
   TGetCenterAppointmentByIdResponse,
-  TCancelCenterAppointmentResponse,
+  TGetCenterAppointmentsResponse,
+  TGetCenterByIdResponse,
+  TGetCentersResponse,
+  TInviteStaffResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 import * as endpoints from './endpoints'
+
+// --- Center Management ---
+
+export const getCenters = async (
+  params: z.infer<typeof getCentersQuerySchema>,
+): Promise<TGetCentersResponse> => {
+  // Validate params using shared Zod schema
+  const parsed = getCentersQuerySchema.safeParse(params)
+  if (!parsed.success) {
+    throw new Error('Invalid params for getCenters')
+  }
+  const res = await request.get(endpoints.getCenters(parsed.data))
+  return res as TGetCentersResponse
+}
+
+export const getCenterById = async (
+  id: string,
+): Promise<TGetCenterByIdResponse> => {
+  // Validate id parameter using shared Zod schema
+  const parsed = getCenterByIdSchema.safeParse({ id })
+  if (!parsed.success) {
+    throw new Error('Invalid id for getCenterById')
+  }
+  const res = await request.get(endpoints.getCenterById(id))
+  return res as TGetCenterByIdResponse
+}
 
 // --- Appointment Management ---
 
@@ -44,10 +76,7 @@ export const cancelCenterAppointment = async (
   id: string,
   params: z.infer<typeof cancelCenterAppointmentSchema>,
 ): Promise<TCancelCenterAppointmentResponse> => {
-  const res = await request.post(
-    endpoints.cancelCenterAppointment(id),
-    params,
-  )
+  const res = await request.post(endpoints.cancelCenterAppointment(id), params)
   return res as TCancelCenterAppointmentResponse
 }
 

@@ -16,6 +16,8 @@ export enum QueryKeys {
   centerResults = 'centerResults',
   centerStaff = 'centerStaff',
   centerReceipts = 'centerReceipts',
+  centers = 'centers',
+  centerById = 'centerById',
 
   adminUsers = 'adminUsers',
   adminCenters = 'adminCenters',

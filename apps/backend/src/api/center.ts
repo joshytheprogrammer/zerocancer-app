@@ -1,10 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
-import { inviteStaffSchema } from "@zerocancer/shared";
 import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
+  getCenterByIdSchema,
+  getCentersQuerySchema,
+  inviteStaffSchema,
 } from "@zerocancer/shared";
 import type {
   TCenterStaffForgotPasswordResponse,
@@ -12,6 +14,8 @@ import type {
   TCenterStaffResetPasswordResponse,
   TCreateCenterStaffPasswordResponse,
   TErrorResponse,
+  TGetCenterByIdResponse,
+  TGetCentersResponse,
   TInviteStaffResponse,
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
@@ -25,6 +29,136 @@ import { comparePassword, hashPassword } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const centerApp = new Hono();
+
+// GET /api/center - List centers (paginated, filtered, searched)
+centerApp.get(
+  "/",
+  zValidator("query", getCentersQuerySchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const {
+      page = 1,
+      pageSize = 20,
+      search,
+      status,
+      state,
+      lga,
+    } = c.req.valid("query");
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { centerName: { contains: search, mode: "insensitive" } },
+        { address: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    if (status) where.status = status;
+    if (state) where.state = state;
+    if (lga) where.lga = lga;
+
+    const [centers, total] = await Promise.all([
+      db.serviceCenter.findMany({
+        where,
+        skip: (page! - 1) * pageSize!,
+        take: pageSize!,
+        orderBy: { createdAt: "desc" },
+        include: {
+          services: {
+            select: { id: true, name: true },
+          },
+          staff: {
+            select: { id: true, email: true },
+          },
+        },
+      }),
+      db.serviceCenter.count({ where }),
+    ]);
+
+    const formattedCenters = centers.map((center) => ({
+      id: center.id,
+      email: center.email,
+      centerName: center.centerName,
+      address: center.address,
+      state: center.state,
+      lga: center.lga,
+      phone: center.phone,
+      bankAccount: center.bankAccount,
+      bankName: center.bankName,
+      status: center.status.toString(),
+      createdAt: center.createdAt.toISOString(),
+      services: center.services,
+      staff: center.staff,
+    }));
+
+    return c.json<TGetCentersResponse>({
+      ok: true,
+      data: {
+        centers: formattedCenters!,
+        page: page!,
+        pageSize: pageSize!,
+        total: total!,
+        totalPages: Math.ceil(total / pageSize!),
+      },
+    });
+  }
+);
+
+// GET /api/center/:id - Get center by ID
+centerApp.get(
+  "/:id",
+  zValidator("param", getCenterByIdSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const { id } = c.req.valid("param");
+
+    const center = await db.serviceCenter.findUnique({
+      where: { id: id! },
+      include: {
+        services: {
+          select: { id: true, name: true },
+        },
+        staff: {
+          select: { id: true, email: true },
+        },
+      },
+    });
+
+    if (!center) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Center not found" },
+        404
+      );
+    }
+
+    const formattedCenter = {
+      id: center.id,
+      email: center.email,
+      centerName: center.centerName,
+      address: center.address,
+      state: center.state,
+      lga: center.lga,
+      phone: center.phone,
+      bankAccount: center.bankAccount,
+      bankName: center.bankName,
+      status: center.status.toString(),
+      createdAt: center.createdAt.toISOString(),
+      services: center.services,
+      staff: center.staff,
+    };
+
+    return c.json<TGetCenterByIdResponse>({
+      ok: true,
+      data: formattedCenter!,
+    });
+  }
+);
 
 // POST /invite-staff - Invite staff by email
 centerApp.post(
