@@ -39,8 +39,8 @@ export const logout = async () => {
 }
 
 // Check profiles
-export const checkProfiles = async () => {
-  return await request.get<TCheckProfilesResponse>(endpoints.checkProfiles())
+export const checkProfiles = async (email: string) => {
+  return await request.post(endpoints.checkProfiles(), { email })
 }
 
 // Forgot password

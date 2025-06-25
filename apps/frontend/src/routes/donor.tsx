@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute, Link } from '@tanstack/react-router'
+import { Outlet, createFileRoute, Link, redirect } from '@tanstack/react-router'
 import {
   Home,
   Briefcase,
@@ -6,15 +6,34 @@ import {
   Users,
   Upload,
   ClipboardCheck,
+  LogOut,
 } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
+import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/donor')({
   component: DonorLayout,
+  beforeLoad: async ({ context }) => {
+    const { isAuth, profile } = await isAuthMiddleware(
+      context.queryClient,
+      'donor',
+    )
+
+    if (!isAuth) return redirect({ to: `/` })
+
+    if (profile === 'PATIENT') return redirect({ to: '/patient' })
+
+    if (profile === 'CENTER') return redirect({ to: '/center' })
+
+    return null
+  },
 })
 
 function DonorLayout() {
+  const { mutate: logout } = useLogout()
+  const navigate = useNavigate()
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -83,6 +102,19 @@ function DonorLayout() {
                 <Users className="h-4 w-4" />
                 Staff
               </Link> */}
+              {/* Add code below */}
+              <div className="border-t p-2 lg:p-4">
+                <button
+                  onClick={() => {
+                    logout()
+                    navigate({ to: '/', replace: true, reloadDocument: true })
+                  }}
+                  className="cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-primary"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
             </nav>
           </div>
         </div>
@@ -94,4 +126,4 @@ function DonorLayout() {
       </div>
     </div>
   )
-} 
+}

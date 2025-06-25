@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { isAxiosError } from 'axios'
 import { useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
 import RoleSelection from './RoleSelection'
-import { useLogin, useForgotPassword } from '@/services/providers/auth.provider'
+import { useLogin, useForgotPassword, useAuthUser } from '@/services/providers/auth.provider'
 import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type { z } from 'zod'
 import { toast } from 'sonner'
@@ -28,11 +29,12 @@ export default function LoginForm() {
   const [forgotEmail, setForgotEmail] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
   const [role, setRole] = useState<'patient' | 'donor' | 'center'>('patient')
+  const queryClient = useQueryClient()
   const form = useForm<FormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'raphaelgbaorun@gmail.com',
-      password: 'Raphael@22',
+      password: 'Raphael@12',
     },
   })
 
@@ -61,8 +63,10 @@ export default function LoginForm() {
       },
       actor: role,  
     }, {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success('Login successful')
+        // Wait for auth data to be properly set before navigating
+        await queryClient.ensureQueryData(useAuthUser())
         navigate({ to: `/${role}` })
       },
       onError: (error) => {

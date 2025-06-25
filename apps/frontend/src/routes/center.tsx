@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute, Link } from '@tanstack/react-router'
+import { Outlet, createFileRoute, Link, redirect } from '@tanstack/react-router'
 import {
   Home,
   Briefcase,
@@ -9,9 +9,24 @@ import {
 } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
+import { isAuthMiddleware } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/center')({
   component: CenterLayout,
+  beforeLoad: async ({ context }) => {
+    const { isAuth, profile } = await isAuthMiddleware(
+      context.queryClient,
+      'center',
+    )
+
+    if (!isAuth) return redirect({ to: `/` })
+
+    if (profile === 'PATIENT') return redirect({ to: '/patient' })
+
+    if (profile === 'DONOR') return redirect({ to: '/donor' })
+
+    return null
+  },
 })
 
 function CenterLayout() {

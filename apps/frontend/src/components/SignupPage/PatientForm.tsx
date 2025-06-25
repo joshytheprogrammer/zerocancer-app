@@ -84,9 +84,15 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
   }
 
   function onSubmit(values: FormData) {
-    mutation.mutate(values, {
+    // Ensure dateOfBirth is properly formatted as ISO string
+    const formattedValues = {
+      ...values,
+      dateOfBirth: values.dateOfBirth ? new Date(values.dateOfBirth).toISOString() : values.dateOfBirth
+    }
+    
+    mutation.mutate(formattedValues, {
       onSuccess: (data) => {
-        onSubmitSuccess(values)
+        onSubmitSuccess(formattedValues)
       },
       onError: (error) => {
         toast.error(
@@ -207,7 +213,7 @@ export default function PatientForm({ onSubmitSuccess }: PatientFormProps) {
                           captionLayout="dropdown"
                           onSelect={(date: Date | undefined) => {
                             field.onChange(
-                              date ? date.toISOString().split('T')[0] : '',
+                              date ? date.toISOString() : '',
                             )
                           }}
                         />
