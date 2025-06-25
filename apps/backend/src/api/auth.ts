@@ -76,8 +76,18 @@ authApp.post(
 
       user = { ...justUser, profiles: userProfiles };
 
+      if (!justUser) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            err_code: "user_not_found",
+            error: "User not found.",
+          },
+          404
+        );
+      }
+
       if (
-        !user ||
         !userProfiles.includes(actor.toUpperCase() as "PATIENT" | "DONOR")
       ) {
         return c.json<TErrorResponse>(
@@ -377,6 +387,7 @@ authApp.post("/verify-email", async (c) => {
       },
     },
   });
+  // "NOTE TO SELF: This is not working as expected.
   await db.emailVerificationToken.delete({ where: { token } });
   return c.json<TVerifyEmailResponse>({ ok: true, data: {} });
 });
