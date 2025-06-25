@@ -1,6 +1,5 @@
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)')({
   component: RouteComponent,

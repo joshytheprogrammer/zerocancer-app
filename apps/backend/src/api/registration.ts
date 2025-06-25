@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { centerSchema, donorSchema, patientSchema } from "@zerocancer/shared";
+import { checkProfilesSchema } from "@zerocancer/shared/schemas/register.schema";
 import {
   TCheckProfilesResponse,
   TDonorRegisterResponse,
@@ -20,18 +21,9 @@ export const registerApp = new Hono();
 
 registerApp.post(
   "/check-profiles",
-  zValidator(
-    "json",
-    z.object({
-      email: z
-        .string()
-        .email({ message: "Please enter a valid email address." }),
-    }),
-    (result) => {
-      if (!result.success)
-        throw new HTTPException(400, { cause: result.error });
-    }
-  ),
+  zValidator("json", checkProfilesSchema, (result) => {
+    if (!result.success) throw new HTTPException(400, { cause: result.error });
+  }),
   async (c) => {
     const { profiles } = await getUserWithProfiles({
       email: c.req.valid("json").email,

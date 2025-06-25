@@ -1,20 +1,28 @@
 import request from '@/lib/request'
 import * as endpoints from '@/services/endpoints'
+import { notificationSchema } from '@zerocancer/shared/schemas/notification.schema'
+import type {
+  TCreateNotificationResponse,
+  TGetNotificationsResponse,
+  TMarkNotificationReadResponse,
+} from '@zerocancer/shared/types'
 
-export const getNotifications = async () => {
-  return await request.get(endpoints.getNotifications())
+export const getNotifications =
+  async (): Promise<TGetNotificationsResponse> => {
+    const res = await request.get(endpoints.getNotifications())
+    return res as TGetNotificationsResponse
+  }
+
+export const markNotificationRead = async (
+  id: string,
+): Promise<TMarkNotificationReadResponse> => {
+  const res = await request.post(endpoints.markNotificationRead(id))
+  return res as TMarkNotificationReadResponse
 }
 
-export const markNotificationRead = async (id: string) => {
-  return await request.post(endpoints.markNotificationRead(id))
-}
-
-export const createNotification = async (data: {
-  type: string
-  title: string
-  message: string
-  data?: any
-  userIds: string[]
-}) => {
-  return await request.post(endpoints.createNotification(), data)
+export const createNotification = async (
+  data: typeof notificationSchema._type,
+): Promise<TCreateNotificationResponse> => {
+  const res = await request.post(endpoints.createNotification(), data)
+  return res as TCreateNotificationResponse
 }

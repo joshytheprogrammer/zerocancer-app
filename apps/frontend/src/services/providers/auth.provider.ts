@@ -1,5 +1,6 @@
 import * as authService from '@/services/auth.service'
 import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
+import * as registerService from '@/services/register.service'
 import {
   QueryClient,
   queryOptions,
@@ -43,6 +44,7 @@ export const useAuthUser = () =>
     // throwOnError
     throwOnError: false,
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
 export const isAuthMiddleware = async (
@@ -84,13 +86,13 @@ export const logOut = () => {
   logout()
 }
 
-export const useCheckProfiles = () => {
-  return queryOptions({
-    queryKey: ['checkProfiles'],
-    queryFn: authService.checkProfiles,
-    retry: false,
-  })
-}
+// export const useCheckProfiles = () => {
+//   return queryOptions({
+//     queryKey: ['checkProfiles'],
+//     queryFn: registerService.checkProfiles,
+//     retry: false,
+//   })
+// }
 
 export const useForgotPassword = () => {
   return useMutation({

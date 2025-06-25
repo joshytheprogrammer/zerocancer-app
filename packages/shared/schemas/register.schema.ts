@@ -50,3 +50,56 @@ export const centerSchema = z.object({
   }),
   // bankAccount: z.string().min(8),
 });
+
+export const checkProfilesSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+});
+
+export const bookSelfPayAppointmentSchema = z.object({
+  screeningTypeId: z.string().min(1, {
+    message: "Screening type is required.",
+  }),
+  centerId: z.string().min(1, { message: "Center is required." }),
+  appointmentDate: z.string().min(1, {
+    message: "Appointment date is required.",
+  }),
+  appointmentTime: z.string().min(1, {
+    message: "Appointment time is required.",
+  }),
+  paymentReference: z.string().min(1, {
+    message: "Payment reference is required.",
+  }),
+});
+
+export const joinWaitlistSchema = z.object({
+  screeningTypeId: z
+    .string()
+    .min(1, { message: "Screening type is required." }),
+});
+
+export const selectCenterSchema = z.object({
+  allocationId: z.string().min(1, { message: "Allocation ID is required." }),
+  centerId: z.string().min(1, { message: "Center ID is required." }),
+  appointmentDate: z
+    .string()
+    .min(1, { message: "Appointment date is required." }),
+  appointmentTime: z
+    .string()
+    .min(1, { message: "Appointment time is required." }),
+});
+
+export const getPatientAppointmentsSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional(),
+  status: z.string().optional(),
+});
+
+export const getPatientResultsSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional(),
+});
+
+export const getPatientReceiptsSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional(),
+});

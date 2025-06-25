@@ -3,8 +3,13 @@ import { actorSchema, loginSchema } from "@zerocancer/shared";
 import type {
   TAuthMeResponse,
   TErrorResponse,
+  TForgotPasswordResponse,
   TLoginResponse,
+  TLogoutResponse,
   TRefreshTokenResponse,
+  TResendVerificationResponse,
+  TResetPasswordResponse,
+  TVerifyEmailResponse,
 } from "@zerocancer/shared/types";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -255,7 +260,10 @@ authApp.post("/logout", async (c) => {
     maxAge: 0,
   });
   // If storing refresh tokens in DB, mark as revoked
-  return c.json({ ok: true, message: "Logged out successfully." });
+  return c.json<TLogoutResponse>({
+    ok: true,
+    data: { message: "Logged out successfully." },
+  });
 });
 
 // POST /api/auth/forgot-password
@@ -267,7 +275,7 @@ authApp.post("/forgot-password", async (c) => {
   const user = await db.user.findUnique({ where: { email } });
   if (!user) {
     // For security, always return success
-    return c.json({ ok: true });
+    return c.json<TForgotPasswordResponse>({ ok: true, data: {} });
   }
   // Generate token and expiry
   const token = crypto.randomBytes(32).toString("hex");
@@ -276,15 +284,15 @@ authApp.post("/forgot-password", async (c) => {
     data: { userId: user.id, token, expiresAt: expires },
   });
   // Send email
-  const resetUrl = `${
-    process.env.FRONTEND_URL || "http://localhost:3000"
-  }/reset-password?token=${token}`;
+  const resetUrl = `$
+    {process.env.FRONTEND_URL || "http://localhost:3000"}
+  /reset-password?token=${token}`;
   await sendEmail({
     to: email,
     subject: "Reset your password",
     html: `<p>Click <a href='${resetUrl}'>here</a> to reset your password. This link expires in 30 minutes.</p>`,
   });
-  return c.json({ ok: true });
+  return c.json<TForgotPasswordResponse>({ ok: true, data: {} });
 });
 
 // POST /api/auth/reset-password
@@ -294,7 +302,10 @@ authApp.post("/reset-password", async (c) => {
   const { token, password } = await c.req.json();
   const reset = await db.passwordResetToken.findUnique({ where: { token } });
   if (!reset || reset.expiresAt < new Date()) {
-    return c.json({ ok: false, error: "Invalid or expired token." }, 400);
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Invalid or expired token." },
+      400
+    );
   }
   const hash = await bcrypt.hash(password, 10);
   await db.user.update({
@@ -302,7 +313,7 @@ authApp.post("/reset-password", async (c) => {
     data: { passwordHash: hash },
   });
   await db.passwordResetToken.delete({ where: { token } });
-  return c.json({ ok: true });
+  return c.json<TResetPasswordResponse>({ ok: true, data: {} });
 });
 
 // POST /api/auth/verify-email
@@ -314,13 +325,19 @@ authApp.post("/verify-email", async (c) => {
     where: { token },
   });
   if (!verify || verify.expiresAt < new Date()) {
-    return c.json({ ok: false, error: "Invalid or expired token." }, 400);
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Invalid or expired token." },
+      400
+    );
   }
 
   // profile to be verified
   if (verify.profileType !== "PATIENT" && verify.profileType !== "DONOR") {
-    return c.json(
-      { ok: false, error: "Invalid profile type for email verification." },
+    return c.json<TErrorResponse>(
+      {
+        ok: false,
+        error: "Invalid profile type for email verification.",
+      },
       400
     );
   }
@@ -337,7 +354,7 @@ authApp.post("/verify-email", async (c) => {
     },
   });
   await db.emailVerificationToken.delete({ where: { token } });
-  return c.json({ ok: true });
+  return c.json<TVerifyEmailResponse>({ ok: true, data: {} });
 });
 
 // POST /api/auth/resend-verification
@@ -349,7 +366,7 @@ authApp.post("/resend-verification", async (c) => {
   const user = await db.user.findUnique({ where: { email } });
   if (!user) {
     // For security, always return success
-    return c.json({ ok: true });
+    return c.json<TResendVerificationResponse>({ ok: true, data: {} });
   }
   // Check if already verified
   let alreadyVerified = false;
@@ -365,7 +382,10 @@ authApp.post("/resend-verification", async (c) => {
     alreadyVerified = !!donor?.emailVerified;
   }
   if (alreadyVerified) {
-    return c.json({ ok: true, message: "Already verified." });
+    return c.json<TResendVerificationResponse>({
+      ok: true,
+      data: { message: "Already verified." },
+    });
   }
   // Generate and send new verification token
   const verifyToken = crypto.randomBytes(32).toString("hex");
@@ -380,9 +400,9 @@ authApp.post("/resend-verification", async (c) => {
   await sendEmail({
     to: user.email,
     subject: "Verify your email",
-    html: `<p>Click <a href='${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
+    html: `<p>Click <a href='$
+      {process.env.FRONTEND_URL || "http://localhost:3000"}
+    /verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
   });
-  return c.json({ ok: true });
+  return c.json<TResendVerificationResponse>({ ok: true, data: {} });
 });

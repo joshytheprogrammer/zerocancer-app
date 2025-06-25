@@ -1,3 +1,13 @@
+import {
+  notificationRecipientResponseSchema,
+  notificationResponseSchema,
+  notificationSchema,
+} from "@zerocancer/shared/schemas/notification.schema";
+import type {
+  TCreateNotificationResponse,
+  TGetNotificationsResponse,
+  TMarkNotificationReadResponse,
+} from "@zerocancer/shared/types";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
@@ -19,28 +29,33 @@ notificationApp.get("/", async (c) => {
     orderBy: { notification: { createdAt: "desc" } },
     take: 50,
   });
-  return c.json({ ok: true, data: notifications });
+  // Optionally, validate/transform with notificationRecipientResponseSchema.array()
+  return c.json<TGetNotificationsResponse>({ ok: true, data: notifications });
 });
 
 // POST /api/notifications/:id/read - mark notification as read
-notificationApp.post("/:id/read", async (c) => {
+notificationApp.post(":id/read", async (c) => {
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
   const userId = payload.id;
   const id = c.req.param("id");
   const db = getDB();
-  await db.notificationRecipient.updateMany({
+  const updated = await db.notificationRecipient.updateMany({
     where: { id, userId },
     data: { read: true, readAt: new Date() },
   });
-  return c.json({ ok: true });
+  return c.json<TMarkNotificationReadResponse>({
+    ok: true,
+    data: { id, read: true, readAt: new Date().toISOString() },
+  });
 });
 
 // POST /api/notifications - create notification (admin or system use)
 notificationApp.post("/", async (c) => {
   // TODO: Add admin check if needed
   const db = getDB();
-  const { type, title, message, data, userIds } = await c.req.json();
+  const body = notificationSchema.parse(await c.req.json());
+  const { type, title, message, data, userIds } = body;
   // Create notification
   const notification = await db.notification.create({
     data: {
@@ -53,5 +68,5 @@ notificationApp.post("/", async (c) => {
       },
     },
   });
-  return c.json({ ok: true, data: notification });
+  return c.json<TCreateNotificationResponse>({ ok: true, data: notification });
 });
