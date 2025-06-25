@@ -29,8 +29,31 @@ notificationApp.get("/", async (c) => {
     orderBy: { notification: { createdAt: "desc" } },
     take: 50,
   });
-  // Optionally, validate/transform with notificationRecipientResponseSchema.array()
-  return c.json<TGetNotificationsResponse>({ ok: true, data: notifications });
+  // Strictly shape each notification recipient and nested notification
+  const safeNotifications = notifications.map((n) => {
+    // Ensure data is an object or null
+    let safeData: Record<string, any> | null = null;
+    if (n.notification.data && typeof n.notification.data === "object" && !Array.isArray(n.notification.data)) {
+      safeData = n.notification.data;
+    }
+    return {
+      id: n.id,
+      userId: n.userId,
+      notificationId: n.notificationId,
+      read: n.read,
+      readAt: n.readAt ? n.readAt.toISOString() : null,
+      notification: {
+        id: n.notification.id,
+        type: n.notification.type,
+        title: n.notification.title,
+        message: n.notification.message,
+        data: safeData,
+        createdAt: n.notification.createdAt.toISOString(),
+        updatedAt: n.notification.createdAt.toISOString(), // fallback if updatedAt not present
+      },
+    };
+  });
+  return c.json<TGetNotificationsResponse>({ ok: true, data: safeNotifications });
 });
 
 // POST /api/notifications/:id/read - mark notification as read
@@ -40,7 +63,7 @@ notificationApp.post(":id/read", async (c) => {
   const userId = payload.id;
   const id = c.req.param("id");
   const db = getDB();
-  const updated = await db.notificationRecipient.updateMany({
+  await db.notificationRecipient.updateMany({
     where: { id, userId },
     data: { read: true, readAt: new Date() },
   });
@@ -68,5 +91,19 @@ notificationApp.post("/", async (c) => {
       },
     },
   });
-  return c.json<TCreateNotificationResponse>({ ok: true, data: notification });
+  // Strictly shape the notification object
+  let safeData: Record<string, any> | null = null;
+  if (notification.data && typeof notification.data === "object" && !Array.isArray(notification.data)) {
+    safeData = notification.data;
+  }
+  const safeNotification = {
+    id: notification.id,
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    data: safeData,
+    createdAt: notification.createdAt.toISOString(),
+    updatedAt: notification.createdAt.toISOString(), // fallback if updatedAt not present
+  };
+  return c.json<TCreateNotificationResponse>({ ok: true, data: safeNotification });
 });

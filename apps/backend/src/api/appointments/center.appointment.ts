@@ -68,7 +68,11 @@ centerAppointmentApp.get("/verify-checkin/:code", async (c) => {
   };
   return c.json<TVerifyCheckInCodeResponse>({
     ok: true,
-    data: safeAppointment,
+    data: {
+      valid: safeAppointment.verification ? true : false,
+      appointmentId: safeAppointment.id,
+      message: "Check-in successful.",
+    },
   });
 });
 

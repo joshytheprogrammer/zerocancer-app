@@ -180,7 +180,7 @@ export type TPatientReceipt = {
   appointments: Array<{
     id: string;
     appointmentDate: string;
-    screeningType: { name: string };
+    screeningType: { id: string; name: string };
     patientId?: string;
   }>;
   createdAt?: string;

@@ -78,13 +78,30 @@ registerApp.post(
             },
           },
         },
+        include: { patientProfile: true },
       });
 
       return c.json<TPatientRegisterResponse>(
         {
           ok: true,
           message: "Patient registered successfully",
-          data: { patientId: updatedUser.id },
+          data: {
+            patientId: updatedUser.id,
+            email: updatedUser.email,
+            fullName: updatedUser.fullName,
+            phone: updatedUser.phone ?? "",
+            dateOfBirth:
+              updatedUser.patientProfile?.dateOfBirth instanceof Date
+                ? updatedUser.patientProfile.dateOfBirth.toISOString()
+                : updatedUser.patientProfile?.dateOfBirth ?? "",
+            gender:
+              updatedUser.patientProfile?.gender === "male" ||
+              updatedUser.patientProfile?.gender === "female"
+                ? updatedUser.patientProfile.gender
+                : "male",
+            state: updatedUser.patientProfile?.state ?? "",
+            localGovernment: updatedUser.patientProfile?.city ?? "",
+          },
         },
         201
       );
@@ -109,7 +126,6 @@ registerApp.post(
         email: data.email!,
         phone: data.phone!,
         passwordHash: hashedPassword,
-        // profile: "PATIENT",
         patientProfile: {
           create: {
             gender: data.gender!,
@@ -119,6 +135,7 @@ registerApp.post(
           },
         },
       },
+      include: { patientProfile: true },
     });
 
     // When registering, generate and send verification email (example usage):
@@ -145,7 +162,23 @@ registerApp.post(
       {
         ok: true,
         message: "Patient registered successfully",
-        data: { patientId: patient.id },
+        data: {
+          patientId: patient.id,
+          email: patient.email,
+          fullName: patient.fullName,
+          phone: patient.phone ?? "",
+          dateOfBirth:
+            patient.patientProfile?.dateOfBirth instanceof Date
+              ? patient.patientProfile.dateOfBirth.toISOString()
+              : patient.patientProfile?.dateOfBirth ?? "",
+          gender:
+            patient.patientProfile?.gender === "male" ||
+            patient.patientProfile?.gender === "female"
+              ? patient.patientProfile.gender
+              : "male",
+          state: patient.patientProfile?.state ?? "",
+          localGovernment: patient.patientProfile?.city ?? "",
+        },
       },
       201
     );
@@ -185,13 +218,23 @@ registerApp.post(
             },
           },
         },
+        include: { donorProfile: true },
       });
 
       return c.json<TPatientRegisterResponse>(
         {
           ok: true,
           message: "Patient registered successfully",
-          data: { patientId: updatedUser.id },
+          data: {
+            patientId: updatedUser.id,
+            email: updatedUser.email,
+            fullName: updatedUser.fullName,
+            phone: updatedUser.phone ?? "",
+            dateOfBirth: "",
+            gender: "male",
+            state: "",
+            localGovernment: "",
+          },
         },
         201
       );
@@ -213,13 +256,13 @@ registerApp.post(
         email: data.email!,
         passwordHash: hashedPassword,
         phone: data.phone!,
-        // profile: "DONOR",
         donorProfile: {
           create: {
             organizationName: data.organization! || "",
           },
         },
       },
+      include: { donorProfile: true },
     });
 
     // When registering, generate and send verification email (example usage):
@@ -246,7 +289,13 @@ registerApp.post(
       {
         ok: true,
         message: "Donor registered successfully",
-        data: { donorId: donor.id },
+        data: {
+          donorId: donor.id,
+          email: donor.email,
+          fullName: donor.fullName,
+          phone: donor.phone ?? "",
+          organization: donor.donorProfile?.organizationName ?? "",
+        },
       },
       201
     );
@@ -292,15 +341,23 @@ registerApp.post(
         address: data.address!,
         state: data.state!,
         lga: data.localGovernment!,
-        // services: data.services,
-        bankAccount: "", //data?.bankAccount,
+        bankAccount: "",
       },
     });
     return c.json<TScreeningCenterRegisterResponse>(
       {
         ok: true,
         message: "Center registered successfully",
-        data: { centerId: center.id },
+        data: {
+          centerId: center.id,
+          centerName: center.centerName,
+          email: center.email,
+          phoneNumber: center.phone ?? "",
+          address: center.address,
+          state: center.state,
+          localGovernment: center.lga,
+          services: [],
+        },
       },
       201
     );
