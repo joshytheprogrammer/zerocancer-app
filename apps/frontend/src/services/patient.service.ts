@@ -8,6 +8,7 @@ import {
   joinWaitlistSchema,
   selectCenterSchema,
 } from '@zerocancer/shared/schemas/register.schema'
+import { getPatientWaitlistsSchema } from '@zerocancer/shared/schemas/waitlist.schema'
 import type {
   TBookSelfPayAppointmentResponse,
   TGetCheckInCodeResponse,
@@ -17,6 +18,7 @@ import type {
   TGetPatientReceiptsResponse,
   TGetPatientResultResponse,
   TGetPatientResultsResponse,
+  TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
   TSelectCenterResponse,
   TVerifyCheckInCodeResponse,
@@ -37,6 +39,19 @@ export const joinWaitlist = async (
 ): Promise<TJoinWaitlistResponse> => {
   const res = await request.post(endpoints.joinWaitlist(), data)
   return res as TJoinWaitlistResponse
+}
+
+// Get patient waitlists (paginated, filterable)
+export const getPatientWaitlists = async (
+  params: z.infer<typeof getPatientWaitlistsSchema>,
+): Promise<TGetPatientWaitlistsResponse> => {
+  // Validate params using shared Zod schema
+  const parsed = getPatientWaitlistsSchema.safeParse(params)
+  if (!parsed.success) {
+    throw new Error('Invalid params for getPatientWaitlists')
+  }
+  const res = await request.get(endpoints.getWaitlists(parsed.data))
+  return res as TGetPatientWaitlistsResponse
 }
 
 // Get eligible centers for a matched allocation

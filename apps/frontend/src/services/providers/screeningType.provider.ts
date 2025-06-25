@@ -22,7 +22,7 @@ export const useScreeningTypes = (params: {
 export const useAllScreeningTypes = (search?: string) =>
   queryOptions({
     queryKey: [QueryKeys.screeningTypesAll, search],
-    queryFn: () => fetchAllScreeningTypes(search),
+    queryFn: () => fetchAllScreeningTypes({search}),
   })
 
 export const useScreeningTypeCategories = () =>

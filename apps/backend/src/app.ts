@@ -6,6 +6,7 @@ import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
+import { waitlistApp } from "./api/waitlist";
 
 const app = new Hono().basePath("/api/v1");
 
@@ -31,6 +32,7 @@ app.route("/auth", authApp);
 app.route("/register", registerApp);
 app.route("/appointment", appointmentApp);
 app.route("/screening-types", screeningTypesApp);
+app.route("/waitlist", waitlistApp);
 
 app.notFound((c) => {
   return c.json(

@@ -46,8 +46,16 @@ export const createSelfPayAppointment = () => '/api/patient/appointments/book'
 export const getQR = () => '/api/patient/qr'
 export const getResults = (page = 1, size = 20) =>
   `/api/patient/results${buildQuery({ page, size })}`
-export const getWaitlists = (page = 1, size = 20) =>
-  `/api/patient/waitlists${buildQuery({ page, size })}`
+export const getWaitlists = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'PENDING' | 'MATCHED' | 'EXPIRED'
+}) =>
+  `/api/waitlist${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    status: params.status ?? undefined,
+  })}`
 export const joinWaitlist = () => '/api/appointment/patient/waitlists/join'
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`

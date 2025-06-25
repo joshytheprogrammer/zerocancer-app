@@ -20,6 +20,17 @@ export const useJoinWaitlist = () => {
   })
 }
 
+// Get patient waitlists (paginated, filterable)
+export const usePatientWaitlists = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'PENDING' | 'MATCHED' | 'EXPIRED'
+}) =>
+  queryOptions({
+    queryKey: [QueryKeys.patientWaitlists, params],
+    queryFn: () => patientService.getPatientWaitlists(params),
+  })
+
 // Get eligible centers for a matched allocation
 export const useEligibleCenters = (
   allocationId: string,
