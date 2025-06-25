@@ -6,6 +6,7 @@ import type {
   TGetNotificationsResponse,
   TMarkNotificationReadResponse,
 } from '@zerocancer/shared/types'
+import type { z } from 'zod'
 
 export const getNotifications =
   async (): Promise<TGetNotificationsResponse> => {
@@ -21,8 +22,13 @@ export const markNotificationRead = async (
 }
 
 export const createNotification = async (
-  data: typeof notificationSchema._type,
+  data: z.infer<typeof notificationSchema>,
 ): Promise<TCreateNotificationResponse> => {
-  const res = await request.post(endpoints.createNotification(), data)
+  // Validate data using shared Zod schema
+  const parsed = notificationSchema.safeParse(data)
+  if (!parsed.success) {
+    throw new Error('Invalid data for createNotification')
+  }
+  const res = await request.post(endpoints.createNotification(), parsed.data)
   return res as TCreateNotificationResponse
 }

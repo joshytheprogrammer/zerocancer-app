@@ -26,7 +26,7 @@ registerApp.post(
   }),
   async (c) => {
     const { profiles } = await getUserWithProfiles({
-      email: c.req.valid("json").email,
+      email: c.req.valid("json").email!,
     });
     return c.json<TCheckProfilesResponse>({
       ok: true,

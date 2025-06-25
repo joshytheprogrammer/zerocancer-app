@@ -36,7 +36,7 @@ authApp.post(
         {
           ok: false,
           err_code: "invalid_login_data",
-          error: result.error,
+          error: result.error!,
         },
         400
       );

@@ -42,13 +42,13 @@ screeningTypesApp.get(
       db.screeningType.count({ where }),
     ]);
     // Validate response
-    const data = screeningTypeSchema.array().parse(types);
+    const data = screeningTypeSchema!.array()!.parse(types);
     return c.json<TGetScreeningTypesResponse>({
       ok: true,
-      data,
-      page,
-      pageSize,
-      total,
+      data: data!,
+      page: page!,
+      pageSize: pageSize!,
+      total: total!,
       totalPages: Math.ceil(total / pageSize),
     });
   }
@@ -75,8 +75,8 @@ screeningTypesApp.get(
       },
       orderBy: { name: "asc" },
     });
-    const data = screeningTypeSchema.array().parse(types);
-    return c.json<TGetScreeningTypesResponse>({ ok: true, data });
+    const data = screeningTypeSchema!.array()!.parse(types);
+    return c.json<TGetScreeningTypesResponse>({ ok: true, data: data! });
   }
 );
 
@@ -87,10 +87,10 @@ screeningTypesApp.get("/categories", async (c) => {
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
-  const data = screeningTypeCategorySchema.array().parse(categories);
+  const data = screeningTypeCategorySchema!.array()!.parse(categories);
   return c.json<TGetScreeningTypeCategoriesResponse>({
     ok: true,
-    data,
+    data: data!,
   });
 });
 
@@ -108,8 +108,8 @@ screeningTypesApp.get(
   async (c) => {
     const db = getDB();
     const { search, page = 1, pageSize = 20 } = c.req.valid("query");
-    const categoryId = c.req.param("categoryId");
-    const where: any = { active: true, screeningTypeCategoryId: categoryId };
+    const categoryId = c.req.param("categoryId")!;
+    const where: any = { active: true, screeningTypeCategoryId: categoryId! };
     if (search) where.name = { contains: search, mode: "insensitive" };
     const [types, total] = await Promise.all([
       db.screeningType.findMany({
@@ -126,13 +126,13 @@ screeningTypesApp.get(
       }),
       db.screeningType.count({ where }),
     ]);
-    const data = screeningTypeSchema.array().parse(types);
+    const data = screeningTypeSchema!.array()!.parse(types);
     return c.json<TGetScreeningTypesResponse>({
       ok: true,
-      data,
-      page,
-      pageSize,
-      total,
+      data: data!,
+      page: page!,
+      pageSize: pageSize!,
+      total: total!,
       totalPages: Math.ceil(total / pageSize),
     });
   }
@@ -141,9 +141,9 @@ screeningTypesApp.get(
 // GET /api/screening-types/by-name/:name - get screening type by name
 screeningTypesApp.get("/by-name/:name", async (c) => {
   const db = getDB();
-  const name = c.req.param("name");
+  const name = c.req.param("name")!;
   const type = await db.screeningType.findFirst({
-    where: { name },
+    where: { name: name! },
     select: {
       id: true,
       name: true,
@@ -152,16 +152,16 @@ screeningTypesApp.get("/by-name/:name", async (c) => {
     },
   });
   if (!type) return c.json({ ok: false, message: "Not found" }, 404);
-  const data = screeningTypeSchema.parse(type);
-  return c.json<TGetScreeningTypeResponse>({ ok: true, data });
+  const data = screeningTypeSchema!.parse(type);
+  return c.json<TGetScreeningTypeResponse>({ ok: true, data: data! });
 });
 
 // GET /api/screening-types/:id - get screening type by id
 screeningTypesApp.get("/:id", async (c) => {
   const db = getDB();
-  const id = c.req.param("id");
+  const id = c.req.param("id")!;
   const type = await db.screeningType.findUnique({
-    where: { id },
+    where: { id: id! },
     select: {
       id: true,
       name: true,
@@ -170,6 +170,6 @@ screeningTypesApp.get("/:id", async (c) => {
     },
   });
   if (!type) return c.json({ ok: false, message: "Not found" }, 404);
-  const data = screeningTypeSchema.parse(type);
-  return c.json<TGetScreeningTypeResponse>({ ok: true, data });
+  const data = screeningTypeSchema!.parse(type);
+  return c.json<TGetScreeningTypeResponse>({ ok: true, data: data! });
 });

@@ -38,7 +38,7 @@ centerApp.post(
     const db = getDB();
     const { centerId, emails } = c.req.valid("json");
     const invites = [];
-    for (const email of emails) {
+    for (const email of emails!) {
       // Generate a unique token
       const token = crypto.randomBytes(32).toString("hex");
       // Store invite in DB (pseudo-code, adjust to your schema)
@@ -53,11 +53,11 @@ centerApp.post(
       // Send invite email
       const inviteUrl = `${process.env.FRONTEND_URL}/center/create-new-password?token=${token}`;
       await sendEmail({
-        to: email,
+        to: email!,
         subject: "You're invited to join a center on Zerocancer",
         html: `<p>You have been invited to join a center. <a href="${inviteUrl}">Click here to set your password and join.</a></p>`,
       });
-      invites.push({ email, token });
+      invites.push({ email: email!, token: token! });
     }
     return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });
   }
@@ -87,7 +87,7 @@ centerApp.post(
       );
     }
     // Hash password
-    const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(password!);
 
     // Create staff
     const staff = await db.centerStaff.create({
@@ -101,7 +101,7 @@ centerApp.post(
 
     // Mark invite as accepted
     await db.centerStaffInvite.update({
-      where: { token },
+      where: { token: token! },
       data: { acceptedAt: new Date() },
     });
 
@@ -124,7 +124,7 @@ centerApp.post(
     const { centerId, email } = c.req.valid("json");
     // Find staff
     const staff = await db.centerStaff.findFirst({
-      where: { centerId, email },
+      where: { centerId: centerId!, email: email! },
     });
     if (!staff) {
       return c.json<TErrorResponse>(
@@ -139,14 +139,14 @@ centerApp.post(
     await db.centerStaffResetToken.create({
       data: {
         staffId: staff.id!,
-        token,
-        expiresAt,
+        token: token!,
+        expiresAt: expiresAt!,
       },
     });
     // Send reset email
     const resetUrl = `${process.env.FRONTEND_URL}/center/reset-password?token=${token}`;
     await sendEmail({
-      to: email,
+      to: email!,
       subject: "Reset your Zerocancer Center Staff password",
       html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
     });
@@ -169,23 +169,23 @@ centerApp.post(
     const { token, password } = c.req.valid("json");
     // Find reset token
     const reset = await db.centerStaffResetToken.findUnique({
-      where: { token },
+      where: { token: token! },
     });
-    if (!reset || reset.expiresAt < new Date()) {
+    if (!reset || reset.expiresAt! < new Date()) {
       return c.json<TErrorResponse>(
         { ok: false, error: "Invalid or expired reset token" },
         400
       );
     }
     // Hash password
-    const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(password!);
     // Update staff password
     await db.centerStaff.update({
       where: { id: reset.staffId! },
       data: { passwordHash },
     });
     // Invalidate token
-    await db.centerStaffResetToken.delete({ where: { token } });
+    await db.centerStaffResetToken.delete({ where: { token: token! } });
     return c.json<TCenterStaffResetPasswordResponse>({
       ok: true,
       data: { message: "Password reset successful" },
@@ -207,7 +207,7 @@ centerApp.post(
     const { centerId, email, password } = c.req.valid("json");
     // Find staff
     const staff = await db.centerStaff.findFirst({
-      where: { centerId, email },
+      where: { centerId: centerId!, email: email! },
     });
     if (!staff || !staff.passwordHash) {
       return c.json<TErrorResponse>(
@@ -216,7 +216,7 @@ centerApp.post(
       );
     }
     // Compare password
-    const valid = await comparePassword(password, staff.passwordHash!);
+    const valid = await comparePassword(password!, staff.passwordHash!);
     if (!valid) {
       return c.json<TErrorResponse>(
         { ok: false, error: "Invalid credentials" },
