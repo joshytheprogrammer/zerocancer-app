@@ -2,7 +2,6 @@ import * as patientService from '@/services/patient.service'
 import {
   queryOptions,
   useMutation,
-  useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
 import { MutationKeys, QueryKeys } from '../keys'
@@ -64,7 +63,7 @@ export function usePatientAppointments(params: {
   size?: number
   status?: string
 }) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, QueryKeys.patientAppointments, params],
     queryFn: () => patientService.getPatientAppointments(params),
   })
@@ -72,7 +71,7 @@ export function usePatientAppointments(params: {
 
 // Get check-in code for an appointment
 export function useCheckInCode(appointmentId: string) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, 'checkInCode', appointmentId],
     queryFn: () => patientService.getCheckInCode(appointmentId),
     enabled: !!appointmentId,
@@ -81,7 +80,7 @@ export function useCheckInCode(appointmentId: string) {
 
 // Center verifies a check-in code
 export function useVerifyCheckInCode(code: string) {
-  return useQuery({
+  return queryOptions({
     queryKey: ['verifyCheckInCode', code],
     queryFn: () => patientService.verifyCheckInCode(code),
     enabled: !!code,
@@ -90,7 +89,7 @@ export function useVerifyCheckInCode(code: string) {
 
 // Get patient screening results (paginated)
 export function usePatientResults(params: { page?: number; size?: number }) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, 'patientResults', params],
     queryFn: () => patientService.getPatientResults(params),
   })
@@ -98,7 +97,7 @@ export function usePatientResults(params: { page?: number; size?: number }) {
 
 // Get a specific screening result
 export function usePatientResult(id: string) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, 'patientResult', id],
     queryFn: () => patientService.getPatientResult(id),
     enabled: !!id,
@@ -107,7 +106,7 @@ export function usePatientResult(id: string) {
 
 // Get patient receipts (paginated)
 export function usePatientReceipts(params: { page?: number; size?: number }) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, 'patientReceipts', params],
     queryFn: () => patientService.getPatientReceipts(params),
   })
@@ -115,7 +114,7 @@ export function usePatientReceipts(params: { page?: number; size?: number }) {
 
 // Get a specific receipt
 export function usePatientReceipt(id: string) {
-  return useQuery({
+  return queryOptions({
     queryKey: [QueryKeys.authUser, 'patientReceipt', id],
     queryFn: () => patientService.getPatientReceipt(id),
     enabled: !!id,

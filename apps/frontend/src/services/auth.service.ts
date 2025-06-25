@@ -4,8 +4,12 @@ import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import type {
   TActors,
   TAuthMeResponse,
-  TCheckProfilesResponse,
+  TForgotPasswordResponse,
   TLoginResponse,
+  TLogoutResponse,
+  TResendVerificationResponse,
+  TResetPasswordResponse,
+  TVerifyEmailResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 
@@ -13,28 +17,22 @@ import type { z } from 'zod'
 export const loginUser = async (
   params: z.infer<typeof loginSchema>,
   actor: TActors,
-) => {
-  return (await request.post(
-    endpoints.loginUser(actor),
-    params,
-  )) as TLoginResponse
+): Promise<TLoginResponse> => {
+  return await request.post(endpoints.loginUser(actor), params)
 }
 
 // Authenticated user service
-export const authUser = async () => {
+export const authUser = async (): Promise<TAuthMeResponse | null> => {
   try {
-    // Attempt to get the authenticated user
     return await request.get<TAuthMeResponse>(endpoints.authUser())
   } catch (error) {
-    // If the request fails, return null
     console.error('Error fetching authenticated user:', error)
     return null
   }
-  // return await request.get<TAuthMeResponse>(endpoints.authUser())
 }
 
 // logout
-export const logout = async () => {
+export const logout = async (): Promise<TLogoutResponse> => {
   return await request.post(endpoints.logoutUser())
 }
 
@@ -44,17 +42,24 @@ export const checkProfiles = async (email: string) => {
 }
 
 // Forgot password
-export const forgotPassword = async (email: string) => {
+export const forgotPassword = async (
+  email: string,
+): Promise<TForgotPasswordResponse> => {
   return await request.post(endpoints.forgotPassword(), { email })
 }
 
 // Reset password
-export const resetPassword = async (token: string, password: string) => {
+export const resetPassword = async (
+  token: string,
+  password: string,
+): Promise<TResetPasswordResponse> => {
   return await request.post(endpoints.resetPassword(), { token, password })
 }
 
 // Verify email
-export const verifyEmail = async (token: string) => {
+export const verifyEmail = async (
+  token: string,
+): Promise<TVerifyEmailResponse> => {
   return await request.post(endpoints.verifyEmail(), { token })
 }
 
@@ -62,7 +67,7 @@ export const verifyEmail = async (token: string) => {
 export const resendVerification = async (
   email: string,
   profileType: string,
-) => {
+): Promise<TResendVerificationResponse> => {
   return await request.post(endpoints.resendVerification(), {
     email,
     profileType,

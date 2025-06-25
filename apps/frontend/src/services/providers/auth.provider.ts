@@ -1,5 +1,6 @@
 import * as authService from '@/services/auth.service'
 import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
+// import * as registerService from '@/services/register.service'
 import {
   QueryClient,
   queryOptions,
@@ -44,6 +45,7 @@ export const useAuthUser = () =>
     // throwOnError
     throwOnError: false,
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
 export const isAuthMiddleware = async (
