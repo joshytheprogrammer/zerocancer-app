@@ -1,11 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
-import { inviteStaffSchema } from "@zerocancer/shared/schemas/center.schema";
+import { inviteStaffSchema } from "@zerocancer/shared";
 import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
-} from "@zerocancer/shared/schemas/centerStaff.schema";
+} from "@zerocancer/shared";
 import type {
   TCenterStaffForgotPasswordResponse,
   TCenterStaffLoginResponse,

@@ -22,3 +22,15 @@ export const getScreeningTypesByCategoryQuerySchema =
   getScreeningTypesQuerySchema.extend({
     categoryId: z.string(),
   });
+
+export const getScreeningTypeByIdSchema = z.object({
+  id: z.string().min(1),
+});
+
+export const getScreeningTypeByNameSchema = z.object({
+  name: z.string().min(1),
+});
+
+export const getScreeningTypesByCategoryParamSchema = z.object({
+  categoryId: z.string().min(1),
+});

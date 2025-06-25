@@ -1,9 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import {
-  notificationRecipientResponseSchema,
-  notificationResponseSchema,
+  // notificationRecipientResponseSchema,
+  // notificationResponseSchema,
   notificationSchema,
-} from "@zerocancer/shared/schemas/notification.schema";
+} from "@zerocancer/shared";
 import type {
   TCreateNotificationResponse,
   TErrorResponse,
