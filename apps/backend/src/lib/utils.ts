@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
-import { patientAppointmentApp } from "src/api/appointments/patient.appointment";
+import bcrypt from "bcryptjs";
 import { getDB } from "./db";
 
 export async function getUserWithProfiles({ email }: { email: string }) {
@@ -27,6 +27,10 @@ export async function getUserWithProfiles({ email }: { email: string }) {
   }
   return { user, profiles: userProfiles };
 }
+
+export const hashPassword = async (password: string) => {
+  return await bcrypt.hash(password, 10);
+};
 
 /**
  * Rules for waitlistMatcherAlg:

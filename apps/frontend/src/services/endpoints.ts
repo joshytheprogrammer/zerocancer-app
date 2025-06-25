@@ -98,6 +98,7 @@ export const uploadResults = (page = 1, size = 20) =>
   `/api/center/results${buildQuery({ page, size })}`
 export const getResultHistory = () => '/api/center/results-history'
 export const inviteStaff = () => '/api/center/staff/invite'
+export const createCenterStaffPassword = () => '/api/center/create-new-password'
 export const getCenterReceipts = (page = 1, size = 20) =>
   `/api/center/receipt-history${buildQuery({ page, size })}`
 
@@ -137,20 +138,33 @@ export const getPatientReceipts = (params: { page?: number; size?: number }) =>
 export const getPatientReceipt = (id: string) => `/api/patient/receipts/${id}`
 
 // Screening types
-export const getScreeningTypes = (params: { page?: number; pageSize?: number; search?: string }) =>
+export const getScreeningTypes = (params: {
+  page?: number
+  pageSize?: number
+  search?: string
+}) =>
   `/api/screening-types${buildQuery({
     page: params.page ?? 1,
     pageSize: params.pageSize ?? 20,
     search: params.search ?? undefined,
-  })}`;
+  })}`
 export const getAllScreeningTypes = (search?: string) =>
-  `/api/screening-types/all${buildQuery({ search })}`;
-export const getScreeningTypeCategories = () => `/api/screening-types/categories`;
-export const getScreeningTypesByCategory = (categoryId: string, params: { page?: number; pageSize?: number; search?: string }) =>
+  `/api/screening-types/all${buildQuery({ search })}`
+export const getScreeningTypeCategories = () =>
+  `/api/screening-types/categories`
+export const getScreeningTypesByCategory = (
+  categoryId: string,
+  params: { page?: number; pageSize?: number; search?: string },
+) =>
   `/api/screening-types/category/${categoryId}${buildQuery({
     page: params.page ?? 1,
     pageSize: params.pageSize ?? 20,
     search: params.search ?? undefined,
-  })}`;
-export const getScreeningTypeById = (id: string) => `/api/screening-types/${id}`;
-export const getScreeningTypeByName = (name: string) => `/api/screening-types/by-name/${encodeURIComponent(name)}`;
+  })}`
+export const getScreeningTypeById = (id: string) => `/api/screening-types/${id}`
+export const getScreeningTypeByName = (name: string) =>
+  `/api/screening-types/by-name/${encodeURIComponent(name)}`
+
+// CENTER STAFF
+export const centerStaffForgotPassword = () => '/api/center/staff/forgot-password'
+export const centerStaffResetPassword = () => '/api/center/staff/reset-password'

@@ -264,3 +264,14 @@ export type TGetScreeningTypeResponse = {
   ok: boolean;
   data: TScreeningType;
 };
+
+export type TInviteStaffResponse = TDataResponse<{
+  invites: Array<{ email: string; token: string }>;
+}>;
+
+export type TCreateCenterStaffPasswordResponse = TDataResponse<{
+  staffId: string;
+}>;
+
+export type TCenterStaffForgotPasswordResponse = TDataResponse<{ message: string }>;
+export type TCenterStaffResetPasswordResponse = TDataResponse<{ message: string }>;

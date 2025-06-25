@@ -57,11 +57,14 @@ export enum MutationKeys {
   resendReceipt = 'resendReceipt',
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
+  createCenterStaffPassword = 'createCenterStaffPassword',
   resendVerification = 'resendVerification',
   selectCenter = 'selectCenter',
   // Notification mutations
   markNotificationRead = 'markNotificationRead',
   createNotification = 'createNotification',
+  centerStaffForgotPassword = 'centerStaffForgotPassword',
+  centerStaffResetPassword = 'centerStaffResetPassword',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
