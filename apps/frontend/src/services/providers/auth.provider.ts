@@ -1,6 +1,6 @@
 import * as authService from '@/services/auth.service'
 import { ACCESS_TOKEN_KEY, MutationKeys } from '@/services/keys'
-import * as registerService from '@/services/register.service'
+// import * as registerService from '@/services/register.service'
 import {
   QueryClient,
   queryOptions,
