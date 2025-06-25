@@ -233,3 +233,34 @@ export type TGetPatientReceiptsResponse = TDataResponse<{
   totalPages: number;
 }>;
 export type TGetPatientReceiptResponse = TDataResponse<TPatientReceipt>;
+
+export type TScreeningType = {
+  id: string;
+  name: string;
+  screeningTypeCategoryId: string;
+  active: boolean;
+};
+
+export type TScreeningTypeCategory = {
+  id: string;
+  name: string;
+};
+
+export type TGetScreeningTypesResponse = {
+  ok: boolean;
+  data: TScreeningType[];
+  page?: number;
+  pageSize?: number;
+  total?: number;
+  totalPages?: number;
+};
+
+export type TGetScreeningTypeCategoriesResponse = {
+  ok: boolean;
+  data: TScreeningTypeCategory[];
+};
+
+export type TGetScreeningTypeResponse = {
+  ok: boolean;
+  data: TScreeningType;
+};

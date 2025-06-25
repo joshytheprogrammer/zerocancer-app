@@ -14,10 +14,10 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
+import type { THonoAppVariables } from "src/lib/types";
 import { getUserWithProfiles } from "src/lib/utils";
-import { z } from "zod";
 
-export const registerApp = new Hono();
+export const registerApp = new Hono<{ Variables: THonoAppVariables }>();
 
 registerApp.post(
   "/check-profiles",
@@ -341,8 +341,12 @@ registerApp.post(
         address: data.address!,
         state: data.state!,
         lga: data.localGovernment!,
+        services: {
+          connect: (data.services || []).map((id: string) => ({ id })),
+        },
         bankAccount: "",
       },
+      include: { services: { select: { id: true } } },
     });
     return c.json<TScreeningCenterRegisterResponse>(
       {
@@ -356,7 +360,7 @@ registerApp.post(
           address: center.address,
           state: center.state,
           localGovernment: center.lga,
-          services: [],
+          services: center.services.map((s: { id: string }) => s.id),
         },
       },
       201

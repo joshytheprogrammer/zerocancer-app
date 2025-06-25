@@ -26,6 +26,14 @@ export enum QueryKeys {
   adminStore = 'adminStore',
   adminRoles = 'adminRoles',
   checkProfiles = 'checkProfiles',
+
+  // Screening type queries
+  screeningTypes = 'screeningTypes',
+  screeningTypesAll = 'screeningTypesAll',
+  screeningTypeCategories = 'screeningTypeCategories',
+  screeningTypesCategory = 'screeningTypesCategory',
+  screeningType = 'screeningType',
+  screeningTypeByName = 'screeningTypeByName',
 }
 
 export enum MutationKeys {

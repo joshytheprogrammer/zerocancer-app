@@ -134,5 +134,23 @@ export const getPatientReceipts = (params: { page?: number; size?: number }) =>
     page: params.page ?? 1,
     size: params.size ?? 20,
   })}`
-
 export const getPatientReceipt = (id: string) => `/api/patient/receipts/${id}`
+
+// Screening types
+export const getScreeningTypes = (params: { page?: number; pageSize?: number; search?: string }) =>
+  `/api/screening-types${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    search: params.search ?? undefined,
+  })}`;
+export const getAllScreeningTypes = (search?: string) =>
+  `/api/screening-types/all${buildQuery({ search })}`;
+export const getScreeningTypeCategories = () => `/api/screening-types/categories`;
+export const getScreeningTypesByCategory = (categoryId: string, params: { page?: number; pageSize?: number; search?: string }) =>
+  `/api/screening-types/category/${categoryId}${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    search: params.search ?? undefined,
+  })}`;
+export const getScreeningTypeById = (id: string) => `/api/screening-types/${id}`;
+export const getScreeningTypeByName = (name: string) => `/api/screening-types/by-name/${encodeURIComponent(name)}`;

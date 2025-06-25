@@ -5,6 +5,7 @@ import { logger } from "hono/logger";
 import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
 import { registerApp } from "./api/registration";
+import { screeningTypesApp } from "./api/screening-types";
 
 const app = new Hono().basePath("/api/v1");
 
@@ -29,6 +30,7 @@ app.get("/healthz", (c) => c.json({ status: "ok" }));
 app.route("/auth", authApp);
 app.route("/register", registerApp);
 app.route("/appointment", appointmentApp);
+app.route("/screening-types", screeningTypesApp);
 
 app.notFound((c) => {
   return c.json(
