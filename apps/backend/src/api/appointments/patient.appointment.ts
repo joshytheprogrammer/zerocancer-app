@@ -66,7 +66,7 @@ patientAppointmentApp.post(
     const transaction = await db.transaction.create({
       data: {
         type: "APPOINTMENT",
-        status: "PAID",
+        status: "COMPLETED",
         amount: 30, // TODO: set actual amount
         paymentReference, // store actual paystack payment reference
         paymentChannel: "PAYSTACK",
