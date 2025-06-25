@@ -20,7 +20,13 @@ export const rescheduleCenterAppointmentSchema = z.object({
   reason: z.string().optional(),
 });
 
+export const verifyCheckInCodeSchema = z.object({
+  checkInCode: z.string().min(1, "Check-in code is required"),
+});
+
 export type TGetCenterAppointmentsSchema = typeof getCenterAppointmentsSchema;
 export type TGetCenterAppointmentsParams = z.infer<
   typeof getCenterAppointmentsSchema
 >;
+export type TVerifyCheckInCodeSchema = typeof verifyCheckInCodeSchema;
+export type TVerifyCheckInCodeParams = z.infer<typeof verifyCheckInCodeSchema>;

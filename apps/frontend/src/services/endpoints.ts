@@ -83,8 +83,7 @@ export const getPatientResults = (params: { page?: number; size?: number }) =>
 export const getCheckInCode = (appointmentId: string) =>
   `/api/patient/appointments/${appointmentId}/checkin-code`
 // Center verifies a check-in code
-export const verifyCheckInCode = (code: string) =>
-  `/api/center/appointments/verify-checkin/${code}`
+export const verifyCheckInCode = () => `/api/center/appointments/verify`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'

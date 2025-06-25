@@ -3,6 +3,7 @@ import {
   // getCenterAppointmentByIdSchema,
   cancelCenterAppointmentSchema,
   getCenterAppointmentsSchema,
+  verifyCheckInCodeSchema,
 } from '@zerocancer/shared/schemas/appointment.schema'
 import {
   getCenterByIdSchema,
@@ -26,6 +27,7 @@ import type {
   TGetCenterByIdResponse,
   TGetCentersResponse,
   TInviteStaffResponse,
+  TVerifyCheckInCodeResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
 import * as endpoints from './endpoints'
@@ -78,6 +80,18 @@ export const cancelCenterAppointment = async (
 ): Promise<TCancelCenterAppointmentResponse> => {
   const res = await request.post(endpoints.cancelCenterAppointment(id), params)
   return res as TCancelCenterAppointmentResponse
+}
+
+export const verifyCheckInCode = async (
+  params: z.infer<typeof verifyCheckInCodeSchema>,
+): Promise<TVerifyCheckInCodeResponse> => {
+  // Validate params using shared Zod schema
+  const parsed = verifyCheckInCodeSchema.safeParse(params)
+  if (!parsed.success) {
+    throw new Error('Invalid params for verifyCheckInCode')
+  }
+  const res = await request.post(endpoints.verifyCheckInCode(), parsed.data)
+  return res as TVerifyCheckInCodeResponse
 }
 
 // --- Staff Management ---

@@ -82,7 +82,7 @@ patientAppointmentApp.post(
         isDonation: false,
         status: "SCHEDULED",
         transactionId: transaction.id!, // Link appointment to transaction
-        checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
+        checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
       include: {
@@ -307,7 +307,7 @@ patientAppointmentApp.post(
         appointmentDate: new Date(appointmentDate!),
         appointmentTime: new Date(appointmentTime!),
         donationId: allocation.campaignId!,
-        checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
+        checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
       include: {

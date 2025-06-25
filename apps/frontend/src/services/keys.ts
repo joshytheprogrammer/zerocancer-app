@@ -71,6 +71,7 @@ export enum MutationKeys {
   centerStaffLogin = 'centerStaffLogin',
   // Appointment mutations
   cancelCenterAppointment = 'cancelCenterAppointment',
+  verifyCheckInCode = 'verifyCheckInCode',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

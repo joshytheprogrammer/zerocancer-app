@@ -73,3 +73,9 @@ export const useCancelCenterAppointment = () =>
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       centerService.cancelCenterAppointment(id, { reason }),
   })
+
+export const useVerifyCheckInCode = () =>
+  useMutation({
+    mutationKey: [MutationKeys.verifyCheckInCode],
+    mutationFn: centerService.verifyCheckInCode,
+  })
