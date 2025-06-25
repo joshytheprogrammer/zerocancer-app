@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCenterRegistration } from '@/services/providers/register.provider'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import { useQuery } from '@tanstack/react-query'
 import statesData from '@zerocancer/shared/constants/states.json'
 import { centerSchema } from '@zerocancer/shared/schemas/register.schema'
 import * as RPNInput from 'react-phone-number-input'
@@ -43,6 +45,11 @@ export default function ScreeningCenterForm({
   const [localGovernments, setLocalGovernments] = useState<
     Array<{ name: string; id: number }>
   >([])
+
+  // Fetch available screening types from the backend
+  const { data: screeningTypesResponse, isLoading: isLoadingScreeningTypes } = useQuery(
+    useAllScreeningTypes()
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(centerSchema),
@@ -97,11 +104,8 @@ export default function ScreeningCenterForm({
     // onSubmitSuccess(values)
   }
 
-  const servicesItems = [
-    { id: 'screening', label: 'Screening' },
-    { id: 'vaccine', label: 'Vaccine' },
-    { id: 'treatment', label: 'Treatment' },
-  ] as const
+  // Get screening types for the services selection
+  const screeningTypes = screeningTypesResponse?.data || []
 
   return (
     <Form {...form}>
@@ -197,26 +201,32 @@ export default function ScreeningCenterForm({
               <FormDescription>
                 Select all services offered at your center.
               </FormDescription>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {servicesItems.map((item) => (
-                  <Button
-                    type="button"
-                    key={item.id}
-                    variant={
-                      field.value.includes(item.id) ? 'default' : 'outline'
-                    }
-                    onClick={() => {
-                      const currentServices = field.value
-                      const newServices = currentServices.includes(item.id)
-                        ? currentServices.filter((s) => s !== item.id)
-                        : [...currentServices, item.id]
-                      field.onChange(newServices)
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </div>
+              {isLoadingScreeningTypes ? (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {screeningTypes.map((screeningType) => (
+                    <Button
+                      type="button"
+                      key={screeningType.id}
+                      variant={
+                        field.value.includes(screeningType.id) ? 'default' : 'outline'
+                      }
+                      onClick={() => {
+                        const currentServices = field.value
+                        const newServices = currentServices.includes(screeningType.id)
+                          ? currentServices.filter((s) => s !== screeningType.id)
+                          : [...currentServices, screeningType.id]
+                        field.onChange(newServices)
+                      }}
+                    >
+                      {screeningType.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}

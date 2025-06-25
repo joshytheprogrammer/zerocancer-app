@@ -237,6 +237,7 @@ export type TGetPatientReceiptResponse = TDataResponse<TPatientReceipt>;
 export type TScreeningType = {
   id: string;
   name: string;
+  description?: string;
   screeningTypeCategoryId: string;
   active: boolean;
 };

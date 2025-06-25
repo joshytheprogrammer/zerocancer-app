@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -8,85 +8,107 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useBookSelfPayAppointment, usePatientAppointments, usePatientResults } from '@/services/providers/patient.provider'
-import { useAuthUser, useCheckProfiles } from '@/services/providers/auth.provider'
+import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
+import {
+  useAuthUser,
+  useCheckProfiles,
+} from '@/services/providers/auth.provider'
 import { useQuery } from '@tanstack/react-query'
-import { Calendar, FileText, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  Calendar,
+  FileText,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import {
+  usePatientAppointments,
+  usePatientResults,
+  useJoinWaitlist,
+} from '@/services/providers/patient.provider'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
 })
 
-const screeningOptions = [
-  {
-    id: 'cervical',
-    title: 'Cervical Cancer Screening',
-    description:
-      'Detects abnormal cells on the cervix. Recommended for women aged 21 and over.',
-  },
-  {
-    id: 'prostate',
-    title: 'Prostate Cancer Screening',
-    description:
-      'Includes a PSA blood test to screen for prostate cancer. Recommended for men over 50.',
-  },
-  {
-    id: 'breast',
-    title: 'Breast Cancer Screening',
-    description:
-      'A mammogram to detect breast cancer early. Recommended for women over 40.',
-  },
-]
-
 function PatientDashboard() {
+  const navigate = useNavigate()
+
   // Get authenticated user data
   const { data: authData } = useQuery(useAuthUser())
   const userEmail = authData?.data?.user?.email
   const { data: checkProfilesData } = useCheckProfiles(userEmail || '')
 
-  console.log(checkProfilesData)
+  // Fetch all screening types from backend
+  const {
+    data: screeningTypesData,
+    isLoading: screeningTypesLoading,
+    error: screeningTypesError,
+  } = useQuery(useAllScreeningTypes())
 
-  // Get patient appointments (recent ones for dashboard)  
-  const { data: appointmentsData, isLoading: appointmentsLoading } = usePatientAppointments({
-    page: 1,
-    size: 3, 
-    status: 'scheduled' 
-  })
-  
-  // Get patient results (recent ones for dashboard)
-  const { data: resultsData, isLoading: resultsLoading } = usePatientResults({
-    page: 1,
-    size: 3 
-  })
+  console.log(screeningTypesData)
+
+  // Fetch patient appointments (recent ones for dashboard)
+  const {
+    data: appointmentsData,
+    isLoading: appointmentsLoading,
+    error: appointmentsError,
+  } = useQuery(
+    usePatientAppointments({ page: 1, size: 3, status: 'scheduled' }),
+  )
+
+  // Fetch patient results (recent ones for dashboard)
+  const {
+    data: resultsData,
+    isLoading: resultsLoading,
+    error: resultsError,
+  } = useQuery(usePatientResults({ page: 1, size: 3 }))
+
+  const joinWaitlistMutation = useJoinWaitlist();
 
   const handlePayAndBook = (screeningId: string) => {
-    console.log(`User wants to pay and book for: ${screeningId}`)
-    // Future: Navigate to booking flow
-
-    const { data: bookSelfPayAppointmentData } = useBookSelfPayAppointment()
-
-  }
+      console.log(`User wants to pay and book for: ${screeningId}`)
+      navigate({ to: '/patient/book/pay', search: { screeningTypeId: screeningId } })
+    }
 
   const handleJoinWaitlist = (screeningId: string) => {
-    console.log(`User wants to join waitlist for: ${screeningId}`)
-    // Future: Add user to waitlist
+    joinWaitlistMutation.mutate(
+      { screeningTypeId: screeningId },
+      {
+        onSuccess: (data) => {
+          toast.success('You have been added to the waitlist');
+          console.log('Join waitlist success:', data);
+        },
+        onError: (error: any) => {
+          if (error?.response?.status === 400 && error?.response?.data?.error) {
+            toast.error(error.response.data.error);
+          } else {
+            toast.error(error.code);
+          }
+          console.error('Join waitlist error:', error);
+        },
+      }
+    );
   }
 
   // Extract user name from auth data
   const userName = authData?.data?.user?.fullName || 'Patient'
 
   // Get upcoming appointment (first scheduled appointment)
-  const upcomingAppointment = (appointmentsData as any)?.data?.appointments?.[0] || null
+  const upcomingAppointment = appointmentsData?.data?.appointments?.[0] || null
 
   // Get latest result
-  const latestResult = (resultsData as any)?.data?.results?.[0] || null
+  const latestResult = resultsData?.data?.results?.[0] || null
 
   return (
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Welcome back, {userName}!</h1>
         <p className="text-muted-foreground">
-          Here's a summary of your health journey. Manage your screenings and track your results.
+          Here's a summary of your health journey. Manage your screenings and
+          track your results.
         </p>
       </div>
 
@@ -117,25 +139,32 @@ function PatientDashboard() {
         <div className="space-y-6 lg:col-span-2">
           <h2 className="text-xl font-semibold">Book a New Screening</h2>
           <div className="grid gap-6 md:grid-cols-2">
-            {screeningOptions.map((option) => (
-              <Card key={option.id}>
-                <CardHeader>
-                  <CardTitle>{option.title}</CardTitle>
-                  <CardDescription>{option.description}</CardDescription>
-                </CardHeader>
-                <CardFooter className="flex justify-between">
-                  <Button onClick={() => handlePayAndBook(option.id)}>
-                    Pay and Book
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleJoinWaitlist(option.id)}
-                  >
-                    Join Waitlist
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {screeningTypesLoading ? (
+              <div>Loading screening types...</div>
+            ) : screeningTypesError ? (
+              <div>Error loading screening types. {screeningTypesError.message}</div>
+            ) : (
+              (screeningTypesData?.data || []).map((option) => (
+                <Card key={option.id}>
+                  <CardHeader>
+                    <CardTitle>{option.name}</CardTitle>
+                    <CardDescription className='line-clamp-2 min-h-[3em]'>{option.description || 'No description available'} </CardDescription>
+                  </CardHeader>
+                  <CardFooter className="flex justify-between">
+                    <Button onClick={() => handlePayAndBook(option.id)}>
+                      Pay and Book
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleJoinWaitlist(option.id)}
+                      disabled={joinWaitlistMutation.isPending}
+                    >
+                      Join Waitlist
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 
@@ -157,28 +186,41 @@ function PatientDashboard() {
                 </div>
               ) : upcomingAppointment ? (
                 <div>
-                  <p className="font-semibold">{upcomingAppointment.screeningType?.name || 'Screening'}</p>
+                  <p className="font-semibold">
+                    {upcomingAppointment.screeningType?.name || 'Screening'}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {upcomingAppointment.center?.centerName || 'Health Center'}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(upcomingAppointment.appointmentDate).toLocaleDateString()} at{' '}
-                    {new Date(upcomingAppointment.appointmentTime).toLocaleTimeString([], {
+                    {new Date(
+                      upcomingAppointment.appointmentDate,
+                    ).toLocaleDateString()}{' '}
+                    at{' '}
+                    {new Date(
+                      upcomingAppointment.appointmentTime,
+                    ).toLocaleTimeString([], {
                       hour: '2-digit',
-                      minute: '2-digit'
+                      minute: '2-digit',
                     })}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      upcomingAppointment.status === 'SCHEDULED' ? 'bg-blue-500' : 'bg-gray-400'
-                    }`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        upcomingAppointment.status === 'SCHEDULED'
+                          ? 'bg-blue-500'
+                          : 'bg-gray-400'
+                      }`}
+                    ></div>
                     <span className="text-sm text-muted-foreground capitalize">
                       {upcomingAppointment.status?.toLowerCase()}
                     </span>
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground">You have no upcoming appointments.</p>
+                <p className="text-muted-foreground">
+                  You have no upcoming appointments.
+                </p>
               )}
             </CardContent>
             <CardFooter>
@@ -204,23 +246,31 @@ function PatientDashboard() {
                 </div>
               ) : latestResult ? (
                 <div>
-                  <p className="font-semibold">
-                    {latestResult.appointment?.screeningType?.name || 'Screening Result'}
+                  {/* <p className="font-semibold">
+                    {latestResult.appointment?.screeningType?.name ||
+                      'Screening Result'}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Result from {new Date(latestResult.uploadedAt).toLocaleDateString()}
+                    Result from{' '}
+                    {new Date(latestResult.uploadedAt).toLocaleDateString()}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      latestResult.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                    }`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        latestResult.status === 'completed'
+                          ? 'bg-green-500'
+                          : 'bg-yellow-500'
+                      }`}
+                    ></div>
                     <span className="text-sm font-medium capitalize">
                       {latestResult.status}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               ) : (
-                <p className="text-muted-foreground">No recent results are available.</p>
+                <p className="text-muted-foreground">
+                  No recent results are available.
+                </p>
               )}
             </CardContent>
             <CardFooter>
@@ -233,4 +283,4 @@ function PatientDashboard() {
       </div>
     </div>
   )
-} 
+}

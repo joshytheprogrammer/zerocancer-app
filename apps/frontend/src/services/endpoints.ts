@@ -48,7 +48,7 @@ export const getResults = (page = 1, size = 20) =>
   `/api/patient/results${buildQuery({ page, size })}`
 export const getWaitlists = (page = 1, size = 20) =>
   `/api/patient/waitlists${buildQuery({ page, size })}`
-export const joinWaitlist = () => '/api/patient/waitlists/join'
+export const joinWaitlist = () => '/api/appointment/patient/waitlists/join'
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
 export const getEligibleCenters = (

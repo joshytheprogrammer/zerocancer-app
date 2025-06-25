@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Bell, Briefcase, FileText, Home, LogOut   } from 'lucide-react'
+import { Bell, Briefcase, FileText, Home, LogOut, BookOpen } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
@@ -51,6 +51,15 @@ function PatientLayout() {
               >
                 <Home className="h-4 w-4" />
                 Dashboard
+              </Link>
+              <Link
+                to="/patient/book"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                activeOptions={{ exact: true }}
+                activeProps={{ className: 'bg-muted text-primary' }}
+              >
+                <BookOpen className="h-4 w-4" />
+                Book Screening
               </Link>
               <Link
                 to="/patient/notifications"

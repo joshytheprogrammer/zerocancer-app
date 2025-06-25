@@ -70,6 +70,7 @@ screeningTypesApp.get(
       select: {
         id: true,
         name: true,
+        description: true,
         screeningTypeCategoryId: true,
         active: true,
       },

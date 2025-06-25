@@ -3,6 +3,7 @@ import { z } from "zod";
 export const screeningTypeSchema = z.object({
   id: z.string(),
   name: z.string(),
+  description: z.string().optional(),
   screeningTypeCategoryId: z.string(),
   active: z.boolean(),
 });

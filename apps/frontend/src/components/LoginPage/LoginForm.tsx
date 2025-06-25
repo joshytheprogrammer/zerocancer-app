@@ -34,7 +34,7 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'raphaelgbaorun@gmail.com',
-      password: 'Raphael@12',
+      password: 'aaaaaaaa',
     },
   })
 

@@ -46,6 +46,8 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
+import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
 import { Route as authSignUpLayoutPatientRouteImport } from './routes/(auth)/sign-up/_layout/patient'
@@ -233,6 +235,16 @@ const authLoginRoute = authLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => authRouteRoute,
 } as any)
+const PatientBookIndexRoute = PatientBookIndexRouteImport.update({
+  id: '/book/',
+  path: '/book/',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientBookPayRoute = PatientBookPayRouteImport.update({
+  id: '/book/pay',
+  path: '/book/pay',
+  getParentRoute: () => PatientRoute,
+} as any)
 const authSignUpLayoutRouteRoute = authSignUpLayoutRouteRouteImport.update({
   id: '/_layout',
   getParentRoute: () => authSignUpRoute,
@@ -294,6 +306,8 @@ export interface FileRoutesByFullPath {
   '/donor/': typeof DonorIndexRoute
   '/patient/': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
+  '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
   '/sign-up/donor': typeof authSignUpLayoutDonorRoute
   '/sign-up/patient': typeof authSignUpLayoutPatientRoute
@@ -331,6 +345,8 @@ export interface FileRoutesByTo {
   '/donor': typeof DonorIndexRoute
   '/patient': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
+  '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
   '/sign-up/donor': typeof authSignUpLayoutDonorRoute
   '/sign-up/patient': typeof authSignUpLayoutPatientRoute
@@ -374,6 +390,8 @@ export interface FileRoutesById {
   '/patient/': typeof PatientIndexRoute
   '/(auth)/sign-up': typeof authSignUpRouteWithChildren
   '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
+  '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book/': typeof PatientBookIndexRoute
   '/(auth)/sign-up/_layout/center': typeof authSignUpLayoutCenterRoute
   '/(auth)/sign-up/_layout/donor': typeof authSignUpLayoutDonorRoute
   '/(auth)/sign-up/_layout/patient': typeof authSignUpLayoutPatientRoute
@@ -417,6 +435,8 @@ export interface FileRouteTypes {
     | '/donor/'
     | '/patient/'
     | '/sign-up'
+    | '/patient/book/pay'
+    | '/patient/book'
     | '/sign-up/center'
     | '/sign-up/donor'
     | '/sign-up/patient'
@@ -454,6 +474,8 @@ export interface FileRouteTypes {
     | '/donor'
     | '/patient'
     | '/sign-up'
+    | '/patient/book/pay'
+    | '/patient/book'
     | '/sign-up/center'
     | '/sign-up/donor'
     | '/sign-up/patient'
@@ -496,6 +518,8 @@ export interface FileRouteTypes {
     | '/patient/'
     | '/(auth)/sign-up'
     | '/(auth)/sign-up/_layout'
+    | '/patient/book/pay'
+    | '/patient/book/'
     | '/(auth)/sign-up/_layout/center'
     | '/(auth)/sign-up/_layout/donor'
     | '/(auth)/sign-up/_layout/patient'
@@ -767,6 +791,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authLoginRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/patient/book/': {
+      id: '/patient/book/'
+      path: '/book'
+      fullPath: '/patient/book'
+      preLoaderRoute: typeof PatientBookIndexRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/book/pay': {
+      id: '/patient/book/pay'
+      path: '/book/pay'
+      fullPath: '/patient/book/pay'
+      preLoaderRoute: typeof PatientBookPayRouteImport
+      parentRoute: typeof PatientRoute
+    }
     '/(auth)/sign-up/_layout': {
       id: '/(auth)/sign-up/_layout'
       path: '/sign-up'
@@ -924,6 +962,8 @@ interface PatientRouteChildren {
   PatientNotificationsRoute: typeof PatientNotificationsRoute
   PatientResultsRoute: typeof PatientResultsRoute
   PatientIndexRoute: typeof PatientIndexRoute
+  PatientBookPayRoute: typeof PatientBookPayRoute
+  PatientBookIndexRoute: typeof PatientBookIndexRoute
 }
 
 const PatientRouteChildren: PatientRouteChildren = {
@@ -931,6 +971,8 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientNotificationsRoute: PatientNotificationsRoute,
   PatientResultsRoute: PatientResultsRoute,
   PatientIndexRoute: PatientIndexRoute,
+  PatientBookPayRoute: PatientBookPayRoute,
+  PatientBookIndexRoute: PatientBookIndexRoute,
 }
 
 const PatientRouteWithChildren =

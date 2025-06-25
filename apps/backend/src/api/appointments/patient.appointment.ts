@@ -156,6 +156,7 @@ patientAppointmentApp.post(
   }),
   async (c) => {
     const db = getDB();
+    console.log("join waitlist");
     const { screeningTypeId } = c.req.valid("json");
 
     const payload = c.get("jwtPayload");
@@ -171,11 +172,12 @@ patientAppointmentApp.post(
     // Check eligibility to join waitlist
     const canJoin = await canJoinWaitlist(db, patientId, screeningTypeId);
     if (!canJoin) {
-      return c.json(
+      return c.json<TErrorResponse>(
         {
           ok: false,
-          message:
-            "You already have an active waitlist entry for this screening type.",
+          error: "You already have an active waitlist entry for this screening type.",
+          err_code: "WAITLIST_ALREADY_EXISTS",
+          
         },
         400
       );
