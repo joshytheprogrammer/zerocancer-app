@@ -14,7 +14,7 @@ export const centerAppointmentApp = new Hono<{
 }>();
 
 // Middleware to ensure user is authenticated
-centerAppointmentApp.use(authMiddleware("center"));
+centerAppointmentApp.use(authMiddleware(["center"]));
 
 // GET /api/center/appointments/verify-checkin/:code
 centerAppointmentApp.get("/verify-checkin/:code", async (c) => {

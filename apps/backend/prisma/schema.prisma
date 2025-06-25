@@ -108,6 +108,8 @@ model ServiceCenter {
   staff         CenterStaff[]
   appointments  Appointment[]
   services      ScreeningType[]
+
+  invitations   CenterStaffInvite[]
 }
 
 enum ServiceCenterStatus {
@@ -229,17 +231,6 @@ model ScreeningResult {
   uploader CenterStaff @relation("StaffUploadedResults", fields: [uploadedBy], references: [id])
 }
 
-model CenterStaff {
-  id        String   @id @default(uuid())
-  centerId  String
-  role      String?
-  createdAt DateTime @default(now())
-
-  center    ServiceCenter @relation(fields: [centerId], references: [id])
-  verifications AppointmentVerification[] @relation("StaffVerifications")
-  uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
-}
-
 model StoreProduct {
   id          String   @id @default(uuid())
   name        String
@@ -298,4 +289,38 @@ model NotificationRecipient {
   readAt         DateTime?
   notification   Notification @relation(fields: [notificationId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
+}
+
+model CenterStaff {
+  id        String   @id @default(uuid())
+  centerId  String
+  email     String
+  passwordHash String
+  role      String?
+  createdAt DateTime @default(now())
+
+  center    ServiceCenter @relation(fields: [centerId], references: [id])
+  verifications AppointmentVerification[] @relation("StaffVerifications")
+  uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
+  resetTokens CenterStaffResetToken[]
+}
+
+model CenterStaffInvite {
+  id        String   @id @default(uuid())
+  centerId  String
+  email     String
+  token     String   @unique
+  expiresAt DateTime?
+  acceptedAt DateTime?
+
+  center    ServiceCenter @relation(fields: [centerId], references: [id])
+}
+
+model CenterStaffResetToken {
+  id        String   @id @default(uuid())
+  staffId   String
+  token     String   @unique
+  expiresAt DateTime
+
+  staff     CenterStaff @relation(fields: [staffId], references: [id])
 }

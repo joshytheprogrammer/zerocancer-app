@@ -45,6 +45,7 @@ dev.nix
 .cursor
 tasks.md
 hono-docs.txt
+backend-implementation-rules.md
 
 # lockfiles
 package-lock.json

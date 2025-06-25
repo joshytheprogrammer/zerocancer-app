@@ -26,6 +26,14 @@ export enum QueryKeys {
   adminStore = 'adminStore',
   adminRoles = 'adminRoles',
   checkProfiles = 'checkProfiles',
+
+  // Screening type queries
+  screeningTypes = 'screeningTypes',
+  screeningTypesAll = 'screeningTypesAll',
+  screeningTypeCategories = 'screeningTypeCategories',
+  screeningTypesCategory = 'screeningTypesCategory',
+  screeningType = 'screeningType',
+  screeningTypeByName = 'screeningTypeByName',
 }
 
 export enum MutationKeys {
@@ -49,11 +57,15 @@ export enum MutationKeys {
   resendReceipt = 'resendReceipt',
   donateAnonymous = 'donateAnonymous',
   inviteStaff = 'inviteStaff',
+  createCenterStaffPassword = 'createCenterStaffPassword',
   resendVerification = 'resendVerification',
   selectCenter = 'selectCenter',
   // Notification mutations
   markNotificationRead = 'markNotificationRead',
   createNotification = 'createNotification',
+  centerStaffForgotPassword = 'centerStaffForgotPassword',
+  centerStaffResetPassword = 'centerStaffResetPassword',
+  centerStaffLogin = 'centerStaffLogin',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
