@@ -6,6 +6,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  useQuery,
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
@@ -67,7 +68,7 @@ export const isAuthMiddleware = async (
   return { isAuth, profile }
 }
 
-const useLogout = () => {
+export const useLogout = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   return useMutation({
@@ -86,13 +87,14 @@ export const logOut = () => {
   logout()
 }
 
-// export const useCheckProfiles = () => {
-//   return queryOptions({
-//     queryKey: ['checkProfiles'],
-//     queryFn: registerService.checkProfiles,
-//     retry: false,
-//   })
-// }
+export const useCheckProfiles = (email: string) => {
+  return useQuery({
+    queryKey: ['checkProfiles', email],
+    queryFn: () => authService.checkProfiles(email),
+    retry: false,
+    enabled: !!email,
+  })
+}
 
 export const useForgotPassword = () => {
   return useMutation({

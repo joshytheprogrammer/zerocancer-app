@@ -1,9 +1,32 @@
 import logo from '@/assets/images/logo.svg'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useAuthUser } from '@/services/providers/auth.provider'
+import { useQuery } from '@tanstack/react-query'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: authData } = useQuery(useAuthUser())
+  
+  const isAuthenticated = !!authData?.data?.user
+  const userProfile = authData?.data?.user?.profile?.toLowerCase()
+
+  const getDashboardLink = () => {
+    if (!isAuthenticated) return null
+    
+    switch (userProfile) {
+      case 'patient':
+        return '/patient'
+      case 'donor':
+        return '/donor'
+      case 'center':
+        return '/center'
+      default:
+        return null
+    }
+  }
+
+  const dashboardLink = getDashboardLink()
 
   return (
     <div className="bg-primary py-4 wrapper flex justify-between items-center">
@@ -15,16 +38,26 @@ export default function Navbar() {
         </div>
       </div>
       <div className="hidden md:flex items-center gap-8">
-        <Link to="/login">
-          <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white cursor-pointer">
-            Login
-          </button>
-        </Link>
-        <Link to="/sign-up">
-          <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
-            Sign Up
-          </button>
-        </Link>
+        {isAuthenticated && dashboardLink ? (
+          <Link to={dashboardLink}>
+            <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
+              Dashboard
+            </button>
+          </Link>
+        ) : (
+          <>
+            <Link to="/login">
+              <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white cursor-pointer">
+                Login
+              </button>
+            </Link>
+            <Link to="/sign-up">
+              <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
+                Sign Up
+              </button>
+            </Link>
+          </>
+        )}
       </div>
       <div className="md:hidden">
         <button onClick={() => setIsOpen(!isOpen)} className="text-white">
@@ -93,12 +126,22 @@ export default function Navbar() {
             <a href="#" onClick={() => setIsOpen(false)}>
               Contact Us
             </a>
-            <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white">
-              Login
-            </button>
-            <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
-              Sign Up
-            </button>
+            {isAuthenticated && dashboardLink ? (
+              <Link to={dashboardLink} onClick={() => setIsOpen(false)}>
+                <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
+                  Dashboard
+                </button>
+              </Link>
+            ) : (
+              <>
+                <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white">
+                  Login
+                </button>
+                <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

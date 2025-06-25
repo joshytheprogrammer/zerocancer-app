@@ -36,6 +36,11 @@ export const logout = async (): Promise<TLogoutResponse> => {
   return await request.post(endpoints.logoutUser())
 }
 
+// Check profiles
+export const checkProfiles = async (email: string) => {
+  return await request.post(endpoints.checkProfiles(), { email })
+}
+
 // Forgot password
 export const forgotPassword = async (
   email: string,

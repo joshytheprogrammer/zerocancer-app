@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as endpoints from '@/services/endpoints'
 import { ACCESS_TOKEN_KEY } from '@/services/keys'
-import { QueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 import type * as t from '@zerocancer/shared/types'
 import type { AxiosError, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
 
-const queryClient = new QueryClient()
+// Remove the local QueryClient - we'll pass it as parameter
 axios.defaults.withCredentials = true
 
 async function _get<T>(url: string, options?: AxiosRequestConfig): Promise<T> {
@@ -105,87 +105,89 @@ const processQueue = (
   failedQueue = []
 }
 
-axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
-    if (!error.response) {
-      return Promise.reject(error)
-    }
-
-    if (originalRequest.url?.includes('/api/auth/2fa') === true) {
-      return Promise.reject(error)
-    }
-    if (originalRequest.url?.includes('/api/auth/logout') === true) {
-      return Promise.reject(error)
-    }
-
-    if (error.response.status === 401 && !originalRequest._retry) {
-      console.warn(
-        '401 error, refreshing token & retry is false',
-        error.response.data,
-      )
-      originalRequest._retry = true
-
-      if (isRefreshing) {
-        console.warn('isRefreshing', isRefreshing)
-        try {
-          const token = await new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject })
-          })
-          // queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
-          originalRequest.headers['Authorization'] = 'Bearer ' + token
-          return await axios(originalRequest)
-        } catch (err) {
-          return Promise.reject(err)
-        }
+// Function to setup axios interceptors with the correct QueryClient
+export function setupAxiosInterceptors(queryClient: QueryClient) {
+  axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config
+      if (!error.response) {
+        return Promise.reject(error)
       }
-      isRefreshing = true
 
-      try {
-        const response = await refreshToken(
-          // Handle edge case where we get a blank screen if the initial 401 error is from a refresh token request
-          originalRequest.url?.includes('/auth/refresh') === true
-            ? true
-            : false,
+      if (originalRequest.url?.includes('/api/auth/2fa') === true) {
+        return Promise.reject(error)
+      }
+      if (originalRequest.url?.includes('/api/auth/logout') === true) {
+        return Promise.reject(error)
+      }
+
+      if (error.response.status === 401 && !originalRequest._retry) {
+        console.warn(
+          '401 error, refreshing token & retry is false',
+          error.response.data,
         )
+        originalRequest._retry = true
 
-        const token = response?.data?.token ?? ''
-
-        if (!!token) {
-          // Update React Query cache with new access token
-          queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
-          originalRequest.headers['Authorization'] = 'Bearer ' + token
-          processQueue(null, token)
-          return await axios(originalRequest)
-        } else {
-          window.location.href = '/login'
+        if (isRefreshing) {
+          console.warn('isRefreshing', isRefreshing)
+          try {
+            const token = await new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject })
+            })
+            originalRequest.headers['Authorization'] = 'Bearer ' + token
+            return await axios(originalRequest)
+          } catch (err) {
+            return Promise.reject(err)
+          }
         }
-      } catch (err) {
-        processQueue(err as AxiosError, null)
-        return Promise.reject(err)
-      } finally {
-        isRefreshing = false
+        isRefreshing = true
+
+        try {
+          const response = await refreshToken(
+            // Handle edge case where we get a blank screen if the initial 401 error is from a refresh token request
+            originalRequest.url?.includes('/auth/refresh') === true
+              ? true
+              : false,
+          )
+
+          const token = response?.data?.token ?? ''
+
+          if (!!token) {
+            // Update React Query cache with new access token
+            queryClient.setQueryData([ACCESS_TOKEN_KEY], token)
+            originalRequest.headers['Authorization'] = 'Bearer ' + token
+            processQueue(null, token)
+            return await axios(originalRequest)
+          } else {
+            window.location.href = '/login'
+          }
+        } catch (err) {
+          processQueue(err as AxiosError, null)
+          return Promise.reject(err)
+        } finally {
+          isRefreshing = false
+        }
       }
-    }
 
-    return Promise.reject(error)
-  },
-)
+      return Promise.reject(error)
+    },
+  )
 
-// Axios request interceptor to attach access token from React Query cache
-axios.interceptors.request.use(
-  (config) => {
-    // Get access token from React Query cache
-    const token = queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
-    if (token) {
-      config.headers = config.headers || {}
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error),
-)
+  // Axios request interceptor to attach access token from React Query cache
+  axios.interceptors.request.use(
+    (config) => {
+      // Get access token from React Query cache
+      const token = queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
+      if (token) {
+        config.headers = config.headers || {}
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error),
+  )
+}
 
 export default {
   get: _get,
@@ -198,5 +200,5 @@ export default {
   deleteWithOptions: _deleteWithOptions,
   patch: _patch,
   refreshToken,
-  //   dispatchTokenUpdatedEvent,
+  setupAxiosInterceptors,
 }

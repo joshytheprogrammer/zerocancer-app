@@ -157,8 +157,32 @@ authApp.get(
   },
   async (c) => {
     const jwtPayload = c.get("jwtPayload");
-    // Optionally fetch more user info from DB here
-    return c.json<TAuthMeResponse>({ ok: true, data: { user: jwtPayload } });
+    const db = getDB();
+    
+    // Fetch user data from database to get full name
+    const user = await db.user.findUnique({
+      where: { id: jwtPayload.id },
+      select: { id: true, fullName: true, email: true }
+    });
+    
+    if (!user) {
+      return c.json<TErrorResponse>({
+        ok: false,
+        error: "User not found"
+      }, 404);
+    }
+    
+    return c.json<TAuthMeResponse>({ 
+      ok: true, 
+      data: { 
+        user: {
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          profile: jwtPayload.profile
+        } 
+      } 
+    });
   }
 );
 

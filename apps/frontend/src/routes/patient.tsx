@@ -1,8 +1,10 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Bell, Briefcase, FileText, Home } from 'lucide-react'
+import { Bell, Briefcase, FileText, Home, LogOut   } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
+import { useLogout } from '@/services/providers/auth.provider'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
@@ -23,6 +25,10 @@ export const Route = createFileRoute('/patient')({
 })
 
 function PatientLayout() {
+
+  const { mutate: logout } = useLogout();
+  const navigate = useNavigate();
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -70,6 +76,18 @@ function PatientLayout() {
                 <FileText className="h-4 w-4" />
                 Results
               </Link>
+              <div className="border-t p-2 lg:p-4">
+                <button
+                  onClick={() => {
+                    logout()
+                    navigate({ to: '/', replace: true, reloadDocument: true })
+                  }}
+                  className="cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-primary"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
             </nav>
           </div>
         </div>

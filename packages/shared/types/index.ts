@@ -72,7 +72,7 @@ export type TLoginResponse = TDataResponse<{
 export type TAuthMeResponse = TDataResponse<{
   user: {
     id: string;
-    // fullName: string;
+    fullName: string;
     email: string;
     profile: "PATIENT" | "DONOR" | "CENTER";
   };
