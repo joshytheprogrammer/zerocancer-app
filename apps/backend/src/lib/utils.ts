@@ -6,7 +6,7 @@ import { getDB } from "./db";
 export async function getUserWithProfiles({ email }: { email: string }) {
   const db = getDB();
   const user = await db.user.findUnique({
-    where: { email },
+    where: { email: email! },
     include: {
       donorProfile: { select: { id: true } },
       patientProfile: { select: { id: true } },
@@ -38,6 +38,8 @@ export const comparePassword = async (
 ): Promise<boolean> => {
   return await bcrypt.compare(password, hash);
 };
+
+
 
 /**
  * Rules for waitlistMatcherAlg:

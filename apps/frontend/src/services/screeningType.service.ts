@@ -1,5 +1,10 @@
 import request from '@/lib/request'
 import {
+  getScreeningTypeByIdSchema,
+  getScreeningTypeByNameSchema,
+  getScreeningTypesByCategoryParamSchema,
+  getScreeningTypesByCategoryQuerySchema,
+  getScreeningTypesQuerySchema,
   screeningTypeCategorySchema,
   screeningTypeSchema,
 } from '@zerocancer/shared/schemas/screeningType.schema'
@@ -14,13 +19,16 @@ import * as endpoints from './endpoints'
 const ScreeningTypeArraySchema = z.array(screeningTypeSchema)
 const ScreeningTypeCategoryArraySchema = z.array(screeningTypeCategorySchema)
 
-export const fetchScreeningTypes = async (params: {
-  page?: number
-  pageSize?: number
-  search?: string
-}): Promise<TGetScreeningTypesResponse> => {
+export const fetchScreeningTypes = async (
+  params: z.infer<typeof getScreeningTypesQuerySchema>,
+): Promise<TGetScreeningTypesResponse> => {
+  // Validate params using shared Zod schema
+  const parsed = getScreeningTypesQuerySchema.safeParse(params)
+  if (!parsed.success) {
+    throw new Error('Invalid params for fetchScreeningTypes')
+  }
   const res = await request.get<TGetScreeningTypesResponse>(
-    endpoints.getScreeningTypes(params),
+    endpoints.getScreeningTypes(parsed.data),
   )
   return {
     ...res,
@@ -28,11 +36,16 @@ export const fetchScreeningTypes = async (params: {
   }
 }
 
-export const fetchAllScreeningTypes = async (
-  search?: string,
-): Promise<TGetScreeningTypesResponse> => {
+export const fetchAllScreeningTypes = async (params?: {
+  search?: string
+}): Promise<TGetScreeningTypesResponse> => {
+  // Validate params using shared Zod schema
+  const parsed = getScreeningTypesQuerySchema.partial().safeParse(params || {})
+  if (!parsed.success) {
+    throw new Error('Invalid params for fetchAllScreeningTypes')
+  }
   const res = await request.get<TGetScreeningTypesResponse>(
-    endpoints.getAllScreeningTypes(search),
+    endpoints.getAllScreeningTypes(parsed.data.search),
   )
   return {
     ...res,
@@ -53,10 +66,26 @@ export const fetchScreeningTypeCategories =
 
 export const fetchScreeningTypesByCategory = async (
   categoryId: string,
-  params: { page?: number; pageSize?: number; search?: string },
+  params: Omit<
+    z.infer<typeof getScreeningTypesByCategoryQuerySchema>,
+    'categoryId'
+  >,
 ): Promise<TGetScreeningTypesResponse> => {
+  // Validate categoryId parameter using shared Zod schema
+  const parsedParam = getScreeningTypesByCategoryParamSchema.safeParse({
+    categoryId,
+  })
+  if (!parsedParam.success) {
+    throw new Error('Invalid categoryId for fetchScreeningTypesByCategory')
+  }
+
+  // Validate query params using shared Zod schema
+  const parsed = getScreeningTypesQuerySchema.safeParse(params)
+  if (!parsed.success) {
+    throw new Error('Invalid params for fetchScreeningTypesByCategory')
+  }
   const res = await request.get<TGetScreeningTypesResponse>(
-    endpoints.getScreeningTypesByCategory(categoryId, params),
+    endpoints.getScreeningTypesByCategory(categoryId, parsed.data),
   )
   return {
     ...res,
@@ -67,6 +96,11 @@ export const fetchScreeningTypesByCategory = async (
 export const fetchScreeningTypeById = async (
   id: string,
 ): Promise<TGetScreeningTypeResponse> => {
+  // Validate id parameter using shared Zod schema
+  const parsed = getScreeningTypeByIdSchema.safeParse({ id })
+  if (!parsed.success) {
+    throw new Error('Invalid id for fetchScreeningTypeById')
+  }
   const res = await request.get<TGetScreeningTypeResponse>(
     endpoints.getScreeningTypeById(id),
   )
@@ -79,6 +113,11 @@ export const fetchScreeningTypeById = async (
 export const fetchScreeningTypeByName = async (
   name: string,
 ): Promise<TGetScreeningTypeResponse> => {
+  // Validate name parameter using shared Zod schema
+  const parsed = getScreeningTypeByNameSchema.safeParse({ name })
+  if (!parsed.success) {
+    throw new Error('Invalid name for fetchScreeningTypeByName')
+  }
   const res = await request.get<TGetScreeningTypeResponse>(
     endpoints.getScreeningTypeByName(name),
   )

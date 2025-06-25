@@ -103,7 +103,7 @@ model ServiceCenter {
   // approvedStaff CenterStaff[]
   bankAccount   String?
   bankName      String?
-  status        String @default("INACTIVE")
+  status        ServiceCenterStatus @default(INACTIVE)
 
   staff         CenterStaff[]
   appointments  Appointment[]
@@ -196,7 +196,7 @@ model Appointment {
   isDonation              Boolean  @default(false)
   appointmentDate         DateTime
   appointmentTime         DateTime
-  transactionId           String?
+  transactionId           String? 
   status                  AppointmentStatus
   createdAt               DateTime @default(now())
   cancellationReason   String?
@@ -245,7 +245,7 @@ model StoreProduct {
 model Transaction {
   id                  String   @id @default(uuid())
   type                TransactionType
-  status              String // change this to an enum with e.g., "PENDING", "COMPLETED", "FAILED"
+  status              TransactionStatus // change this to an enum with e.g., "PENDING", "COMPLETED", "FAILED"
   amount              Float
   relatedDonationId   String?
   paymentReference    String?
@@ -254,6 +254,12 @@ model Transaction {
 
   donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id])
   appointments Appointment[] @relation("TransactionAppointments")
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
 
 model PasswordResetToken {
@@ -296,7 +302,7 @@ model NotificationRecipient {
 model CenterStaff {
   id        String   @id @default(uuid())
   centerId  String
-  email     String
+  email     String  
   passwordHash String
   role      String?
   createdAt DateTime @default(now())
@@ -305,6 +311,8 @@ model CenterStaff {
   verifications AppointmentVerification[] @relation("StaffVerifications")
   uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
   resetTokens CenterStaffResetToken[]
+
+  @@unique([centerId, email])
 }
 
 model CenterStaffInvite {

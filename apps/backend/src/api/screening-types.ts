@@ -1,11 +1,15 @@
 import { zValidator } from "@hono/zod-validator";
 import {
+  getScreeningTypeByIdSchema,
+  getScreeningTypeByNameSchema,
+  getScreeningTypesByCategoryParamSchema,
   getScreeningTypesByCategoryQuerySchema,
   getScreeningTypesQuerySchema,
-  screeningTypeCategorySchema,
-  screeningTypeSchema,
+  // screeningTypeCategorySchema,
+  // screeningTypeSchema,
 } from "@zerocancer/shared";
 import type {
+  TErrorResponse,
   TGetScreeningTypeCategoriesResponse,
   TGetScreeningTypeResponse,
   TGetScreeningTypesResponse,
@@ -19,14 +23,15 @@ export const screeningTypesApp = new Hono();
 screeningTypesApp.get(
   "/",
   zValidator("query", getScreeningTypesQuerySchema, (result, c) => {
-    if (!result.success) return c.json({ ok: false, error: result.error }, 400);
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
     const db = getDB();
     const { page = 1, pageSize = 20, search } = c.req.valid("query");
     const where: any = { active: true };
     if (search) where.name = { contains: search, mode: "insensitive" };
-    const [types, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       db.screeningType.findMany({
         where,
         select: {
@@ -36,20 +41,18 @@ screeningTypesApp.get(
           active: true,
         },
         orderBy: { name: "asc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: (page! - 1) * pageSize!,
+        take: pageSize!,
       }),
       db.screeningType.count({ where }),
     ]);
-    // Validate response
-    const data = screeningTypeSchema.array().parse(types);
     return c.json<TGetScreeningTypesResponse>({
       ok: true,
-      data,
-      page,
-      pageSize,
-      total,
-      totalPages: Math.ceil(total / pageSize),
+      data: data!,
+      page: page!,
+      pageSize: pageSize!,
+      total: total!,
+      totalPages: Math.ceil(total / pageSize!),
     });
   }
 );
@@ -58,14 +61,15 @@ screeningTypesApp.get(
 screeningTypesApp.get(
   "/all",
   zValidator("query", getScreeningTypesQuerySchema.partial(), (result, c) => {
-    if (!result.success) return c.json({ ok: false, error: result.error }, 400);
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
     const db = getDB();
     const { search } = c.req.valid("query");
     const where: any = { active: true };
     if (search) where.name = { contains: search, mode: "insensitive" };
-    const types = await db.screeningType.findMany({
+    const data = await db.screeningType.findMany({
       where,
       select: {
         id: true,
@@ -76,8 +80,7 @@ screeningTypesApp.get(
       },
       orderBy: { name: "asc" },
     });
-    const data = screeningTypeSchema.array().parse(types);
-    return c.json<TGetScreeningTypesResponse>({ ok: true, data });
+    return c.json<TGetScreeningTypesResponse>({ ok: true, data: data! });
   }
 );
 
@@ -88,31 +91,34 @@ screeningTypesApp.get("/categories", async (c) => {
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
-  const data = screeningTypeCategorySchema.array().parse(categories);
   return c.json<TGetScreeningTypeCategoriesResponse>({
     ok: true,
-    data,
+    data: categories!,
   });
 });
 
 // GET /api/screening-types/category/:categoryId - paginated, filtered, searched list by category
 screeningTypesApp.get(
   "/category/:categoryId",
+  zValidator("param", getScreeningTypesByCategoryParamSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
   zValidator(
     "query",
     getScreeningTypesByCategoryQuerySchema.partial(),
     (result, c) => {
       if (!result.success)
-        return c.json({ ok: false, error: result.error }, 400);
+        return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
     }
   ),
   async (c) => {
     const db = getDB();
     const { search, page = 1, pageSize = 20 } = c.req.valid("query");
-    const categoryId = c.req.param("categoryId");
-    const where: any = { active: true, screeningTypeCategoryId: categoryId };
+    const { categoryId } = c.req.valid("param");
+    const where: any = { active: true, screeningTypeCategoryId: categoryId! };
     if (search) where.name = { contains: search, mode: "insensitive" };
-    const [types, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       db.screeningType.findMany({
         where,
         select: {
@@ -122,55 +128,68 @@ screeningTypesApp.get(
           active: true,
         },
         orderBy: { name: "asc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: (page! - 1) * pageSize!,
+        take: pageSize!,
       }),
       db.screeningType.count({ where }),
     ]);
-    const data = screeningTypeSchema.array().parse(types);
     return c.json<TGetScreeningTypesResponse>({
       ok: true,
-      data,
-      page,
-      pageSize,
-      total,
-      totalPages: Math.ceil(total / pageSize),
+      data: data!,
+      page: page!,
+      pageSize: pageSize!,
+      total: total!,
+      totalPages: Math.ceil(total / pageSize!),
     });
   }
 );
 
 // GET /api/screening-types/by-name/:name - get screening type by name
-screeningTypesApp.get("/by-name/:name", async (c) => {
-  const db = getDB();
-  const name = c.req.param("name");
-  const type = await db.screeningType.findFirst({
-    where: { name },
-    select: {
-      id: true,
-      name: true,
-      screeningTypeCategoryId: true,
-      active: true,
-    },
-  });
-  if (!type) return c.json({ ok: false, message: "Not found" }, 404);
-  const data = screeningTypeSchema.parse(type);
-  return c.json<TGetScreeningTypeResponse>({ ok: true, data });
-});
+screeningTypesApp.get(
+  "/by-name/:name",
+  zValidator("param", getScreeningTypeByNameSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const { name } = c.req.valid("param");
+    const data = await db.screeningType.findFirst({
+      where: { name: name! },
+      select: {
+        id: true,
+        name: true,
+        screeningTypeCategoryId: true,
+        active: true,
+      },
+    });
+    if (!data)
+      return c.json<TErrorResponse>({ ok: false, error: "Not found" }, 404);
+    return c.json<TGetScreeningTypeResponse>({ ok: true, data: data! });
+  }
+);
 
 // GET /api/screening-types/:id - get screening type by id
-screeningTypesApp.get("/:id", async (c) => {
-  const db = getDB();
-  const id = c.req.param("id");
-  const type = await db.screeningType.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      screeningTypeCategoryId: true,
-      active: true,
-    },
-  });
-  if (!type) return c.json({ ok: false, message: "Not found" }, 404);
-  const data = screeningTypeSchema.parse(type);
-  return c.json<TGetScreeningTypeResponse>({ ok: true, data });
-});
+screeningTypesApp.get(
+  "/:id",
+  zValidator("param", getScreeningTypeByIdSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const { id } = c.req.valid("param");
+    const data = await db.screeningType.findUnique({
+      where: { id: id! },
+      select: {
+        id: true,
+        name: true,
+        screeningTypeCategoryId: true,
+        active: true,
+      },
+    });
+    if (!data)
+      return c.json<TErrorResponse>({ ok: false, error: "Not found" }, 404);
+    return c.json<TGetScreeningTypeResponse>({ ok: true, data: data! });
+  }
+);

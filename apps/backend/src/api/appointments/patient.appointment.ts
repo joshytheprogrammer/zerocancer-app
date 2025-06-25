@@ -66,7 +66,7 @@ patientAppointmentApp.post(
     const transaction = await db.transaction.create({
       data: {
         type: "APPOINTMENT",
-        status: "PAID",
+        status: "COMPLETED",
         amount: 30, // TODO: set actual amount
         paymentReference, // store actual paystack payment reference
         paymentChannel: "PAYSTACK",
@@ -74,14 +74,14 @@ patientAppointmentApp.post(
     });
     const appointment = await db.appointment.create({
       data: {
-        patientId: userId,
-        centerId,
-        screeningTypeId,
-        appointmentDate: new Date(appointmentDate),
-        appointmentTime: new Date(appointmentTime),
+        patientId: userId!,
+        centerId: centerId!,
+        screeningTypeId: screeningTypeId!,
+        appointmentDate: new Date(appointmentDate!),
+        appointmentTime: new Date(appointmentTime!),
         isDonation: false,
         status: "SCHEDULED",
-        transactionId: transaction.id, // Link appointment to transaction
+        transactionId: transaction.id!, // Link appointment to transaction
         checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -94,51 +94,51 @@ patientAppointmentApp.post(
     });
     // Strictly shape the appointment object to TPatientAppointment
     const safeAppointment = {
-      id: appointment.id,
-      patientId: appointment.patientId,
-      centerId: appointment.centerId,
-      screeningTypeId: appointment.screeningTypeId,
+      id: appointment.id!,
+      patientId: appointment.patientId!,
+      centerId: appointment.centerId!,
+      screeningTypeId: appointment.screeningTypeId!,
       appointmentDate: appointment.appointmentDate.toISOString(),
       appointmentTime: appointment.appointmentTime.toISOString(),
-      isDonation: appointment.isDonation,
-      status: appointment.status,
+      isDonation: appointment.isDonation!,
+      status: appointment.status!,
       transactionId:
         appointment.transactionId === null
           ? undefined
           : appointment.transactionId,
-      checkInCode: appointment.checkInCode,
+      checkInCode: appointment.checkInCode!,
       checkInCodeExpiresAt: appointment.checkInCodeExpiresAt
         ? appointment.checkInCodeExpiresAt.toISOString()
         : null,
       donationId:
         appointment.donationId === null ? undefined : appointment.donationId,
-      center: appointment.center
+      center: appointment.center!
         ? {
-            id: appointment.center.id,
-            centerName: appointment.center.centerName,
-            address: appointment.center.address,
-            state: appointment.center.state,
-            lga: appointment.center.lga,
+            id: appointment.center.id!,
+            centerName: appointment.center.centerName!,
+            address: appointment.center.address!,
+            state: appointment.center.state!,
+            lga: appointment.center.lga!,
           }
         : undefined,
-      screeningType: appointment.screeningType
+      screeningType: appointment.screeningType!
         ? {
-            id: appointment.screeningType.id,
-            name: appointment.screeningType.name,
+            id: appointment.screeningType.id!,
+            name: appointment.screeningType.name!,
           }
         : undefined,
-      transaction: appointment.transaction
+      transaction: appointment.transaction!
         ? {
-            id: appointment.transaction.id,
-            type: appointment.transaction.type,
-            status: appointment.transaction.status,
-            amount: appointment.transaction.amount,
-            paymentReference: appointment.transaction.paymentReference,
-            paymentChannel: appointment.transaction.paymentChannel,
+            id: appointment.transaction.id!,
+            type: appointment.transaction.type!,
+            status: appointment.transaction.status!,
+            amount: appointment.transaction.amount!,
+            paymentReference: appointment.transaction.paymentReference!,
+            paymentChannel: appointment.transaction.paymentChannel!,
             createdAt: appointment.transaction.createdAt.toISOString(),
           }
         : undefined,
-      result: appointment.result ? { id: appointment.result.id } : undefined, // Add more fields if needed
+      result: appointment.result ? { id: appointment.result.id! } : undefined, // Add more fields if needed
     };
     return c.json<TBookSelfPayAppointmentResponse>({
       ok: true,
@@ -170,7 +170,7 @@ patientAppointmentApp.post(
     }
 
     // Check eligibility to join waitlist
-    const canJoin = await canJoinWaitlist(db, patientId, screeningTypeId);
+    const canJoin = await canJoinWaitlist(db, patientId, screeningTypeId!);
     if (!canJoin) {
       return c.json<TErrorResponse>(
         {
@@ -186,8 +186,8 @@ patientAppointmentApp.post(
     // Create waitlist entry
     const waitlist = await db.waitlist.create({
       data: {
-        screeningTypeId,
-        patientId,
+        screeningTypeId: screeningTypeId!,
+        patientId: patientId!,
         status: "PENDING",
       },
     });
@@ -225,7 +225,7 @@ patientAppointmentApp.get(
       );
     }
     // Find all active centers offering this screening type
-    const screeningTypeId = allocation.waitlist.screeningTypeId;
+    const screeningTypeId = allocation.waitlist.screeningTypeId!;
     const [centers, total] = await Promise.all([
       db.serviceCenter.findMany({
         skip: (page - 1) * size,
@@ -300,13 +300,13 @@ patientAppointmentApp.post(
     const appointment = await db.appointment.create({
       data: {
         patientId: userId,
-        centerId,
-        screeningTypeId: allocation.waitlist.screeningTypeId,
+        centerId: centerId!,
+        screeningTypeId: allocation.waitlist.screeningTypeId!,
         isDonation: true,
         status: "SCHEDULED",
-        appointmentDate: new Date(appointmentDate),
-        appointmentTime: new Date(appointmentTime),
-        donationId: allocation.campaignId,
+        appointmentDate: new Date(appointmentDate!),
+        appointmentTime: new Date(appointmentTime!),
+        donationId: allocation.campaignId!,
         checkInCode: crypto.randomBytes(10).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
@@ -318,23 +318,23 @@ patientAppointmentApp.post(
       },
     });
     await db.donationAllocation.update({
-      where: { id: allocationId },
-      data: { appointmentId: appointment.id },
+      where: { id: allocationId! },
+      data: { appointmentId: appointment.id! },
     });
     const safeAppointment = {
-      id: appointment.id,
-      patientId: appointment.patientId,
-      centerId: appointment.centerId,
-      screeningTypeId: appointment.screeningTypeId,
+      id: appointment.id!,
+      patientId: appointment.patientId!,
+      centerId: appointment.centerId!,
+      screeningTypeId: appointment.screeningTypeId!,
       appointmentDate: appointment.appointmentDate.toISOString(),
       appointmentTime: appointment.appointmentTime.toISOString(),
-      isDonation: appointment.isDonation,
-      status: appointment.status,
+      isDonation: appointment.isDonation!,
+      status: appointment.status!,
       transactionId:
         appointment.transactionId === null
           ? undefined
           : appointment.transactionId,
-      checkInCode: appointment.checkInCode,
+      checkInCode: appointment.checkInCode!,
       checkInCodeExpiresAt: appointment.checkInCodeExpiresAt
         ? appointment.checkInCodeExpiresAt.toISOString()
         : null,
@@ -342,31 +342,31 @@ patientAppointmentApp.post(
         appointment.donationId === null ? undefined : appointment.donationId,
       center: appointment.center
         ? {
-            id: appointment.center.id,
-            centerName: appointment.center.centerName,
-            address: appointment.center.address,
-            state: appointment.center.state,
-            lga: appointment.center.lga,
+            id: appointment.center.id!,
+            centerName: appointment.center.centerName!,
+            address: appointment.center.address!,
+            state: appointment.center.state!,
+            lga: appointment.center.lga!,
           }
         : undefined,
       screeningType: appointment.screeningType
         ? {
-            id: appointment.screeningType.id,
-            name: appointment.screeningType.name,
+            id: appointment.screeningType.id!,
+            name: appointment.screeningType.name!,
           }
         : undefined,
       transaction: appointment.transaction
         ? {
-            id: appointment.transaction.id,
-            type: appointment.transaction.type,
-            status: appointment.transaction.status,
-            amount: appointment.transaction.amount,
-            paymentReference: appointment.transaction.paymentReference,
-            paymentChannel: appointment.transaction.paymentChannel,
+            id: appointment.transaction.id!,
+            type: appointment.transaction.type!,
+            status: appointment.transaction.status!,
+            amount: appointment.transaction.amount!,
+            paymentReference: appointment.transaction.paymentReference!,
+            paymentChannel: appointment.transaction.paymentChannel!,
             createdAt: appointment.transaction.createdAt.toISOString(),
           }
         : undefined,
-      result: appointment.result ? { id: appointment.result.id } : undefined, // Add more fields if needed
+      result: appointment.result ? { id: appointment.result.id! } : undefined, // Add more fields if needed
     };
     return c.json<TSelectCenterResponse>({
       ok: true,
@@ -418,44 +418,44 @@ patientAppointmentApp.get(
       db.appointment.count({ where }),
     ]);
     const safeAppointments = appointments.map((a) => ({
-      id: a.id,
-      patientId: a.patientId,
-      centerId: a.centerId,
-      screeningTypeId: a.screeningTypeId,
+      id: a.id!,
+      patientId: a.patientId!,
+      centerId: a.centerId!,
+      screeningTypeId: a.screeningTypeId!,
       appointmentDate: a.appointmentDate.toISOString(),
       appointmentTime: a.appointmentTime.toISOString(),
-      isDonation: a.isDonation,
-      status: a.status,
+      isDonation: a.isDonation!,
+      status: a.status!,
       transactionId: a.transactionId === null ? undefined : a.transactionId,
-      checkInCode: a.checkInCode,
+      checkInCode: a.checkInCode!,
       checkInCodeExpiresAt: a.checkInCodeExpiresAt
         ? a.checkInCodeExpiresAt.toISOString()
         : null,
       donationId: a.donationId === null ? undefined : a.donationId,
       center: a.center
         ? {
-            id: a.center.id,
-            centerName: a.center.centerName,
-            address: a.center.address,
-            state: a.center.state,
-            lga: a.center.lga,
+            id: a.center.id!,
+            centerName: a.center.centerName!,
+            address: a.center.address!,
+            state: a.center.state!,
+            lga: a.center.lga!,
           }
         : undefined,
       screeningType: a.screeningType
-        ? { id: a.screeningType.id, name: a.screeningType.name }
+        ? { id: a.screeningType.id!, name: a.screeningType.name! }
         : undefined,
       transaction: a.transaction
         ? {
-            id: a.transaction.id,
-            type: a.transaction.type,
-            status: a.transaction.status,
-            amount: a.transaction.amount,
-            paymentReference: a.transaction.paymentReference,
-            paymentChannel: a.transaction.paymentChannel,
+            id: a.transaction.id!,
+            type: a.transaction.type!,
+            status: a.transaction.status!,
+            amount: a.transaction.amount!,
+            paymentReference: a.transaction.paymentReference!,
+            paymentChannel: a.transaction.paymentChannel!,
             createdAt: a.transaction.createdAt.toISOString(),
           }
         : undefined,
-      result: a.result ? { id: a.result.id } : undefined, // Add more fields if needed
+      result: a.result ? { id: a.result.id! } : undefined, // Add more fields if needed
     }));
     return c.json<TGetPatientAppointmentsResponse>({
       ok: true,
@@ -506,15 +506,15 @@ patientAppointmentApp.get(
       }),
     ]);
     const safeResults = results.map((r) => ({
-      id: r.id,
+      id: r.id!,
       appointment: {
-        id: r.appointment.id,
+        id: r.appointment.id!,
         appointmentDate: r.appointment.appointmentDate.toISOString(),
-        screeningType: { name: r.appointment.screeningType.name },
+        screeningType: { name: r.appointment.screeningType.name! },
       },
       uploader: {
-        id: r.uploader.id,
-        centerId: r.uploader.centerId,
+        id: r.uploader.id!,
+        centerId: r.uploader.centerId!,
       },
       uploadedAt: r.uploadedAt ? r.uploadedAt.toISOString() : undefined,
     }));
@@ -556,15 +556,15 @@ patientAppointmentApp.get("/patient/results/:id", async (c) => {
     return c.json({ ok: false, message: "Not found or forbidden" }, 404);
   }
   const safeResult = {
-    id: result.id,
+    id: result.id!,
     appointment: {
-      id: result.appointment.id,
+      id: result.appointment.id!,
       appointmentDate: result.appointment.appointmentDate.toISOString(),
-      screeningType: { name: result.appointment.screeningType.name },
+      screeningType: { name: result.appointment.screeningType.name! },
     },
     uploader: {
-      id: result.uploader.id,
-      centerId: result.uploader.centerId,
+      id: result.uploader.id!,
+      centerId: result.uploader.centerId!,
     },
     uploadedAt: result.uploadedAt ? result.uploadedAt.toISOString() : undefined,
   };
@@ -607,12 +607,12 @@ patientAppointmentApp.get(
       }),
     ]);
     const safeReceipts = receipts.map((r) => ({
-      id: r.id,
+      id: r.id!,
       appointments: r.appointments.map((a) => ({
-        id: a.id,
+        id: a.id!,
         appointmentDate: a.appointmentDate.toISOString(),
-        screeningType: { id: a.screeningType.id, name: a.screeningType.name },
-        patientId: a.patientId,
+        screeningType: { id: a.screeningType.id!, name: a.screeningType.name! },
+        patientId: a.patientId!,
       })),
       createdAt: r.createdAt ? r.createdAt.toISOString() : undefined,
     }));
@@ -653,12 +653,12 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
     return c.json({ ok: false, message: "Not found or forbidden" }, 404);
   }
   const safeReceipt = {
-    id: receipt.id,
+    id: receipt.id!,
     appointments: receipt.appointments.map((a) => ({
-      id: a.id,
+      id: a.id!,
       appointmentDate: a.appointmentDate.toISOString(),
-      screeningType: { id: a.screeningType.id, name: a.screeningType.name },
-      patientId: a.patientId,
+      screeningType: { id: a.screeningType.id!, name: a.screeningType.name! },
+      patientId: a.patientId!,
     })),
     createdAt: receipt.createdAt ? receipt.createdAt.toISOString() : undefined,
   };
@@ -696,7 +696,7 @@ patientAppointmentApp.get("/:id/checkin-code", async (c) => {
   return c.json<TGetCheckInCodeResponse>({
     ok: true,
     data: {
-      checkInCode: appointment.checkInCode,
+      checkInCode: appointment.checkInCode!,
       expiresAt: appointment.checkInCodeExpiresAt
         ? appointment.checkInCodeExpiresAt.toISOString()
         : null,

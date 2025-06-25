@@ -115,7 +115,7 @@ centerAppointmentApp.post(
         404
       );
     }
-    if (appointment.status === "CANCELLED") {
+    if (appointment.status! === "CANCELLED") {
       return c.json<TErrorResponse>(
         { ok: false, error: "Already cancelled." },
         400
@@ -131,7 +131,10 @@ centerAppointmentApp.post(
     });
     // Optionally, notify patient
     // ...
-    return c.json<TDataResponse<{ id: string }>>({ ok: true, data: { id } });
+    return c.json<TDataResponse<{ id: string }>>({
+      ok: true,
+      data: { id: id! },
+    });
   }
 );
 
@@ -156,7 +159,7 @@ centerAppointmentApp.post(
         404
       );
     }
-    if (appointment.status === "CANCELLED") {
+    if (appointment.status! === "CANCELLED") {
       return c.json<TErrorResponse>(
         { ok: false, error: "Cannot reschedule a cancelled appointment." },
         400
@@ -165,8 +168,8 @@ centerAppointmentApp.post(
     const updated = await db.appointment.update({
       where: { id },
       data: {
-        appointmentDate: new Date(newDate),
-        appointmentTime: new Date(newTime),
+        appointmentDate: new Date(newDate!),
+        appointmentTime: new Date(newTime!),
         status: "SCHEDULED",
       },
     });
@@ -181,7 +184,7 @@ centerAppointmentApp.post(
     >({
       ok: true,
       data: {
-        id: updated.id,
+        id: updated.id!,
         appointmentDate: updated.appointmentDate.toISOString(),
         appointmentTime: updated.appointmentTime.toISOString(),
       },
