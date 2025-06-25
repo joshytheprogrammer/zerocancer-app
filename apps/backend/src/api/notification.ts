@@ -21,7 +21,7 @@ notificationApp.use(authMiddleware());
 notificationApp.get("/", async (c) => {
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
+  const userId = payload.id!;
   const db = getDB();
   const notifications = await db.notificationRecipient.findMany({
     where: { userId },
@@ -60,7 +60,7 @@ notificationApp.get("/", async (c) => {
 notificationApp.post(":id/read", async (c) => {
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
+  const userId = payload.id!;
   const id = c.req.param("id");
   const db = getDB();
   await db.notificationRecipient.updateMany({

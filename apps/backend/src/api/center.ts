@@ -44,7 +44,7 @@ centerApp.post(
       // Store invite in DB (pseudo-code, adjust to your schema)
       await db.centerStaffInvite.create({
         data: {
-          centerId,
+          centerId: centerId!,
           email,
           token,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
@@ -92,8 +92,8 @@ centerApp.post(
     // Create staff
     const staff = await db.centerStaff.create({
       data: {
-        centerId: invite.centerId,
-        email: invite.email,
+        centerId: invite.centerId!,
+        email: invite.email!,
         passwordHash,
         createdAt: new Date(),
       },
@@ -107,7 +107,7 @@ centerApp.post(
 
     return c.json<TCreateCenterStaffPasswordResponse>({
       ok: true,
-      data: { staffId: staff.id },
+      data: { staffId: staff.id! },
     });
   }
 );
@@ -138,7 +138,7 @@ centerApp.post(
     // Store token (assume a CenterStaffResetToken model or similar)
     await db.centerStaffResetToken.create({
       data: {
-        staffId: staff.id,
+        staffId: staff.id!,
         token,
         expiresAt,
       },
@@ -181,7 +181,7 @@ centerApp.post(
     const passwordHash = await hashPassword(password);
     // Update staff password
     await db.centerStaff.update({
-      where: { id: reset.staffId },
+      where: { id: reset.staffId! },
       data: { passwordHash },
     });
     // Invalidate token
@@ -216,7 +216,7 @@ centerApp.post(
       );
     }
     // Compare password
-    const valid = await comparePassword(password, staff.passwordHash);
+    const valid = await comparePassword(password, staff.passwordHash!);
     if (!valid) {
       return c.json<TErrorResponse>(
         { ok: false, error: "Invalid credentials" },
@@ -252,10 +252,10 @@ centerApp.post(
       data: {
         token,
         user: {
-          userId: staff.id,
-          email: staff.email,
+          userId: staff.id!,
+          email: staff.email!,
           profile: "CENTER_STAFF",
-          centerId: staff.centerId,
+          centerId: staff.centerId!,
         },
       },
     });

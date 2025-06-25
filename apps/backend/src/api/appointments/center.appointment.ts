@@ -38,7 +38,7 @@ centerAppointmentApp.get(
     if (screeningType) where.screeningTypeId = screeningType;
     // Optionally, filter by centerId from JWT
     const payload = c.get("jwtPayload");
-    const centerId = payload?.id; // Use centerId or id from JWT
+    const centerId = payload?.id!; // Use centerId or id from JWT
     if (centerId) where.centerId = centerId;
     const [appointments, total] = await Promise.all([
       db.appointment.findMany({

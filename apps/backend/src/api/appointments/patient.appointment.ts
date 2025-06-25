@@ -53,7 +53,7 @@ patientAppointmentApp.post(
     if (!payload) {
       return c.json({ ok: false, message: "Unauthorized" }, 401);
     }
-    const userId = payload.id;
+    const userId = payload.id!;
     if (!userId) {
       return c.json({ ok: false, message: "User ID not found in token" }, 401);
     }
@@ -163,7 +163,7 @@ patientAppointmentApp.post(
       return c.json({ ok: false, message: "Unauthorized" }, 401);
     }
 
-    const patientId = payload.id; // Assuming JWT payload contains userId
+    const patientId = payload.id!; // Assuming JWT payload contains userId
     if (!patientId) {
       return c.json({ ok: false, message: "User ID not found in token" }, 401);
     }
@@ -201,7 +201,7 @@ patientAppointmentApp.get(
     const db = getDB();
     const payload = c.get("jwtPayload");
     if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id;
+    const userId = payload.id!;
     const allocationId = c.req.param("allocationId");
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
@@ -276,7 +276,7 @@ patientAppointmentApp.post(
     const db = getDB();
     const payload = c.get("jwtPayload");
     if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id;
+    const userId = payload.id!;
     const { allocationId, centerId, appointmentDate, appointmentTime } =
       c.req.valid("json");
     // Validate allocation
@@ -384,7 +384,7 @@ patientAppointmentApp.get(
     const db = getDB();
     const payload = c.get("jwtPayload");
     if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id;
+    const userId = payload.id!;
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
     const status = c.req.query("status");
@@ -479,7 +479,7 @@ patientAppointmentApp.get(
     const db = getDB();
     const payload = c.get("jwtPayload");
     if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id;
+    const userId = payload.id!;
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
     const [results, total] = await Promise.all([
@@ -534,7 +534,7 @@ patientAppointmentApp.get("/patient/results/:id", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
+  const userId = payload.id!;
   const id = c.req.param("id");
   const result = await db.screeningResult.findUnique({
     where: { id },
@@ -580,7 +580,7 @@ patientAppointmentApp.get(
     const db = getDB();
     const payload = c.get("jwtPayload");
     if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id;
+    const userId = payload.id!;
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
     const [receipts, total] = await Promise.all([
@@ -632,7 +632,7 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
+  const userId = payload.id!;
   const id = c.req.param("id");
   const receipt = await db.transaction.findUnique({
     where: { id },
@@ -668,7 +668,7 @@ patientAppointmentApp.get("/:id/checkin-code", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
   if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id;
+  const userId = payload.id!;
   const id = c.req.param("id");
   const appointment = await db.appointment.findUnique({
     where: { id },
