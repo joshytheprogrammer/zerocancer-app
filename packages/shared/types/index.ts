@@ -191,6 +191,31 @@ export type TBookSelfPayAppointmentResponse = TDataResponse<{
   appointment: TPatientAppointment;
 }>;
 export type TJoinWaitlistResponse = TDataResponse<{ waitlist: TWaitlist }>;
+export type TGetPatientWaitlistsResponse = TDataResponse<{
+  waitlists: Array<{
+    id: string;
+    screeningTypeId: string;
+    patientId: string;
+    status: string;
+    joinedAt: string;
+    claimedAt: string | null;
+    screeningType: {
+      id: string;
+      name: string;
+    };
+    allocation?: {
+      id: string;
+      campaign: {
+        id: string;
+        purpose: string;
+      };
+    } | null;
+  }>;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
 export type TGetEligibleCentersResponse = TDataResponse<{
   centers: TCenterSummary[];
   page: number;
@@ -237,7 +262,7 @@ export type TGetPatientReceiptResponse = TDataResponse<TPatientReceipt>;
 export type TScreeningType = {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   screeningTypeCategoryId: string;
   active: boolean;
 };
