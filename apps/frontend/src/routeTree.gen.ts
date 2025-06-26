@@ -48,6 +48,7 @@ import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-pas
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
 import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
+import { Route as authStaffCreatePasswordRouteImport } from './routes/(auth)/staff/create-password'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
 import { Route as authSignUpLayoutPatientRouteImport } from './routes/(auth)/sign-up/_layout/patient'
@@ -245,6 +246,11 @@ const PatientBookPayRoute = PatientBookPayRouteImport.update({
   path: '/book/pay',
   getParentRoute: () => PatientRoute,
 } as any)
+const authStaffCreatePasswordRoute = authStaffCreatePasswordRouteImport.update({
+  id: '/staff/create-password',
+  path: '/staff/create-password',
+  getParentRoute: () => authRouteRoute,
+} as any)
 const authSignUpLayoutRouteRoute = authSignUpLayoutRouteRouteImport.update({
   id: '/_layout',
   getParentRoute: () => authSignUpRoute,
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/donor/': typeof DonorIndexRoute
   '/patient/': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
+  '/staff/create-password': typeof authStaffCreatePasswordRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/donor': typeof DonorIndexRoute
   '/patient': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
+  '/staff/create-password': typeof authStaffCreatePasswordRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -390,6 +398,7 @@ export interface FileRoutesById {
   '/patient/': typeof PatientIndexRoute
   '/(auth)/sign-up': typeof authSignUpRouteWithChildren
   '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
+  '/(auth)/staff/create-password': typeof authStaffCreatePasswordRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book/': typeof PatientBookIndexRoute
   '/(auth)/sign-up/_layout/center': typeof authSignUpLayoutCenterRoute
@@ -435,6 +444,7 @@ export interface FileRouteTypes {
     | '/donor/'
     | '/patient/'
     | '/sign-up'
+    | '/staff/create-password'
     | '/patient/book/pay'
     | '/patient/book'
     | '/sign-up/center'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/donor'
     | '/patient'
     | '/sign-up'
+    | '/staff/create-password'
     | '/patient/book/pay'
     | '/patient/book'
     | '/sign-up/center'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/patient/'
     | '/(auth)/sign-up'
     | '/(auth)/sign-up/_layout'
+    | '/(auth)/staff/create-password'
     | '/patient/book/pay'
     | '/patient/book/'
     | '/(auth)/sign-up/_layout/center'
@@ -805,6 +817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientBookPayRouteImport
       parentRoute: typeof PatientRoute
     }
+    '/(auth)/staff/create-password': {
+      id: '/(auth)/staff/create-password'
+      path: '/staff/create-password'
+      fullPath: '/staff/create-password'
+      preLoaderRoute: typeof authStaffCreatePasswordRouteImport
+      parentRoute: typeof authRouteRoute
+    }
     '/(auth)/sign-up/_layout': {
       id: '/(auth)/sign-up/_layout'
       path: '/sign-up'
@@ -879,6 +898,7 @@ interface authRouteRouteChildren {
   authResetPasswordRoute: typeof authResetPasswordRoute
   authVerifyEmailRoute: typeof authVerifyEmailRoute
   authSignUpRoute: typeof authSignUpRouteWithChildren
+  authStaffCreatePasswordRoute: typeof authStaffCreatePasswordRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
@@ -886,6 +906,7 @@ const authRouteRouteChildren: authRouteRouteChildren = {
   authResetPasswordRoute: authResetPasswordRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
   authSignUpRoute: authSignUpRouteWithChildren,
+  authStaffCreatePasswordRoute: authStaffCreatePasswordRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
