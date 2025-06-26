@@ -83,13 +83,15 @@ export const getPatientAppointments = (params: {
   page?: number
   size?: number
   status?: string
-}) => `/api/patient/appointments${buildQuery(params)}`
-export const getPatientResult = (id: string) => `/api/patient/results/${id}`
-export const getPatientResults = (params: { page?: number; size?: number }) =>
-  `/api/patient/results${buildQuery({
-    page: params.page ?? 1,
-    size: params.size ?? 20,
-  })}`
+}) => `/api/appointment/patient${buildQuery(params)}`
+
+export const getPatientResults = (params: {
+  page?: number
+  pageSize?: number
+}) => `/api/appointment/patient/results${buildQuery(params)}`
+
+export const getPatientResult = (id: string) =>
+  `/api/appointment/patient/results/${id}`
 // Get check-in code for an appointment
 export const getCheckInCode = (appointmentId: string) =>
   `/api/patient/appointments/${appointmentId}/checkin-code`
@@ -144,6 +146,19 @@ export const getCenterAppointmentById = (id: string) =>
 
 export const cancelCenterAppointment = (id: string) =>
   `/api/center/appointments/${id}/cancel`
+
+export const uploadResults = (appointmentId: string) =>
+  `/api/center/appointments/${appointmentId}/upload-results`
+
+// Result file management endpoints
+export const deleteResultFile = (fileId: string) =>
+  `/api/center/appointments/files/${fileId}`
+export const restoreResultFile = (fileId: string) =>
+  `/api/center/appointments/files/${fileId}/restore`
+
+// Appointment completion endpoint
+export const completeAppointment = (appointmentId: string) =>
+  `/api/center/appointments/${appointmentId}/complete`
 
 // ADMIN
 export const getUsers = (page = 1, size = 20) =>

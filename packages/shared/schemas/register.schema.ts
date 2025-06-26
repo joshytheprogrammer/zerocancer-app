@@ -88,11 +88,6 @@ export const getPatientAppointmentsSchema = z.object({
   status: z.string().optional(),
 });
 
-export const getPatientResultsSchema = z.object({
-  page: z.number().optional(),
-  size: z.number().optional(),
-});
-
 export const getPatientReceiptsSchema = z.object({
   page: z.number().optional(),
   size: z.number().optional(),

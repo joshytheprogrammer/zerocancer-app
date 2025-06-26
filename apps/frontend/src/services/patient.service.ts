@@ -4,10 +4,16 @@ import {
   bookSelfPayAppointmentSchema,
   getPatientAppointmentsSchema,
   getPatientReceiptsSchema,
-  getPatientResultsSchema,
   selectCenterSchema,
 } from '@zerocancer/shared/schemas/register.schema'
-import { getPatientWaitlistsSchema, joinWaitlistSchema } from '@zerocancer/shared/schemas/waitlist.schema'
+import {
+  getPatientResultByIdSchema,
+  getPatientResultsSchema,
+} from '@zerocancer/shared/schemas/result.schema'
+import {
+  getPatientWaitlistsSchema,
+  joinWaitlistSchema,
+} from '@zerocancer/shared/schemas/waitlist.schema'
 import type {
   TBookSelfPayAppointmentResponse,
   TGetCheckInCodeResponse,
@@ -15,7 +21,7 @@ import type {
   TGetPatientAppointmentsResponse,
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
-  TGetPatientResultResponse,
+  TGetPatientResultByIdResponse,
   TGetPatientResultsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
@@ -103,16 +109,28 @@ export const verifyCheckInCode = async (
 export const getPatientResults = async (
   params: z.infer<typeof getPatientResultsSchema>,
 ): Promise<TGetPatientResultsResponse> => {
-  const res = await request.get(endpoints.getPatientResults(params))
+  const validatedParams = getPatientResultsSchema.safeParse(params)
+  if (!validatedParams.success) {
+    throw new Error('Invalid results query parameters')
+  }
+
+  const res = await request.get(
+    endpoints.getPatientResults(validatedParams.data),
+  )
   return res as TGetPatientResultsResponse
 }
 
 // Get a specific screening result
 export const getPatientResult = async (
   id: string,
-): Promise<TGetPatientResultResponse> => {
+): Promise<TGetPatientResultByIdResponse> => {
+  const validatedParams = getPatientResultByIdSchema.safeParse({ id })
+  if (!validatedParams.success) {
+    throw new Error('Invalid result ID')
+  }
+
   const res = await request.get(endpoints.getPatientResult(id))
-  return res as TGetPatientResultResponse
+  return res as TGetPatientResultByIdResponse
 }
 
 // Get patient receipts (paginated)

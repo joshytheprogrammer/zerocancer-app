@@ -115,19 +115,19 @@ export function usePatientResult(id: string) {
   })
 }
 
-// Get patient receipts (paginated)
-export function usePatientReceipts(params: { page?: number; size?: number }) {
-  return queryOptions({
-    queryKey: [QueryKeys.authUser, 'patientReceipts', params],
-    queryFn: () => patientService.getPatientReceipts(params),
-  })
-}
+// // Get patient receipts (paginated)
+// export function usePatientReceipts(params: { page?: number; size?: number }) {
+//   return queryOptions({
+//     queryKey: [QueryKeys.authUser, 'patientReceipts', params],
+//     queryFn: () => patientService.getPatientReceipts(params),
+//   })
+// }
 
-// Get a specific receipt
-export function usePatientReceipt(id: string) {
-  return queryOptions({
-    queryKey: [QueryKeys.authUser, 'patientReceipt', id],
-    queryFn: () => patientService.getPatientReceipt(id),
-    enabled: !!id,
-  })
-}
+// // Get a specific receipt
+// export function usePatientReceipt(id: string) {
+//   return queryOptions({
+//     queryKey: [QueryKeys.authUser, 'patientReceipt', id],
+//     queryFn: () => patientService.getPatientReceipt(id),
+//     enabled: !!id,
+//   })
+// }

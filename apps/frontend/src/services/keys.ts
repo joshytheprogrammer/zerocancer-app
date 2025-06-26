@@ -73,6 +73,10 @@ export enum MutationKeys {
   // Appointment mutations
   cancelCenterAppointment = 'cancelCenterAppointment',
   verifyCheckInCode = 'verifyCheckInCode',
+  // Result file mutations
+  deleteResultFile = 'deleteResultFile',
+  restoreResultFile = 'restoreResultFile',
+  completeAppointment = 'completeAppointment',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

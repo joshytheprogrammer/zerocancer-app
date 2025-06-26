@@ -4,5 +4,6 @@ export * from "./center.schema";
 export * from "./centerStaff.schema";
 export * from "./notification.schema";
 export * from "./register.schema";
+export * from "./result.schema";
 export * from "./screeningType.schema";
 export * from "./waitlist.schema";

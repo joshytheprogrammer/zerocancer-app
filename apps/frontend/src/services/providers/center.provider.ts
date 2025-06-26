@@ -79,3 +79,36 @@ export const useVerifyCheckInCode = () =>
     mutationKey: [MutationKeys.verifyCheckInCode],
     mutationFn: centerService.verifyCheckInCode,
   })
+
+export const useDeleteResultFile = () =>
+  useMutation({
+    mutationKey: [MutationKeys.deleteResultFile],
+    mutationFn: ({
+      fileId,
+      reason,
+      notifyPatient,
+    }: {
+      fileId: string
+      reason?: string
+      notifyPatient?: boolean
+    }) => centerService.deleteResultFile(fileId, { reason, notifyPatient }),
+  })
+
+export const useRestoreResultFile = () =>
+  useMutation({
+    mutationKey: [MutationKeys.restoreResultFile],
+    mutationFn: ({ fileId }: { fileId: string }) =>
+      centerService.restoreResultFile(fileId),
+  })
+
+export const useCompleteAppointment = () =>
+  useMutation({
+    mutationKey: [MutationKeys.completeAppointment],
+    mutationFn: ({
+      appointmentId,
+      completionNotes,
+    }: {
+      appointmentId: string
+      completionNotes?: string
+    }) => centerService.completeAppointment(appointmentId, { completionNotes }),
+  })

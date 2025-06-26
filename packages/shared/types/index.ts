@@ -195,29 +195,92 @@ export type TGetCentersResponse = TDataResponse<{
 
 export type TGetCenterByIdResponse = TDataResponse<TCenter>;
 
+export type TResultFile = {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  uploadedAt: string;
+  // Soft delete fields
+  isDeleted: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
+  deletionReason?: string;
+};
+
 export type TPatientResult = {
   id: string;
+  notes: string | null;
+  uploadedAt: string;
   appointment: {
     id: string;
     appointmentDate: string;
-    screeningType: { name: string };
+    appointmentTime?: string;
+    screeningType: {
+      id: string;
+      name: string;
+    };
+    center: {
+      id: string;
+      centerName: string;
+      address?: string;
+    };
   };
-  uploader: { id: string; centerId: string };
-  uploadedAt?: string;
-  // add more fields as needed
+  files: TResultFile[];
+  folders: Record<string, TResultFile[]>;
 };
 
-export type TPatientReceipt = {
-  id: string;
-  appointments: Array<{
-    id: string;
-    appointmentDate: string;
-    screeningType: { id: string; name: string };
-    patientId?: string;
+export type TUploadResultsResponse = TDataResponse<{
+  resultId: string;
+  filesCount: number;
+}>;
+
+export type TGetPatientResultByIdResponse = TDataResponse<TPatientResult>;
+
+// Soft delete and completion response types
+export type TDeleteResultFileResponse = TDataResponse<{
+  fileId: string;
+  deletedAt: string;
+}>;
+
+export type TRestoreResultFileResponse = TDataResponse<{
+  fileId: string;
+  restoredAt: string;
+}>;
+
+export type TCompleteAppointmentResponse = TDataResponse<{
+  appointmentId: string;
+  completedAt: string;
+  status: 'COMPLETED';
+}>;
+
+// For admin (post-MVP)
+export type TGetDeletedFilesResponse = TDataResponse<{
+  files: Array<TResultFile & {
+    appointmentId: string;
+    patientName: string;
+    centerName: string;
+    deletedByStaffName: string;
   }>;
-  createdAt?: string;
-  // add more fields as needed
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
+// Enhanced appointment type with completion info
+export type TAppointmentDetails = {
+  id: string;
+  status: string;
+  // ... other existing appointment fields would be here
+  completedAt?: string;
+  completionNotes?: string;
+  canBeCompleted: boolean; // Computed field indicating if results exist
 };
+
+// ...existing types continue...
 
 export type TBookSelfPayAppointmentResponse = TDataResponse<{
   appointment: TPatientAppointment;
@@ -299,7 +362,13 @@ export type TGetPatientResultsResponse = TDataResponse<{
   total: number;
   totalPages: number;
 }>;
-export type TGetPatientResultResponse = TDataResponse<TPatientResult>;
+
+// Placeholder for receipt types (to be implemented later)
+export type TPatientReceipt = {
+  id: string;
+  // Add receipt properties later
+};
+
 export type TGetPatientReceiptsResponse = TDataResponse<{
   receipts: TPatientReceipt[];
   page: number;

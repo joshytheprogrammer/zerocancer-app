@@ -3,6 +3,7 @@ import {
   bookSelfPayAppointmentSchema,
   getPatientAppointmentsSchema,
   getPatientReceiptsSchema,
+  getPatientResultByIdSchema,
   getPatientResultsSchema,
   selectCenterSchema,
 } from "@zerocancer/shared";
@@ -14,7 +15,7 @@ import type {
   TGetPatientAppointmentsResponse,
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
-  TGetPatientResultResponse,
+  TGetPatientResultByIdResponse,
   TGetPatientResultsResponse,
   TSelectCenterResponse,
 } from "@zerocancer/shared/types";
@@ -23,6 +24,7 @@ import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
+import { z } from "zod";
 
 export const patientAppointmentApp = new Hono<{
   Variables: THonoAppVariables;
@@ -421,7 +423,7 @@ patientAppointmentApp.get(
 
 // GET /api/appointment/patient/results - List patient results
 patientAppointmentApp.get(
-  "/patient/results",
+  "/results",
   zValidator("query", getPatientResultsSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -429,96 +431,176 @@ patientAppointmentApp.get(
   async (c) => {
     const db = getDB();
     const payload = c.get("jwtPayload");
-    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-    const userId = payload.id!;
-    const page = parseInt(c.req.query("page") || "1", 10);
-    const size = parseInt(c.req.query("size") || "20", 10);
+    const patientId = payload?.id!;
+    const { page = 1, pageSize = 20 } = c.req.valid("query");
+
     const [results, total] = await Promise.all([
       db.screeningResult.findMany({
-        where: { appointment: { patientId: userId } },
-        skip: (page - 1) * size,
-        take: size,
+        where: {
+          appointment: { patientId },
+        },
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
         orderBy: { uploadedAt: "desc" },
         include: {
           appointment: {
             select: {
               id: true,
               appointmentDate: true,
-              screeningType: { select: { name: true } },
+              appointmentTime: true,
+              screeningType: { select: { id: true, name: true } },
+              center: { select: { id: true, centerName: true } },
             },
           },
-          uploader: { select: { id: true, centerId: true } },
+          files: {
+            orderBy: { filePath: "asc" },
+          },
         },
       }),
       db.screeningResult.count({
-        where: { appointment: { patientId: userId } },
+        where: {
+          appointment: { patientId },
+        },
       }),
     ]);
-    const safeResults = results.map((r) => ({
-      id: r.id!,
+
+    // Helper function to group files by folder
+    const groupFilesByFolder = (files: any[]): Record<string, any[]> => {
+      return files.reduce((acc, file) => {
+        const folderName = file.filePath.includes("/")
+          ? file.filePath.split("/")[0]
+          : "root";
+
+        if (!acc[folderName]) {
+          acc[folderName] = [];
+        }
+        acc[folderName].push(file);
+        return acc;
+      }, {});
+    };
+
+    // Format the response
+    const processedResults = results.map((result) => ({
+      id: result.id,
+      notes: result.notes,
+      uploadedAt: result.uploadedAt.toISOString(),
       appointment: {
-        id: r.appointment.id!,
-        appointmentDate: r.appointment.appointmentDate.toISOString(),
-        screeningType: { name: r.appointment.screeningType.name! },
+        id: result.appointment.id,
+        appointmentDate: result.appointment.appointmentDate.toISOString(),
+        appointmentTime: result.appointment.appointmentTime?.toISOString(),
+        screeningType: result.appointment.screeningType,
+        center: result.appointment.center,
       },
-      uploader: {
-        id: r.uploader.id!,
-        centerId: r.uploader.centerId!,
-      },
-      uploadedAt: r.uploadedAt ? r.uploadedAt.toISOString() : undefined,
+      files: result.files.map((file) => ({
+        id: file.id,
+        fileName: file.fileName,
+        filePath: file.filePath,
+        fileType: file.fileType,
+        fileSize: file.fileSize,
+        url: file.cloudinaryUrl,
+        uploadedAt: file.uploadedAt.toISOString(),
+        isDeleted: file.isDeleted,
+      })),
+      folders: groupFilesByFolder(result.files),
     }));
+
     return c.json<TGetPatientResultsResponse>({
       ok: true,
       data: {
-        results: safeResults,
-        page,
-        pageSize: size,
+        results: processedResults,
+        page: Number(page),
+        pageSize: Number(pageSize),
         total,
-        totalPages: Math.ceil(total / size),
+        totalPages: Math.ceil(total / Number(pageSize)),
       },
     });
   }
 );
 
 // GET /api/appointment/patient/results/:id - Get specific patient result
-patientAppointmentApp.get("/patient/results/:id", async (c) => {
-  const db = getDB();
-  const payload = c.get("jwtPayload");
-  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
-  const userId = payload.id!;
-  const id = c.req.param("id");
-  const result = await db.screeningResult.findUnique({
-    where: { id },
-    include: {
-      appointment: {
-        select: {
-          id: true,
-          patientId: true,
-          appointmentDate: true,
-          screeningType: { select: { name: true } },
+patientAppointmentApp.get(
+  "/results/:id",
+  zValidator("param", getPatientResultByIdSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const payload = c.get("jwtPayload");
+    const patientId = payload?.id!;
+    const { id } = c.req.valid("param");
+
+    const result = await db.screeningResult.findFirst({
+      where: {
+        id,
+        appointment: { patientId },
+      },
+      include: {
+        appointment: {
+          select: {
+            id: true,
+            appointmentDate: true,
+            appointmentTime: true,
+            screeningType: { select: { id: true, name: true } },
+            center: { select: { id: true, centerName: true, address: true } },
+          },
+        },
+        files: {
+          orderBy: { filePath: "asc" },
         },
       },
-      uploader: { select: { id: true, centerId: true } },
-    },
-  });
-  if (!result || result.appointment.patientId !== userId) {
-    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+    });
+
+    if (!result) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Result not found" },
+        404
+      );
+    }
+
+    // Helper function to group files by folder
+    const groupFilesByFolder = (files: any[]): Record<string, any[]> => {
+      return files.reduce((acc, file) => {
+        const folderName = file.filePath.includes("/")
+          ? file.filePath.split("/")[0]
+          : "root";
+
+        if (!acc[folderName]) {
+          acc[folderName] = [];
+        }
+        acc[folderName].push(file);
+        return acc;
+      }, {});
+    };
+
+    return c.json<TGetPatientResultByIdResponse>({
+      ok: true,
+      data: {
+        id: result.id,
+        notes: result.notes,
+        uploadedAt: result.uploadedAt.toISOString(),
+        appointment: {
+          id: result.appointment.id,
+          appointmentDate: result.appointment.appointmentDate.toISOString(),
+          appointmentTime: result.appointment.appointmentTime?.toISOString(),
+          screeningType: result.appointment.screeningType,
+          center: result.appointment.center,
+        },
+        files: result.files.map((file) => ({
+          id: file.id,
+          fileName: file.fileName,
+          filePath: file.filePath,
+          fileType: file.fileType,
+          fileSize: file.fileSize,
+          url: file.cloudinaryUrl,
+          uploadedAt: file.uploadedAt.toISOString(),
+          isDeleted: file.isDeleted,
+        })),
+        folders: groupFilesByFolder(result.files),
+      },
+    });
   }
-  const safeResult = {
-    id: result.id!,
-    appointment: {
-      id: result.appointment.id!,
-      appointmentDate: result.appointment.appointmentDate.toISOString(),
-      screeningType: { name: result.appointment.screeningType.name! },
-    },
-    uploader: {
-      id: result.uploader.id!,
-      centerId: result.uploader.centerId!,
-    },
-    uploadedAt: result.uploadedAt ? result.uploadedAt.toISOString() : undefined,
-  };
-  return c.json<TGetPatientResultResponse>({ ok: true, data: safeResult });
-});
+);
 
 // GET /api/appointment/patient/receipts - List patient receipts
 patientAppointmentApp.get(

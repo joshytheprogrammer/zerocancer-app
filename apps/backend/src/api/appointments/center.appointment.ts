@@ -1,14 +1,22 @@
 import { zValidator } from "@hono/zod-validator";
 import {
   cancelCenterAppointmentSchema,
+  completeAppointmentSchema,
+  deleteResultFileSchema,
   getCenterAppointmentByIdSchema,
   getCenterAppointmentsSchema,
   rescheduleCenterAppointmentSchema,
+  restoreResultFileSchema,
+  uploadResultsSchema,
   verifyCheckInCodeSchema,
 } from "@zerocancer/shared";
 import type {
+  TCompleteAppointmentResponse,
   TDataResponse,
+  TDeleteResultFileResponse,
   TErrorResponse,
+  TRestoreResultFileResponse,
+  TUploadResultsResponse,
   TVerifyCheckInCodeResponse,
 } from "@zerocancer/shared/types";
 import { Hono } from "hono";
@@ -327,6 +335,370 @@ centerAppointmentApp.post(
         appointmentId: appointment.id,
         message: "Check-in successful",
       },
+    });
+  }
+);
+
+// POST /api/appointment/center/:id/upload-results - Upload screening results
+centerAppointmentApp.post(
+  "/:id/upload-results",
+  zValidator("json", uploadResultsSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { id } = c.req.param();
+    const { files, notes } = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+
+    if (!payload?.id) {
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+    }
+
+    // Verify appointment exists and belongs to center
+    const appointment = await db.appointment.findUnique({
+      where: { id },
+      include: {
+        center: true,
+        patient: { select: { id: true, fullName: true } },
+      },
+    });
+
+    if (!appointment) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Appointment not found" },
+        404
+      );
+    }
+
+    if (appointment.centerId !== payload.id) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Appointment does not belong to your center" },
+        403
+      );
+    }
+
+    // Check if appointment is in valid state for result upload
+    if (!["IN_PROGRESS", "SCHEDULED"].includes(appointment.status!)) {
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Appointment is not in a valid state for result upload",
+        },
+        400
+      );
+    }
+
+    try {
+      // Create or update screening result with files in a transaction
+      const result = await db.$transaction(async (tx) => {
+        // Create or update screening result
+        const screeningResult = await tx.screeningResult.upsert({
+          where: { appointmentId: id },
+          create: {
+            appointmentId: id,
+            notes,
+            uploadedBy: payload.id!,
+          },
+          update: {
+            notes,
+            uploadedBy: payload.id!,
+            uploadedAt: new Date(),
+          },
+        });
+
+        // Create file records
+        if (files && files.length > 0) {
+          await tx.screeningResultFile.createMany({
+            data: files.map((file) => ({
+              resultId: screeningResult.id,
+              fileName: file.fileName || "unknown",
+              filePath: file.filePath || "unknown",
+              fileType: file.fileType || "unknown",
+              fileSize: file.fileSize || 0,
+              cloudinaryUrl: file.url || "",
+              cloudinaryId: file.cloudinaryId || "",
+            })),
+          });
+        }
+
+        // Keep appointment as IN_PROGRESS - completion is manual
+        await tx.appointment.update({
+          where: { id },
+          data: { status: "IN_PROGRESS" },
+        });
+
+        return screeningResult;
+      });
+
+      // NOTE: No patient notification on upload - only when manually completed
+      
+      return c.json<TUploadResultsResponse>({
+        ok: true,
+        data: {
+          resultId: result.id,
+          filesCount: files?.length || 0,
+        },
+      });
+    } catch (error) {
+      console.error("Error uploading results:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Failed to upload results" },
+        500
+      );
+    }
+  }
+);
+
+// POST /api/appointment/center/:id/complete - Mark appointment as completed
+centerAppointmentApp.post(
+  "/:id/complete",
+  zValidator("json", completeAppointmentSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { id } = c.req.param();
+    const { completionNotes } = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+
+    // Verify appointment belongs to center and is in correct status
+    const appointment = await db.appointment.findFirst({
+      where: { 
+        id,
+        centerId: payload?.id,
+        status: "IN_PROGRESS" // Can only complete in-progress appointments
+      },
+      include: {
+        result: {
+          include: {
+            files: {
+              where: { isDeleted: false }
+            }
+          }
+        },
+        patient: { select: { id: true, fullName: true } },
+        center: { select: { centerName: true } },
+        screeningType: { select: { name: true } }
+      }
+    });
+
+    if (!appointment) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Appointment not found or cannot be completed" },
+        404
+      );
+    }
+
+    // Check if results have been uploaded
+    if (!appointment.result || appointment.result.files.length === 0) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Cannot complete appointment without uploading results" },
+        400
+      );
+    }
+
+    // Mark appointment as completed
+    const completedAppointment = await db.appointment.update({
+      where: { id },
+      data: { 
+        status: "COMPLETED"
+        // Note: completedAt and completionNotes could be added to schema later
+      }
+    });
+
+    // NOW send notification to patient about results availability
+    try {
+      await createNotificationForUsers({
+        type: "RESULTS_AVAILABLE",
+        title: "Screening Results Available",
+        message: `Your screening results for ${appointment.screeningType.name} at ${appointment.center.centerName} are now available. You can view and download them from your appointments.`,
+        userIds: [appointment.patient.id!],
+        data: { appointmentId: id, resultId: appointment.result.id },
+      });
+    } catch (error) {
+      console.error("Failed to send completion notification:", error);
+    }
+
+    return c.json<TCompleteAppointmentResponse>({
+      ok: true,
+      data: {
+        appointmentId: completedAppointment.id!,
+        completedAt: new Date().toISOString(),
+        status: "COMPLETED"
+      }
+    });
+  }
+);
+
+// DELETE /api/appointment/center/files/:fileId - Soft delete a file
+centerAppointmentApp.delete(
+  "/files/:fileId",
+  zValidator("json", deleteResultFileSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { fileId } = c.req.param();
+    const { reason, notifyPatient = true } = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+    const staffId = payload?.id!;
+
+    // Verify file exists and belongs to center's appointment
+    const file = await db.screeningResultFile.findFirst({
+      where: { 
+        id: fileId,
+        isDeleted: false, // Can't delete already deleted files
+        result: {
+          appointment: {
+            centerId: payload?.id // Use the center ID from auth payload
+          }
+        }
+      },
+      include: {
+        result: {
+          include: {
+            appointment: {
+              select: { 
+                id: true,
+                status: true,
+                patientId: true 
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!file) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "File not found or already deleted" },
+        404
+      );
+    }
+
+    // Soft delete the file
+    const deletedFile = await db.screeningResultFile.update({
+      where: { id: fileId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: staffId,
+        deletionReason: reason || null,
+      }
+    });
+
+    // Only notify patient if appointment is COMPLETED and notification is not disabled
+    const shouldNotifyPatient = file.result.appointment.status === "COMPLETED" && notifyPatient;
+    
+    if (shouldNotifyPatient) {
+      try {
+        await createNotificationForUsers({
+          type: "RESULT_UPDATED",
+          title: "Result File Removed",
+          message: `A result file "${file.fileName}" has been removed from your screening results.`,
+          userIds: [file.result.appointment.patientId!],
+          data: { appointmentId: file.result.appointment.id },
+        });
+      } catch (error) {
+        console.error("Failed to send deletion notification:", error);
+      }
+    }
+
+    return c.json<TDeleteResultFileResponse>({
+      ok: true,
+      data: {
+        fileId: deletedFile.id!,
+        deletedAt: deletedFile.deletedAt!.toISOString()
+      }
+    });
+  }
+);
+
+// POST /api/appointment/center/files/:fileId/restore - Restore a soft-deleted file
+centerAppointmentApp.post(
+  "/files/:fileId/restore",
+  zValidator("json", restoreResultFileSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { fileId } = c.req.param();
+    const payload = c.get("jwtPayload");
+
+    // Verify file exists and is deleted
+    const file = await db.screeningResultFile.findFirst({
+      where: { 
+        id: fileId,
+        isDeleted: true, // Can only restore deleted files
+        result: {
+          appointment: {
+            centerId: payload?.id
+          }
+        }
+      },
+      include: {
+        result: {
+          include: {
+            appointment: {
+              select: { 
+                id: true,
+                status: true,
+                patientId: true 
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!file) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Deleted file not found" },
+        404
+      );
+    }
+
+    // Restore the file
+    const restoredFile = await db.screeningResultFile.update({
+      where: { id: fileId },
+      data: {
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+      }
+    });
+
+    // Only notify patient if appointment is COMPLETED
+    if (file.result.appointment.status === "COMPLETED") {
+      try {
+        await createNotificationForUsers({
+          type: "RESULT_UPDATED",
+          title: "Result File Restored",
+          message: `Result file "${file.fileName}" has been restored to your screening results.`,
+          userIds: [file.result.appointment.patientId!],
+          data: { appointmentId: file.result.appointment.id },
+        });
+      } catch (error) {
+        console.error("Failed to send restore notification:", error);
+      }
+    }
+
+    return c.json<TRestoreResultFileResponse>({
+      ok: true,
+      data: {
+        fileId: restoredFile.id!,
+        restoredAt: new Date().toISOString()
+      }
     });
   }
 );

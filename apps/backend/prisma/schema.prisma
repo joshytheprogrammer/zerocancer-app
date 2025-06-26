@@ -223,14 +223,38 @@ model AppointmentVerification {
 }
 
 model ScreeningResult {
-  id          String   @id @default(uuid())
-  result      String
-  notes       String?
-  uploadedBy  String
-  uploadedAt  DateTime @default(now())
+  id            String   @id @default(uuid())
+  appointmentId String   @unique
+  notes         String?
+  uploadedBy    String
+  uploadedAt    DateTime @default(now())
 
-  appointment Appointment @relation("ScreeningResultAppointment", fields: [id], references: [id])
-  uploader CenterStaff @relation("StaffUploadedResults", fields: [uploadedBy], references: [id])
+  appointment Appointment @relation("ScreeningResultAppointment", fields: [appointmentId], references: [id])
+  uploader    CenterStaff @relation("StaffUploadedResults", fields: [uploadedBy], references: [id])
+  files       ScreeningResultFile[]
+}
+
+model ScreeningResultFile {
+  id            String   @id @default(uuid())
+  resultId      String
+  fileName      String
+  filePath      String
+  fileType      String
+  fileSize      Int
+  cloudinaryUrl String
+  cloudinaryId  String
+  uploadedAt    DateTime @default(now())
+  
+  // Soft delete fields
+  isDeleted     Boolean  @default(false)
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletionReason String? // Optional reason for deletion
+  
+  result        ScreeningResult @relation(fields: [resultId], references: [id])
+  deletedByStaff CenterStaff? @relation("StaffDeletedFiles", fields: [deletedBy], references: [id])
+  
+  @@index([isDeleted, resultId]) // For efficient filtering
 }
 
 model StoreProduct {
@@ -310,6 +334,7 @@ model CenterStaff {
   center    ServiceCenter @relation(fields: [centerId], references: [id])
   verifications AppointmentVerification[] @relation("StaffVerifications")
   uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
+  deletedResultFiles ScreeningResultFile[] @relation("StaffDeletedFiles")
   resetTokens CenterStaffResetToken[]
 
   @@unique([centerId, email])
