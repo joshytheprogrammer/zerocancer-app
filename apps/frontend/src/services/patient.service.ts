@@ -8,7 +8,7 @@ import {
 } from '@zerocancer/shared/schemas/register.schema'
 import {
   getPatientResultByIdSchema,
-  getPatientResultsSchema,
+  // getPatientResultsSchema,
 } from '@zerocancer/shared/schemas/result.schema'
 import {
   getPatientWaitlistsSchema,
@@ -22,7 +22,7 @@ import type {
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
   TGetPatientResultByIdResponse,
-  TGetPatientResultsResponse,
+  // TGetPatientResultsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
   TSelectCenterResponse,

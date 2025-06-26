@@ -1,5 +1,5 @@
 import { QueryKeys } from '@/services/keys'
-import { queryOptions } from '@tanstack/react-query'
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query'
 import {
   fetchAllScreeningTypes,
   fetchScreeningTypeById,
@@ -19,10 +19,31 @@ export const useScreeningTypes = (params: {
     queryFn: () => fetchScreeningTypes(params),
   })
 
+// Get screening types with infinite loading (paginated, searchable)
+export const useScreeningTypesInfinite = (params: {
+  pageSize?: number
+  search?: string
+}) =>
+  infiniteQueryOptions({
+    queryKey: [QueryKeys.screeningTypes, 'infinite', params],
+    queryFn: ({ pageParam }) => {
+      return fetchScreeningTypes({
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      // Handle optional pagination fields from TGetScreeningTypesResponse
+      const { page, totalPages } = lastPage
+      return page && totalPages && page < totalPages ? page + 1 : undefined
+    },
+  })
+
 export const useAllScreeningTypes = (search?: string) =>
   queryOptions({
     queryKey: [QueryKeys.screeningTypesAll, search],
-    queryFn: () => fetchAllScreeningTypes({search}),
+    queryFn: () => fetchAllScreeningTypes({ search }),
   })
 
 export const useScreeningTypeCategories = () =>
@@ -38,6 +59,33 @@ export const useScreeningTypesByCategory = (
   queryOptions({
     queryKey: [QueryKeys.screeningTypesCategory, categoryId, params],
     queryFn: () => fetchScreeningTypesByCategory(categoryId, params),
+    enabled: !!categoryId,
+  })
+
+// Get screening types by category with infinite loading (paginated, searchable)
+export const useScreeningTypesByCategoryInfinite = (
+  categoryId: string,
+  params: { pageSize?: number; search?: string },
+) =>
+  infiniteQueryOptions({
+    queryKey: [
+      QueryKeys.screeningTypesCategory,
+      'infinite',
+      categoryId,
+      params,
+    ],
+    queryFn: ({ pageParam }) => {
+      return fetchScreeningTypesByCategory(categoryId, {
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      // Handle optional pagination fields from TGetScreeningTypesResponse
+      const { page, totalPages } = lastPage
+      return page && totalPages && page < totalPages ? page + 1 : undefined
+    },
     enabled: !!categoryId,
   })
 

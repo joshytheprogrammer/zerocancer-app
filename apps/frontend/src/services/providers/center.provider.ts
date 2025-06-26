@@ -1,5 +1,9 @@
 import { MutationKeys, QueryKeys } from '@/services/keys'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useMutation,
+} from '@tanstack/react-query'
 import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
 import { getCentersQuerySchema } from '@zerocancer/shared/schemas/center.schema'
 import type { z } from 'zod'
@@ -11,6 +15,29 @@ export const centers = (params: z.infer<typeof getCentersQuerySchema>) =>
   queryOptions({
     queryKey: [QueryKeys.centers, params],
     queryFn: () => centerService.getCenters(params),
+  })
+
+// Get centers with infinite loading (paginated, filterable)
+export const centersInfinite = (params: {
+  pageSize?: number
+  search?: string
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  state?: string
+  lga?: string
+}) =>
+  infiniteQueryOptions({
+    queryKey: [QueryKeys.centers, 'infinite', params],
+    queryFn: ({ pageParam }) => {
+      return centerService.getCenters({
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
   })
 
 export const centerById = (id: string) =>
@@ -58,6 +85,27 @@ export const centerAppointments = (
   queryOptions({
     queryKey: [QueryKeys.centerAppointments, params],
     queryFn: () => centerService.getCenterAppointments(params),
+  })
+
+// Get center appointments with infinite loading (paginated, filterable)
+export const centerAppointmentsInfinite = (params: {
+  pageSize?: number
+  screeningType?: string
+}) =>
+  infiniteQueryOptions({
+    queryKey: [QueryKeys.centerAppointments, 'infinite', params],
+    queryFn: ({ pageParam }) => {
+      return centerService.getCenterAppointments({
+        ...params,
+        page: pageParam,
+        pageSize: params.pageSize ?? 20, // Provide default to match schema requirement
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
   })
 
 export const centerAppointmentById = (id: string) =>

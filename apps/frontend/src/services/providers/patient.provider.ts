@@ -1,5 +1,6 @@
 import * as patientService from '@/services/patient.service'
 import {
+  infiniteQueryOptions,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -31,6 +32,26 @@ export const usePatientWaitlists = (params: {
     queryFn: () => patientService.getPatientWaitlists(params),
   })
 
+// Get patient waitlists with infinite loading (paginated, filterable)
+export const usePatientWaitlistsInfinite = (params: {
+  pageSize?: number
+  status?: 'PENDING' | 'MATCHED' | 'EXPIRED'
+}) =>
+  infiniteQueryOptions({
+    queryKey: [QueryKeys.patientWaitlists, 'infinite', params],
+    queryFn: ({ pageParam }) => {
+      return patientService.getPatientWaitlists({
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
+  })
+
 // Get eligible centers for a matched allocation
 export const useEligibleCenters = (
   allocationId: string,
@@ -51,6 +72,39 @@ export const useEligibleCenters = (
     ],
     queryFn: () =>
       patientService.getEligibleCenters(allocationId, page, size, state, lga),
+    enabled: !!allocationId,
+  })
+
+// Get eligible centers with infinite loading
+export const useEligibleCentersInfinite = (
+  allocationId: string,
+  size = 20,
+  state?: string,
+  lga?: string,
+) =>
+  infiniteQueryOptions({
+    queryKey: [
+      QueryKeys.authUser,
+      'eligibleCenters',
+      'infinite',
+      allocationId,
+      size,
+      state,
+      lga,
+    ],
+    queryFn: ({ pageParam }) =>
+      patientService.getEligibleCenters(
+        allocationId,
+        pageParam,
+        size,
+        state,
+        lga,
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
     enabled: !!allocationId,
   })
 
@@ -77,6 +131,33 @@ export function usePatientAppointments(params: {
   return queryOptions({
     queryKey: [QueryKeys.authUser, QueryKeys.patientAppointments, params],
     queryFn: () => patientService.getPatientAppointments(params),
+  })
+}
+
+// Get patient appointments with infinite loading (paginated, filterable)
+export function usePatientAppointmentsInfinite(params: {
+  size?: number
+  status?: string
+}) {
+  return infiniteQueryOptions({
+    queryKey: [
+      QueryKeys.authUser,
+      QueryKeys.patientAppointments,
+      'infinite',
+      params,
+    ],
+    queryFn: ({ pageParam }) => {
+      return patientService.getPatientAppointments({
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      // lastPage.data has the structure: { appointments, page, pageSize, total, totalPages }
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
   })
 }
 
@@ -111,6 +192,24 @@ export function usePatientReceipts(params: { page?: number; size?: number }) {
   return queryOptions({
     queryKey: [QueryKeys.authUser, 'patientReceipts', params],
     queryFn: () => patientService.getPatientReceipts(params),
+  })
+}
+
+// Get patient receipts with infinite loading (paginated)
+export function usePatientReceiptsInfinite(params: { size?: number }) {
+  return infiniteQueryOptions({
+    queryKey: [QueryKeys.authUser, 'patientReceipts', 'infinite', params],
+    queryFn: ({ pageParam }) => {
+      return patientService.getPatientReceipts({
+        ...params,
+        page: pageParam,
+      })
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data
+      return page < totalPages ? page + 1 : undefined
+    },
   })
 }
 
