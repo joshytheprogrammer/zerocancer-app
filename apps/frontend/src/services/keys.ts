@@ -16,6 +16,8 @@ export enum QueryKeys {
   centerResults = 'centerResults',
   centerStaff = 'centerStaff',
   centerReceipts = 'centerReceipts',
+  centers = 'centers',
+  centerById = 'centerById',
 
   adminUsers = 'adminUsers',
   adminCenters = 'adminCenters',
@@ -69,6 +71,7 @@ export enum MutationKeys {
   centerStaffLogin = 'centerStaffLogin',
   // Appointment mutations
   cancelCenterAppointment = 'cancelCenterAppointment',
+  verifyCheckInCode = 'verifyCheckInCode',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

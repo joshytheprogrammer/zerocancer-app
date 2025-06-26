@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
+import { centerApp } from "./api/center";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistApp } from "./api/waitlist";
@@ -30,6 +31,7 @@ app.get("/healthz", (c) => c.json({ status: "ok" }));
 // ROUTES
 app.route("/auth", authApp);
 app.route("/register", registerApp);
+app.route("/center", centerApp);
 app.route("/appointment", appointmentApp);
 app.route("/screening-types", screeningTypesApp);
 app.route("/waitlist", waitlistApp);

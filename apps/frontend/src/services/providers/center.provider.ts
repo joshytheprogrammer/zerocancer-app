@@ -1,8 +1,26 @@
 import { MutationKeys, QueryKeys } from '@/services/keys'
 import { queryOptions, useMutation } from '@tanstack/react-query'
 import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
+import { getCentersQuerySchema } from '@zerocancer/shared/schemas/center.schema'
 import type { z } from 'zod'
 import * as centerService from '../center.service'
+
+// --- Center Query Providers ---
+
+export const centers = (params: z.infer<typeof getCentersQuerySchema>) =>
+  queryOptions({
+    queryKey: [QueryKeys.centers, params],
+    queryFn: () => centerService.getCenters(params),
+  })
+
+export const centerById = (id: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.centerById, id],
+    queryFn: () => centerService.getCenterById(id),
+    enabled: !!id,
+  })
+
+// --- Staff Management Mutations ---
 
 export const useInviteStaff = () =>
   useMutation({
@@ -54,4 +72,10 @@ export const useCancelCenterAppointment = () =>
     mutationKey: [MutationKeys.cancelCenterAppointment],
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       centerService.cancelCenterAppointment(id, { reason }),
+  })
+
+export const useVerifyCheckInCode = () =>
+  useMutation({
+    mutationKey: [MutationKeys.verifyCheckInCode],
+    mutationFn: centerService.verifyCheckInCode,
   })

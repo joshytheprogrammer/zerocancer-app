@@ -83,8 +83,7 @@ export const getPatientResults = (params: { page?: number; size?: number }) =>
 export const getCheckInCode = (appointmentId: string) =>
   `/api/patient/appointments/${appointmentId}/checkin-code`
 // Center verifies a check-in code
-export const verifyCheckInCode = (code: string) =>
-  `/api/center/appointments/verify-checkin/${code}`
+export const verifyCheckInCode = () => `/api/center/appointments/verify`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
@@ -99,6 +98,25 @@ export const getDonorReceipts = (page = 1, size = 20) =>
 export const getDonationImpact = () => '/api/donor/impact'
 
 // CENTER
+export const getCenters = (params: {
+  page?: number
+  pageSize?: number
+  search?: string
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  state?: string
+  lga?: string
+}) =>
+  `/api/center${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    search: params.search ?? undefined,
+    status: params.status ?? undefined,
+    state: params.state ?? undefined,
+    lga: params.lga ?? undefined,
+  })}`
+
+export const getCenterById = (id: string) => `/api/center/${id}`
+
 export const getCenterAppointments = (params: {
   page?: number
   pageSize?: number
@@ -119,7 +137,7 @@ export const cancelCenterAppointment = (id: string) =>
 // ADMIN
 export const getUsers = (page = 1, size = 20) =>
   `/api/admin/users${buildQuery({ page, size })}`
-export const getCenters = (page = 1, size = 20) =>
+export const getAdminCenters = (page = 1, size = 20) =>
   `/api/admin/centers${buildQuery({ page, size })}`
 export const approveCenter = (id: string) => `/api/admin/centers/${id}/approve`
 export const getAllCampaigns = (page = 1, size = 20) =>
