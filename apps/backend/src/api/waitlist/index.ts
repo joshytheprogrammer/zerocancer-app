@@ -9,18 +9,18 @@ import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { patientWaitlistApp } from "./patient.waitlist";
 
-export const waitlistApp = new Hono<{
+export const waitlistsApp = new Hono<{
   Variables: THonoAppVariables;
 }>();
 
 // Route to patient-specific waitlist endpoints
-waitlistApp.route("/patient", patientWaitlistApp);
+waitlistsApp.route("/patient", patientWaitlistApp);
 
 // Future admin waitlist endpoints can be added here
 // waitlistApp.route("/admin", adminWaitlistApp);
 
 // GET /api/waitlist - List all waitlists with demand metrics (paginated)
-waitlistApp.get(
+waitlistsApp.get(
   "/",
   zValidator("query", getAllWaitlistsSchema, (result, c) => {
     if (!result.success) {
