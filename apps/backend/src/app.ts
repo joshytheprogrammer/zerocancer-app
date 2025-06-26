@@ -38,7 +38,7 @@ app.route("/waitlist", waitlistsApp);
 
 app.notFound((c) => {
   return c.json(
-    { error: "Not Found", message: "The requested resource was not found." },
+    { error: "Not Found", message: "The requested resource was not found. Or no longer exist" },
     404
   );
 });

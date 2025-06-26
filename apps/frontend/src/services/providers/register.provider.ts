@@ -1,6 +1,6 @@
-import * as service from '@/services'
-import { MutationKeys } from '@/services/keys'
-import { useMutation } from '@tanstack/react-query'
+import { registerService } from '@/services'
+import { MutationKeys, QueryKeys } from '@/services/keys'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   centerSchema,
   donorSchema,
@@ -15,14 +15,7 @@ import type {
 import type { AxiosError } from 'axios'
 import { z } from 'zod'
 
-// export const usePatientRegistrationOptions = queryOptions({
-//   queryKey: [QueryKeys.r],
-//   queryFn: () => dataService.getConversations(),
-//   refetchOnMount: false,
-//   refetchOnWindowFocus: false,
-//   refetchOnReconnect: false,
-//   retry: false,
-// });
+// --- Registration Mutations ---
 
 export const usePatientRegistration = () =>
   useMutation<
@@ -32,7 +25,7 @@ export const usePatientRegistration = () =>
   >({
     mutationKey: [MutationKeys.registerPatient],
     mutationFn: (params: z.infer<typeof patientSchema>) => {
-      return service.registerPatient(params)
+      return registerService.registerPatient(params)
     },
   })
 
@@ -44,7 +37,7 @@ export const useDonorRegistration = () =>
   >({
     mutationKey: [MutationKeys.registerDonor],
     mutationFn: (params: z.infer<typeof donorSchema>) => {
-      return service.registerDonor(params)
+      return registerService.registerDonor(params)
     },
   })
 
@@ -56,6 +49,17 @@ export const useCenterRegistration = () =>
   >({
     mutationKey: [MutationKeys.registerCenter],
     mutationFn: (params: z.infer<typeof centerSchema>) => {
-      return service.registerCenter(params)
+      return registerService.registerCenter(params)
     },
   })
+
+// --- Profile Checking Query ---
+
+export const useCheckProfiles = (email: string) => {
+  return useQuery({
+    queryKey: [QueryKeys.checkProfiles, email],
+    queryFn: () => registerService.checkProfiles({ email }),
+    retry: false,
+    enabled: !!email,
+  })
+}

@@ -25,7 +25,11 @@ export const loginUser = async (
 export const authUser = async (): Promise<TAuthMeResponse | null> => {
   try {
     const response = await request.get<TAuthMeResponse>(endpoints.authUser())
-    console.log('Auth User Email & Profile:', response.data.user.email, response.data.user.profile)
+    console.log(
+      'Auth User Email & Profile:',
+      response.data.user.email,
+      response.data.user.profile,
+    )
     return response
   } catch (error) {
     console.error('Error fetching authenticated user:', error)
@@ -38,10 +42,8 @@ export const logout = async (): Promise<TLogoutResponse> => {
   return await request.post(endpoints.logoutUser())
 }
 
-// Check profiles
-export const checkProfiles = async (email: string) => {
-  return await request.post(endpoints.checkProfiles(), { email })
-}
+// Check profiles (re-export from register service for convenience)
+export { checkProfiles } from './register.service'
 
 // Forgot password
 export const forgotPassword = async (

@@ -24,8 +24,6 @@ export const backendHealth = () => '/api/healthz'
 // USER REGISTRATION
 export const registerUser = (actor: t.TActors) => `/api/register/${actor}`
 export const checkProfiles = () => '/api/register/check-profiles'
-// export const checkEmail = (email: string) =>
-//   `/api/register/check-email?email=${encodeURIComponent(email)}`
 
 // AUTHENTICATION
 export const loginUser = (actor: t.TActors) =>
@@ -42,7 +40,7 @@ export const resendVerification = () => '/api/auth/resend-verification'
 // PATIENT
 export const getAppointments = (page = 1, size = 20) =>
   `/api/patient/appointments${buildQuery({ page, size })}`
-export const createSelfPayAppointment = () => '/api/patient/appointments/book'
+export const createSelfPayAppointment = () => '/api/appointment/patient/book'
 export const getQR = () => '/api/patient/qr'
 export const getResults = (page = 1, size = 20) =>
   `/api/patient/results${buildQuery({ page, size })}`
@@ -77,26 +75,26 @@ export const getEligibleCenters = (
   state?: string,
   lga?: string,
 ) =>
-  `/api/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
-export const selectCenterAfterMatch = () => `/api/patient/matches/select-center`
+  `/api/appointment/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
+export const selectCenterAfterMatch = () => `/api/appointment/patient/matches/select-center`
 export const getPatientAppointments = (params: {
   page?: number
   size?: number
   status?: string
 }) => `/api/appointment/patient${buildQuery(params)}`
 
-export const getPatientResults = (params: {
-  page?: number
-  pageSize?: number
-}) => `/api/appointment/patient/results${buildQuery(params)}`
+// export const getPatientResults = (params: {
+//   page?: number
+//   pageSize?: number
+// }) => `/api/appointment/patient/results${buildQuery(params)}`
 
 export const getPatientResult = (id: string) =>
   `/api/appointment/patient/results/${id}`
 // Get check-in code for an appointment
 export const getCheckInCode = (appointmentId: string) =>
-  `/api/patient/appointments/${appointmentId}/checkin-code`
+  `/api/appointment/patient/${appointmentId}/checkin-code`
 // Center verifies a check-in code
-export const verifyCheckInCode = () => `/api/center/appointments/verify`
+export const verifyCheckInCode = () => `/api/appointment/center/verify`
 
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
@@ -224,8 +222,7 @@ export const getScreeningTypeByName = (name: string) =>
   `/api/screening-types/by-name/${encodeURIComponent(name)}`
 
 // CENTER STAFF
-export const centerStaffForgotPassword = () =>
-  '/api/center/staff/forgot-password'
+export const centerStaffForgotPassword = () => '/api/center/staff/forgot-password'
 export const centerStaffResetPassword = () => '/api/center/staff/reset-password'
 export const inviteStaff = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>

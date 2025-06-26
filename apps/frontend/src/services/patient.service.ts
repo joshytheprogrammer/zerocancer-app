@@ -26,7 +26,6 @@ import type {
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
   TSelectCenterResponse,
-  TVerifyCheckInCodeResponse,
 } from '@zerocancer/shared/types'
 import { z } from 'zod'
 
@@ -97,28 +96,20 @@ export const getCheckInCode = async (
   return res as TGetCheckInCodeResponse
 }
 
-// Center verifies a check-in code
-export const verifyCheckInCode = async (
-  code: string,
-): Promise<TVerifyCheckInCodeResponse> => {
-  const res = await request.post(endpoints.verifyCheckInCode(), { code })
-  return res as TVerifyCheckInCodeResponse
-}
-
 // Get patient screening results (paginated)
-export const getPatientResults = async (
-  params: z.infer<typeof getPatientResultsSchema>,
-): Promise<TGetPatientResultsResponse> => {
-  const validatedParams = getPatientResultsSchema.safeParse(params)
-  if (!validatedParams.success) {
-    throw new Error('Invalid results query parameters')
-  }
+// export const getPatientResults = async (
+//   params: z.infer<typeof getPatientResultsSchema>,
+// ): Promise<TGetPatientResultsResponse> => {
+//   const validatedParams = getPatientResultsSchema.safeParse(params)
+//   if (!validatedParams.success) {
+//     throw new Error('Invalid results query parameters')
+//   }
 
-  const res = await request.get(
-    endpoints.getPatientResults(validatedParams.data),
-  )
-  return res as TGetPatientResultsResponse
-}
+//   const res = await request.get(
+//     endpoints.getPatientResults(validatedParams.data),
+//   )
+//   return res as TGetPatientResultsResponse
+// }
 
 // Get a specific screening result
 export const getPatientResult = async (

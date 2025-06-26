@@ -5,8 +5,8 @@ import {
   QueryClient,
   queryOptions,
   useMutation,
-  useQueryClient,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
@@ -63,11 +63,11 @@ export const isAuthMiddleware = async (
 
   // Check if user's profile matches the required actor role
   const profileMatches = auth?.data?.user?.profile === actor.toUpperCase()
-  
-  return { 
+
+  return {
     isAuth: isAuthenticated,
     isAuthorized: isAuthenticated && profileMatches,
-    profile 
+    profile,
   }
 }
 
@@ -90,14 +90,20 @@ export const logOut = () => {
   logout()
 }
 
-export const useCheckProfiles = (email: string) => {
-  return useQuery({
-    queryKey: ['checkProfiles', email],
-    queryFn: () => authService.checkProfiles(email),
-    retry: false,
-    enabled: !!email,
+export const useResendVerification = () => {
+  return useMutation({
+    mutationKey: [MutationKeys.resendVerification],
+    mutationFn: ({
+      email,
+      profileType,
+    }: {
+      email: string
+      profileType: string
+    }) => authService.resendVerification(email, profileType),
   })
 }
+
+// --- Password Reset Mutations ---
 
 export const useForgotPassword = () => {
   return useMutation({
@@ -114,22 +120,11 @@ export const useResetPassword = () => {
   })
 }
 
+// --- Email Verification Mutations ---
+
 export const useVerifyEmail = () => {
   return useMutation({
     mutationKey: [MutationKeys.verifyEmail],
     mutationFn: (token: string) => authService.verifyEmail(token),
-  })
-}
-
-export const useResendVerification = () => {
-  return useMutation({
-    mutationKey: [MutationKeys.resendVerification],
-    mutationFn: ({
-      email,
-      profileType,
-    }: {
-      email: string
-      profileType: string
-    }) => authService.resendVerification(email, profileType),
   })
 }

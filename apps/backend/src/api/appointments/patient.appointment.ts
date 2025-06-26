@@ -422,100 +422,100 @@ patientAppointmentApp.get(
 );
 
 // GET /api/appointment/patient/results - List patient results
-patientAppointmentApp.get(
-  "/results",
-  zValidator("query", getPatientResultsSchema, (result, c) => {
-    if (!result.success)
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-  }),
-  async (c) => {
-    const db = getDB();
-    const payload = c.get("jwtPayload");
-    const patientId = payload?.id!;
-    const { page = 1, pageSize = 20 } = c.req.valid("query");
+// patientAppointmentApp.get(
+//   "/results",
+//   zValidator("query", getPatientResultsSchema, (result, c) => {
+//     if (!result.success)
+//       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+//   }),
+//   async (c) => {
+//     const db = getDB();
+//     const payload = c.get("jwtPayload");
+//     const patientId = payload?.id!;
+//     const { page = 1, pageSize = 20 } = c.req.valid("query");
 
-    const [results, total] = await Promise.all([
-      db.screeningResult.findMany({
-        where: {
-          appointment: { patientId },
-        },
-        skip: (Number(page) - 1) * Number(pageSize),
-        take: Number(pageSize),
-        orderBy: { uploadedAt: "desc" },
-        include: {
-          appointment: {
-            select: {
-              id: true,
-              appointmentDate: true,
-              appointmentTime: true,
-              screeningType: { select: { id: true, name: true } },
-              center: { select: { id: true, centerName: true } },
-            },
-          },
-          files: {
-            orderBy: { filePath: "asc" },
-          },
-        },
-      }),
-      db.screeningResult.count({
-        where: {
-          appointment: { patientId },
-        },
-      }),
-    ]);
+//     const [results, total] = await Promise.all([
+//       db.screeningResult.findMany({
+//         where: {
+//           appointment: { patientId },
+//         },
+//         skip: (Number(page) - 1) * Number(pageSize),
+//         take: Number(pageSize),
+//         orderBy: { uploadedAt: "desc" },
+//         include: {
+//           appointment: {
+//             select: {
+//               id: true,
+//               appointmentDate: true,
+//               appointmentTime: true,
+//               screeningType: { select: { id: true, name: true } },
+//               center: { select: { id: true, centerName: true } },
+//             },
+//           },
+//           files: {
+//             orderBy: { filePath: "asc" },
+//           },
+//         },
+//       }),
+//       db.screeningResult.count({
+//         where: {
+//           appointment: { patientId },
+//         },
+//       }),
+//     ]);
 
-    // Helper function to group files by folder
-    const groupFilesByFolder = (files: any[]): Record<string, any[]> => {
-      return files.reduce((acc, file) => {
-        const folderName = file.filePath.includes("/")
-          ? file.filePath.split("/")[0]
-          : "root";
+//     // Helper function to group files by folder
+//     const groupFilesByFolder = (files: any[]): Record<string, any[]> => {
+//       return files.reduce((acc, file) => {
+//         const folderName = file.filePath.includes("/")
+//           ? file.filePath.split("/")[0]
+//           : "root";
 
-        if (!acc[folderName]) {
-          acc[folderName] = [];
-        }
-        acc[folderName].push(file);
-        return acc;
-      }, {});
-    };
+//         if (!acc[folderName]) {
+//           acc[folderName] = [];
+//         }
+//         acc[folderName].push(file);
+//         return acc;
+//       }, {});
+//     };
 
-    // Format the response
-    const processedResults = results.map((result) => ({
-      id: result.id,
-      notes: result.notes,
-      uploadedAt: result.uploadedAt.toISOString(),
-      appointment: {
-        id: result.appointment.id,
-        appointmentDate: result.appointment.appointmentDate.toISOString(),
-        appointmentTime: result.appointment.appointmentTime?.toISOString(),
-        screeningType: result.appointment.screeningType,
-        center: result.appointment.center,
-      },
-      files: result.files.map((file) => ({
-        id: file.id,
-        fileName: file.fileName,
-        filePath: file.filePath,
-        fileType: file.fileType,
-        fileSize: file.fileSize,
-        url: file.cloudinaryUrl,
-        uploadedAt: file.uploadedAt.toISOString(),
-        isDeleted: file.isDeleted,
-      })),
-      folders: groupFilesByFolder(result.files),
-    }));
+//     // Format the response
+//     const processedResults = results.map((result) => ({
+//       id: result.id,
+//       notes: result.notes,
+//       uploadedAt: result.uploadedAt.toISOString(),
+//       appointment: {
+//         id: result.appointment.id,
+//         appointmentDate: result.appointment.appointmentDate.toISOString(),
+//         appointmentTime: result.appointment.appointmentTime?.toISOString(),
+//         screeningType: result.appointment.screeningType,
+//         center: result.appointment.center,
+//       },
+//       files: result.files.map((file) => ({
+//         id: file.id,
+//         fileName: file.fileName,
+//         filePath: file.filePath,
+//         fileType: file.fileType,
+//         fileSize: file.fileSize,
+//         url: file.cloudinaryUrl,
+//         uploadedAt: file.uploadedAt.toISOString(),
+//         isDeleted: file.isDeleted,
+//       })),
+//       folders: groupFilesByFolder(result.files),
+//     }));
 
-    return c.json<TGetPatientResultsResponse>({
-      ok: true,
-      data: {
-        results: processedResults,
-        page: Number(page),
-        pageSize: Number(pageSize),
-        total,
-        totalPages: Math.ceil(total / Number(pageSize)),
-      },
-    });
-  }
-);
+//     return c.json<TGetPatientResultsResponse>({
+//       ok: true,
+//       data: {
+//         results: processedResults,
+//         page: Number(page),
+//         pageSize: Number(pageSize),
+//         total,
+//         totalPages: Math.ceil(total / Number(pageSize)),
+//       },
+//     });
+//   }
+// );
 
 // GET /api/appointment/patient/results/:id - Get specific patient result
 patientAppointmentApp.get(

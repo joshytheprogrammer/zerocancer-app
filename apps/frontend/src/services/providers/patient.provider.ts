@@ -8,14 +8,14 @@ import { MutationKeys, QueryKeys } from '../keys'
 
 export const useBookSelfPayAppointment = () => {
   return useMutation({
-    mutationKey: ['bookSelfPayAppointment'],
+    mutationKey: [MutationKeys.bookAppointment],
     mutationFn: patientService.bookSelfPayAppointment,
   })
 }
 
 export const useJoinWaitlist = () => {
   return useMutation({
-    mutationKey: ['joinWaitlist'],
+    mutationKey: [MutationKeys.joinWaitlist],
     mutationFn: patientService.joinWaitlist,
   })
 }
@@ -89,22 +89,13 @@ export function useCheckInCode(appointmentId: string) {
   })
 }
 
-// Center verifies a check-in code
-export function useVerifyCheckInCode(code: string) {
-  return queryOptions({
-    queryKey: ['verifyCheckInCode', code],
-    queryFn: () => patientService.verifyCheckInCode(code),
-    enabled: !!code,
-  })
-}
-
 // Get patient screening results (paginated)
-export function usePatientResults(params: { page?: number; size?: number }) {
-  return queryOptions({
-    queryKey: [QueryKeys.authUser, 'patientResults', params],
-    queryFn: () => patientService.getPatientResults(params),
-  })
-}
+// export function usePatientResults(params: { page?: number; size?: number }) {
+//   return queryOptions({
+//     queryKey: [QueryKeys.authUser, 'patientResults', params],
+//     queryFn: () => patientService.getPatientResults(params),
+//   })
+// }
 
 // Get a specific screening result
 export function usePatientResult(id: string) {
@@ -115,19 +106,19 @@ export function usePatientResult(id: string) {
   })
 }
 
-// // Get patient receipts (paginated)
-// export function usePatientReceipts(params: { page?: number; size?: number }) {
-//   return queryOptions({
-//     queryKey: [QueryKeys.authUser, 'patientReceipts', params],
-//     queryFn: () => patientService.getPatientReceipts(params),
-//   })
-// }
+// Get patient receipts (paginated)
+export function usePatientReceipts(params: { page?: number; size?: number }) {
+  return queryOptions({
+    queryKey: [QueryKeys.authUser, 'patientReceipts', params],
+    queryFn: () => patientService.getPatientReceipts(params),
+  })
+}
 
-// // Get a specific receipt
-// export function usePatientReceipt(id: string) {
-//   return queryOptions({
-//     queryKey: [QueryKeys.authUser, 'patientReceipt', id],
-//     queryFn: () => patientService.getPatientReceipt(id),
-//     enabled: !!id,
-//   })
-// }
+// Get a specific receipt
+export function usePatientReceipt(id: string) {
+  return queryOptions({
+    queryKey: [QueryKeys.authUser, 'patientReceipt', id],
+    queryFn: () => patientService.getPatientReceipt(id),
+    enabled: !!id,
+  })
+}

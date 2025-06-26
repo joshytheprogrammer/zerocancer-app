@@ -160,7 +160,7 @@ centerApp.get(
   }
 );
 
-// POST /api/center/invite-staff - Invite staff by email
+// POST /api/center/staff/invite - Invite staff by email
 centerApp.post(
   "/staff/invite",
   authMiddleware(["center"]),
@@ -197,7 +197,7 @@ centerApp.post(
   }
 );
 
-// POST /api/center/create-new-password - Center staff sets password using invite token
+// POST /api/center/staff/create-new-password - Center staff sets password using invite token
 centerApp.post(
   "/staff/create-new-password",
   zValidator("json", createCenterStaffPasswordSchema, (result, c) => {
@@ -246,7 +246,7 @@ centerApp.post(
   }
 );
 
-// POST /api/center/forgot-password - Center staff requests password reset
+// POST /api/center/staff/forgot-password - Center staff requests password reset
 centerApp.post(
   "/staff/forgot-password",
   zValidator("json", centerStaffForgotPasswordSchema, (result, c) => {
@@ -291,7 +291,7 @@ centerApp.post(
   }
 );
 
-// POST /api/center/reset-password - Center staff resets password using token
+// POST /api/center/staff/reset-password - Center staff resets password using token
 centerApp.post(
   "/staff/reset-password",
   zValidator("json", centerStaffResetPasswordSchema, (result, c) => {
