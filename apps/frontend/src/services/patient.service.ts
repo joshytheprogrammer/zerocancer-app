@@ -5,10 +5,9 @@ import {
   getPatientAppointmentsSchema,
   getPatientReceiptsSchema,
   getPatientResultsSchema,
-  joinWaitlistSchema,
   selectCenterSchema,
 } from '@zerocancer/shared/schemas/register.schema'
-import { getPatientWaitlistsSchema } from '@zerocancer/shared/schemas/waitlist.schema'
+import { getPatientWaitlistsSchema, joinWaitlistSchema } from '@zerocancer/shared/schemas/waitlist.schema'
 import type {
   TBookSelfPayAppointmentResponse,
   TGetCheckInCodeResponse,
