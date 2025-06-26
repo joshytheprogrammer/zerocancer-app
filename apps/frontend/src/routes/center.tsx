@@ -6,32 +6,37 @@ import {
   Users,
   Upload,
   ClipboardCheck,
+  LogOut
 } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
+import { useLogout } from '@/services/providers/auth.provider'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/center')({
   component: CenterLayout,
-  // beforeLoad: async ({ context }) => {
-  //   const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
-  //     context.queryClient,
-  //     'center',
-  //   )
+  beforeLoad: async ({ context }) => {
+    const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
+      context.queryClient,
+      'center',
+    )
 
-  //   if (!isAuth) return redirect({ to: `/` })
+    if (!isAuth) return redirect({ to: `/` })
 
-  //   // If authenticated but wrong role, redirect to correct dashboard
-  //   if (!isAuthorized) {
-  //     if (profile === 'PATIENT') return redirect({ to: '/patient' })
-  //     if (profile === 'DONOR') return redirect({ to: '/donor' })
-  //   }
+    // If authenticated but wrong role, redirect to correct dashboard
+    if (!isAuthorized) {
+      if (profile === 'PATIENT') return redirect({ to: '/patient' })
+      if (profile === 'DONOR') return redirect({ to: '/donor' })
+    }
 
-  //   return null
-  // },
+    return null
+  },
 })
 
 function CenterLayout() {
+  const { mutate: logout } = useLogout();
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen w-full">
       {/* Fixed Sidebar */}
@@ -101,6 +106,18 @@ function CenterLayout() {
                 <Users className="h-4 w-4" />
                 Staff
               </Link>
+              <div className="border-t p-2 lg:p-4">
+                <button
+                  onClick={() => {
+                    logout()
+                    navigate({ to: '/', replace: true, reloadDocument: true })
+                  }}
+                  className="cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-primary"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
             </nav>
           </div>
         </div>

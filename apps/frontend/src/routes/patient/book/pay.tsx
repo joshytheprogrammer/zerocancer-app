@@ -13,6 +13,14 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import { Calendar as ShadCalendar } from '@/components/ui/calendar'
 import {
   Popover as ShadPopover,
@@ -20,8 +28,12 @@ import {
   PopoverTrigger as ShadPopoverTrigger,
 } from '@/components/ui/popover'
 import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
-import { ChevronDownIcon } from 'lucide-react'
+import { centers } from '@/services/providers/center.provider'
+import { useQuery } from '@tanstack/react-query'
+import { ChevronDownIcon, Loader2, Check, ChevronsUpDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 // Zod schema for form validation
 const bookingSchema = z.object({
@@ -44,6 +56,7 @@ export const Route = createFileRoute('/patient/book/pay')({
 function PayBookingPage() {
   const search = Route.useSearch()
   const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
 
   const form = useForm<FormData>({
     resolver: zodResolver(bookingSchema),
@@ -56,6 +69,33 @@ function PayBookingPage() {
     },
   })
 
+  // Fetch centers for the dropdown
+  const { data: centersData, isLoading: centersLoading, error: centersError } = useQuery(
+    centers({
+      page: 1,
+      pageSize: 100, // Get a large number to show all available centers
+      status: 'ACTIVE', // Only show active centers
+    })
+  )
+
+  // Filter centers that offer the selected screening service
+  const availableCenters = centersData?.data?.centers?.filter((center) => {
+    if (!search.screeningTypeId) return true // Show all if no service selected
+    return center.services?.some((service) => service.id === search.screeningTypeId)
+  }) || []
+
+  // Filter centers based on search query
+  const filteredCenters = availableCenters.filter((center) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      center.centerName.toLowerCase().includes(query) ||
+      center.lga.toLowerCase().includes(query) ||
+      center.state.toLowerCase().includes(query) ||
+      center.address.toLowerCase().includes(query)
+    )
+  })
+
   const bookSelfPayAppointmentMutation = useBookSelfPayAppointment()
 
   function onSubmit(values: FormData) {
@@ -63,12 +103,21 @@ function PayBookingPage() {
     const paymentReference =
       values.paymentReference || 'PAY-' + Math.random().toString(36).substring(2, 10).toUpperCase()
 
+    // Parse and format the appointment time properly
+    const appointmentDateTime = new Date(values.appointmentDate)
+    const [hours, minutes] = values.appointmentTime.split(':')
+    appointmentDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+
     const formattedValues = {
       ...values,
       paymentReference,
-      // Ensure date is properly formatted
-      appointmentDate: values.appointmentDate ? new Date(values.appointmentDate).toISOString() : values.appointmentDate
+      // Ensure date is properly formatted as ISO string
+      appointmentDate: values.appointmentDate ? new Date(values.appointmentDate).toISOString() : values.appointmentDate,
+      // Format appointment time as a proper datetime ISO string
+      appointmentTime: appointmentDateTime.toISOString()
     }
+
+    console.log('Booking data being sent:', formattedValues)
 
     bookSelfPayAppointmentMutation.mutate(formattedValues, {
         onSuccess: (data) => {
@@ -76,7 +125,9 @@ function PayBookingPage() {
           navigate({ to: '/patient/appointments' })
         },
         onError: (error: any) => {
-          toast.error(error?.response?.data?.error || error.code || 'Booking failed')
+          console.error('Booking error:', error)
+          console.error('Error response:', error?.response?.data)
+          toast.error(error?.response?.data?.error || error?.response?.data?.message || 'Booking failed')
         },
     })
   }
@@ -114,14 +165,84 @@ function PayBookingPage() {
                 name="centerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Center ID</FormLabel>
+                    <FormLabel>
+                      Screening Center
+                      {search.screeningTypeId && availableCenters.length > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground ml-2">
+                          ({availableCenters.length} center{availableCenters.length !== 1 ? 's' : ''} available)
+                        </span>
+                      )}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter center ID"
-                        {...field}
-              />
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Type to search centers..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          disabled={centersLoading}
+                        />
+                        
+                        {searchQuery && (
+                          <div className="border rounded-md max-h-48 overflow-y-auto bg-white">
+                            {filteredCenters.length > 0 ? (
+                              filteredCenters.map((center) => (
+                                <div
+                                  key={center.id}
+                                  className={cn(
+                                    "p-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0",
+                                    field.value === center.id && "bg-blue-50 border-blue-200"
+                                  )}
+                                  onClick={() => {
+                                    console.log('Selected center:', center.id, center.centerName)
+                                    field.onChange(center.id)
+                                    setSearchQuery(center.centerName)
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {field.value === center.id && (
+                                      <Check className="h-4 w-4 text-blue-600" />
+                                    )}
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{center.centerName}</span>
+                                      <span className="text-sm text-muted-foreground">
+                                        {center.lga}, {center.state}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {center.address}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-3 text-center text-sm text-muted-foreground">
+                                {search.screeningTypeId 
+                                  ? "No centers offer this service" 
+                                  : "No centers found"}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {field.value && !searchQuery && (
+                          <div className="text-sm text-green-600">
+                            ✓ Selected: {availableCenters.find(c => c.id === field.value)?.centerName}
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
+                    {centersLoading && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading available centers...
+                      </div>
+                    )}
+                    {centersError && (
+                      <div className="text-sm text-destructive mt-2">
+                        Failed to load centers. Please try refreshing the page.
+                      </div>
+                    )}
                   </FormItem>
                 )}
               />
