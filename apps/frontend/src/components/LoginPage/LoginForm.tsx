@@ -63,11 +63,12 @@ export default function LoginForm() {
       },
       actor: role,  
     }, {
-      onSuccess: async () => {
+      onSuccess: async (response) => {
         toast.success('Login successful')
-        // Wait for auth data to be properly set before navigating
-        await queryClient.ensureQueryData(useAuthUser())
-        navigate({ to: `/${role}` })
+        
+        // Navigate to the correct dashboard based on backend profile, not UI selection
+        const userProfile = response.data.user.profile.toLowerCase()
+        navigate({ to: `/${userProfile}` })
       },
       onError: (error) => {
         toast.error(error.response?.data?.error || 'Login failed. Please try again.')

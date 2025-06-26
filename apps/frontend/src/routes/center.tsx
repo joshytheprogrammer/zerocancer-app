@@ -13,20 +13,22 @@ import { isAuthMiddleware } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/center')({
   component: CenterLayout,
-  beforeLoad: async ({ context }) => {
-    const { isAuth, profile } = await isAuthMiddleware(
-      context.queryClient,
-      'center',
-    )
+  // beforeLoad: async ({ context }) => {
+  //   const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
+  //     context.queryClient,
+  //     'center',
+  //   )
 
-    if (!isAuth) return redirect({ to: `/` })
+  //   if (!isAuth) return redirect({ to: `/` })
 
-    if (profile === 'PATIENT') return redirect({ to: '/patient' })
+  //   // If authenticated but wrong role, redirect to correct dashboard
+  //   if (!isAuthorized) {
+  //     if (profile === 'PATIENT') return redirect({ to: '/patient' })
+  //     if (profile === 'DONOR') return redirect({ to: '/donor' })
+  //   }
 
-    if (profile === 'DONOR') return redirect({ to: '/donor' })
-
-    return null
-  },
+  //   return null
+  // },
 })
 
 function CenterLayout() {

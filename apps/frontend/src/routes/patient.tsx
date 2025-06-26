@@ -9,16 +9,18 @@ import { useNavigate } from '@tanstack/react-router'
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
   beforeLoad: async ({ context }) => {
-    const { isAuth, profile } = await isAuthMiddleware(
+    const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
       context.queryClient,
       'patient',
     )
 
     if (!isAuth) return redirect({ to: `/` })
 
+    // If authenticated but wrong role, redirect to correct dashboard
+    if (!isAuthorized) {
     if (profile === 'DONOR') return redirect({ to: '/donor' })
-
     if (profile === 'CENTER') return redirect({ to: '/center' })
+    }
 
     return null
   },

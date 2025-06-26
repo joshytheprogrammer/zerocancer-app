@@ -48,11 +48,11 @@ function PayBookingPage() {
   const form = useForm<FormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      screeningTypeId: search.screeningTypeId || '',
-      centerId: '',
-      appointmentDate: '',
-      appointmentTime: '',
-      paymentReference: '',
+    screeningTypeId: search.screeningTypeId || '',
+    centerId: '',
+    appointmentDate: '',
+    appointmentTime: '',
+    paymentReference: '',
     },
   })
 
@@ -71,13 +71,13 @@ function PayBookingPage() {
     }
 
     bookSelfPayAppointmentMutation.mutate(formattedValues, {
-      onSuccess: (data) => {
-        toast.success('Appointment booked successfully!')
-        navigate({ to: '/patient/appointments' })
-      },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.error || error.code || 'Booking failed')
-      },
+        onSuccess: (data) => {
+          toast.success('Appointment booked successfully!')
+          navigate({ to: '/patient/appointments' })
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.error || error.code || 'Booking failed')
+        },
     })
   }
 
@@ -90,7 +90,7 @@ function PayBookingPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {!search.screeningTypeId && (
+            {!search.screeningTypeId && (
                 <FormField
                   control={form.control}
                   name="screeningTypeId"
@@ -101,11 +101,11 @@ function PayBookingPage() {
                         <Input
                           placeholder="Enter screening type ID"
                           {...field}
-                        />
+                />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}
+            )}
                 />
               )}
 
@@ -119,7 +119,7 @@ function PayBookingPage() {
                       <Input
                         placeholder="Enter center ID"
                         {...field}
-                      />
+              />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -190,7 +190,7 @@ function PayBookingPage() {
                         min="09:00"
                         max="17:00"
                         {...field}
-                      />
+              />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -214,20 +214,20 @@ function PayBookingPage() {
                 )}
               />
 
-              <Button
-                type="submit"
+            <Button
+              type="submit"
                 className="w-full flex items-center justify-center gap-2"
-                disabled={bookSelfPayAppointmentMutation.isPending}
-              >
+              disabled={bookSelfPayAppointmentMutation.isPending}
+            >
                 {bookSelfPayAppointmentMutation.isPending && (
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
                 )}
-                {bookSelfPayAppointmentMutation.isPending ? 'Booking...' : 'Book Appointment'}
-              </Button>
-            </form>
+              {bookSelfPayAppointmentMutation.isPending ? 'Booking...' : 'Book Appointment'}
+            </Button>
+          </form>
           </Form>
         </CardContent>
       </Card>

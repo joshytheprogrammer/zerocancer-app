@@ -16,16 +16,18 @@ import { useNavigate } from '@tanstack/react-router'
 export const Route = createFileRoute('/donor')({
   component: DonorLayout,
   beforeLoad: async ({ context }) => {
-    const { isAuth, profile } = await isAuthMiddleware(
+    const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
       context.queryClient,
       'donor',
     )
 
     if (!isAuth) return redirect({ to: `/` })
 
+    // If authenticated but wrong role, redirect to correct dashboard
+    if (!isAuthorized) {
     if (profile === 'PATIENT') return redirect({ to: '/patient' })
-
     if (profile === 'CENTER') return redirect({ to: '/center' })
+    }
 
     return null
   },
@@ -46,7 +48,7 @@ function DonorLayout() {
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               <Link
-                to="/login"
+                to="/donor"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeOptions={{ exact: true }}
                 activeProps={{ className: 'bg-muted text-primary' }}

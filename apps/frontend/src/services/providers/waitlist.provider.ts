@@ -2,7 +2,7 @@ import { MutationKeys, QueryKeys } from '@/services/keys'
 import { queryOptions, useMutation } from '@tanstack/react-query'
 import {
   getAllWaitlistsSchema,
-  getPatientWaitlistsSchema,
+  // getPatientWaitlistsSchema,
 } from '@zerocancer/shared/schemas/waitlist.schema'
 import type { z } from 'zod'
 import * as waitlistService from '../waitlist.service'
@@ -17,13 +17,13 @@ export const allWaitlists = (params: z.infer<typeof getAllWaitlistsSchema>) =>
 
 // --- Patient Waitlist Query Providers ---
 
-export const patientWaitlists = (
-  params: z.infer<typeof getPatientWaitlistsSchema>,
-) =>
-  queryOptions({
-    queryKey: [QueryKeys.patientWaitlists, params],
-    queryFn: () => waitlistService.getPatientWaitlists(params),
-  })
+// export const patientWaitlists = (
+//   params: z.infer<typeof getPatientWaitlistsSchema>,
+// ) =>
+//   queryOptions({
+//     queryKey: [QueryKeys.patientWaitlists, params],
+//     queryFn: () => waitlistService.getPatientWaitlists(params),
+//   })
 
 // --- Waitlist Mutations ---
 
