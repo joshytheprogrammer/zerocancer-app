@@ -7,7 +7,7 @@ import { authApp } from "./api/auth";
 import { centerApp } from "./api/center";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
-import { waitlistsApp } from "./api/waitlist/index";
+import { waitlistsApp } from "./api/waitlist";
 
 const app = new Hono().basePath("/api/v1");
 
