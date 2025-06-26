@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Users,
   Calendar,
   Upload,
   CircleDollarSign,
+  QrCode,
+  FileText,
 } from 'lucide-react'
 import {
   Table,
@@ -16,79 +19,106 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { centerAppointments } from '@/services/providers/center.provider'
+import { useAuthUser } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/center/')({
   component: CenterDashboard,
 })
 
-const mockDashboardData = {
-  stats: [
+function CenterDashboard() {
+  const authUserQuery = useQuery(useAuthUser())
+  
+  // Get recent appointments
+  const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery(
+    centerAppointments({ 
+      page: 1,
+      pageSize: 5
+    })
+  )
+
+  // TODO: Add these service functions to center.service.ts
+  // const { data: dashboardStats } = useQuery(centerDashboardStats())
+  // For now, using calculated stats from appointments data
+  
+  const appointments = appointmentsData?.data?.appointments || []
+  
+  // Calculate stats from available data
+  const upcomingCount = appointments.filter((apt) => apt.status === 'scheduled').length
+  const completedCount = appointments.filter((apt) => apt.status === 'completed').length
+  const inProgressCount = appointments.filter((apt) => apt.status === 'in_progress').length
+  const pendingResultsCount = appointments.filter((apt) => 
+    apt.status === 'completed' && !(apt as any).resultUploaded
+  ).length
+
+  const stats = [
     {
       title: 'Upcoming Appointments',
-      value: '12',
+      value: appointmentsLoading ? '...' : upcomingCount.toString(),
       icon: <Calendar className="h-4 w-4 text-muted-foreground" />,
-      change: '+3 since last week',
+      change: 'Today',
+      link: '/center/appointments?filter=scheduled',
     },
     {
       title: 'Results to Upload',
-      value: '8',
+      value: appointmentsLoading ? '...' : pendingResultsCount.toString(),
       icon: <Upload className="h-4 w-4 text-muted-foreground" />,
-      change: '2 new today',
+      change: 'Pending upload',
+      link: '/center/upload-results',
     },
     {
-      title: 'Total Patients Served',
-      value: '234',
+      title: 'In Progress',
+      value: appointmentsLoading ? '...' : inProgressCount.toString(),
       icon: <Users className="h-4 w-4 text-muted-foreground" />,
-      change: '+20 this month',
+      change: 'Currently checking in',
+      link: '/center/verify-code',
     },
     {
-      title: 'Monthly Revenue',
-      value: '$2,450',
+      title: 'Completed Today',
+      value: appointmentsLoading ? '...' : completedCount.toString(),
       icon: <CircleDollarSign className="h-4 w-4 text-muted-foreground" />,
-      change: '+5.2% from last month',
+      change: 'This month',
+      link: '/center/results-history',
     },
-  ],
-  recentAppointments: [
-    {
-      id: 'appt_c1',
-      patient: 'John Doe',
-      type: 'Cervical Cancer Screening',
-      date: '2024-08-15',
-      status: 'Confirmed',
-    },
-    {
-      id: 'appt_c2',
-      patient: 'Jane Smith',
-      type: 'Prostate Cancer Screening',
-      date: '2024-08-16',
-      status: 'Confirmed',
-    },
-    {
-      id: 'appt_c3',
-      patient: 'Peter Jones',
-      type: 'Breast Cancer Screening',
-      date: '2024-08-14',
-      status: 'Completed',
-    },
-  ],
-}
+  ]
 
-function CenterDashboard() {
-  const center = { name: 'City Health Clinic' }
+  const centerName = authUserQuery.data?.data?.user?.fullName || 'Your Center'
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {center.name}. Here's an overview of your center's
-          activity.
+          Welcome back, {centerName}. Here's an overview of your center's activity.
         </p>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Button asChild className="h-16 flex-col gap-2">
+          <Link to="/center/verify-code">
+            <QrCode className="h-6 w-6" />
+            Verify Check-in
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-16 flex-col gap-2">
+          <Link to="/center/upload-results">
+            <Upload className="h-6 w-6" />
+            Upload Results
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-16 flex-col gap-2">
+          <Link to="/center/appointments">
+            <FileText className="h-6 w-6" />
+            View All Appointments
+          </Link>
+        </Button>
       </div>
 
       {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {mockDashboardData.stats.map((stat) => (
-          <Card key={stat.title}>
+        {stats.map((stat) => (
+          <Card key={stat.title} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               {stat.icon}
@@ -96,6 +126,11 @@ function CenterDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">{stat.change}</p>
+              {stat.link && (
+                <Button variant="link" size="sm" className="p-0 h-auto mt-2" asChild>
+                  <Link to={stat.link}>View all →</Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -103,44 +138,73 @@ function CenterDashboard() {
 
       {/* Recent appointments table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Appointments</CardTitle>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/center/appointments">View All</Link>
+          </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Screening Type</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockDashboardData.recentAppointments.map((appt) => (
-                <TableRow key={appt.id}>
-                  <TableCell>{appt.patient}</TableCell>
-                  <TableCell>{appt.type}</TableCell>
-                  <TableCell>{appt.date}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        appt.status === 'Confirmed' ? 'default' : 'secondary'
-                      }
-                    >
-                      {appt.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/center/appointments">View</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
+          {appointmentsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 bg-muted animate-pulse rounded" />
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          ) : appointments.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No appointments found</p>
+              <p className="text-sm">New appointments will appear here</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Screening Type</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {appointments.map((appt) => (
+                  <TableRow key={appt.id}>
+                    <TableCell className="font-medium">
+                      {appt.patient?.fullName || 'Unknown Patient'}
+                    </TableCell>
+                    <TableCell>{appt.screeningType?.name || 'Unknown Type'}</TableCell>
+                    <TableCell>
+                      {new Date(appt.date).toLocaleDateString()} at {appt.timeSlot}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          appt.status === 'scheduled' 
+                            ? 'default' 
+                            : appt.status === 'in_progress'
+                            ? 'secondary'
+                            : appt.status === 'completed'
+                            ? 'outline'
+                            : 'destructive'
+                        }
+                      >
+                        {appt.status.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/center/appointments" search={{ appointmentId: appt.id }}>
+                          View
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
