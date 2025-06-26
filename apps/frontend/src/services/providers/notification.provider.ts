@@ -6,6 +6,8 @@ import {
 import { MutationKeys, QueryKeys } from '../keys'
 import * as notificationService from '../notification.service'
 
+// NOTE TO SELF: Make notification provider to use real-time updates either by short polling or SSE
+
 export function useNotifications() {
   return queryOptions({
     queryKey: [QueryKeys.authUser, 'notifications'],

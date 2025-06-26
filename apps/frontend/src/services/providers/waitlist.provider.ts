@@ -1,5 +1,5 @@
-import { MutationKeys, QueryKeys } from '@/services/keys'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import { QueryKeys } from '@/services/keys'
+import { queryOptions } from '@tanstack/react-query'
 import {
   getAllWaitlistsSchema,
   // getPatientWaitlistsSchema,
@@ -25,10 +25,3 @@ export const allWaitlists = (params: z.infer<typeof getAllWaitlistsSchema>) =>
 //     queryFn: () => waitlistService.getPatientWaitlists(params),
 //   })
 
-// --- Waitlist Mutations ---
-
-export const useJoinWaitlist = () =>
-  useMutation({
-    mutationKey: [MutationKeys.joinWaitlist],
-    mutationFn: waitlistService.joinWaitlist,
-  })
