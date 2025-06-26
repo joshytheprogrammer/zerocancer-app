@@ -135,30 +135,30 @@ export const getCenterAppointments = (params: {
   pageSize?: number
   screeningType?: string
 }) =>
-  `/api/center/appointments${buildQuery({
+  `/api/appointment/center${buildQuery({
     page: params.page ?? 1,
     pageSize: params.pageSize ?? 20,
     screeningType: params.screeningType ?? undefined,
   })}`
 
 export const getCenterAppointmentById = (id: string) =>
-  `/api/center/appointments/${id}`
+  `/api/appointment/center/${id}`
 
 export const cancelCenterAppointment = (id: string) =>
-  `/api/center/appointments/${id}/cancel`
+  `/api/appointment/center/${id}/cancel`
 
 export const uploadResults = (appointmentId: string) =>
-  `/api/center/appointments/${appointmentId}/upload-results`
+  `/api/appointment/center/${appointmentId}/upload-results`
 
 // Result file management endpoints
 export const deleteResultFile = (fileId: string) =>
-  `/api/center/appointments/files/${fileId}`
+  `/api/appointment/center/files/${fileId}`
 export const restoreResultFile = (fileId: string) =>
-  `/api/center/appointments/files/${fileId}/restore`
+  `/api/appointment/center/files/${fileId}/restore`
 
 // Appointment completion endpoint
 export const completeAppointment = (appointmentId: string) =>
-  `/api/center/appointments/${appointmentId}/complete`
+  `/api/appointment/center/${appointmentId}/complete`
 
 // ADMIN
 export const getUsers = (page = 1, size = 20) =>

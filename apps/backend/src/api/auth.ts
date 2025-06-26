@@ -115,11 +115,13 @@ authApp.post(
       );
     }
 
+    const authProfile = actor === "center" ? "CENTER" : (user.profiles.includes(actor.toUpperCase()) ? actor.toUpperCase() : user.profiles[0]) // Use first profile for non-center actors
     const payload = {
       id: id!,
       email: user.email!,
-      profile: actor === "center" ? "CENTER" : user.profiles[0], // Use first profile for non-center actors
+      profile: authProfile, // Use first profile for non-center actors
     };
+
     const token = await sign(
       { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 5 },
       JWT_TOKEN_SECRET
@@ -168,7 +170,31 @@ authApp.get(
   async (c) => {
     const jwtPayload = c.get("jwtPayload");
     const db = getDB();
+
+    if(jwtPayload.profile === "CENTER") {
+      const center = await db.serviceCenter.findUnique({
+        where: { id: jwtPayload.id! },
+        select: { id: true, centerName: true, email: true }
+      });
+          if (!center) {
+      return c.json<TErrorResponse>({
+        ok: false,
+        error: "Center not found"
+      }, 404);
+    }
     
+    return c.json<TAuthMeResponse>({ 
+      ok: true, 
+      data: { 
+        user: {
+          id: center.id!,
+          fullName: center.centerName!,
+          email: center.email!,
+          profile: jwtPayload.profile
+        } 
+      } 
+    });
+    }
     // Fetch user data from database to get full name
     const user = await db.user.findUnique({
       where: { id: jwtPayload.id! },
