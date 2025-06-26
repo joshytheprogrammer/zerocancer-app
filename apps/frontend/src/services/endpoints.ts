@@ -51,12 +51,23 @@ export const getWaitlists = (params: {
   pageSize?: number
   status?: 'PENDING' | 'MATCHED' | 'EXPIRED'
 }) =>
-  `/api/waitlist${buildQuery({
+  `/api/waitlist/patient${buildQuery({
     page: params.page ?? 1,
     pageSize: params.pageSize ?? 20,
     status: params.status ?? undefined,
   })}`
-export const joinWaitlist = () => '/api/appointment/patient/waitlists/join'
+
+export const getAllWaitlists = (params: {
+  page?: number
+  pageSize?: number
+  demandOrder?: 'asc' | 'desc'
+}) =>
+  `/api/waitlist${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    demandOrder: params.demandOrder ?? 'desc',
+  })}`
+export const joinWaitlist = () => '/api/waitlist/patient/join'
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
 export const getEligibleCenters = (

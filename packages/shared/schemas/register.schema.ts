@@ -71,12 +71,6 @@ export const bookSelfPayAppointmentSchema = z.object({
   }),
 });
 
-export const joinWaitlistSchema = z.object({
-  screeningTypeId: z
-    .string()
-    .min(1, { message: "Screening type is required." }),
-});
-
 export const selectCenterSchema = z.object({
   allocationId: z.string().min(1, { message: "Allocation ID is required." }),
   centerId: z.string().min(1, { message: "Center ID is required." }),

@@ -4,7 +4,6 @@ import {
   getPatientAppointmentsSchema,
   getPatientReceiptsSchema,
   getPatientResultsSchema,
-  joinWaitlistSchema,
   selectCenterSchema,
 } from "@zerocancer/shared";
 import type {
@@ -17,14 +16,12 @@ import type {
   TGetPatientReceiptsResponse,
   TGetPatientResultResponse,
   TGetPatientResultsResponse,
-  TJoinWaitlistResponse,
   TSelectCenterResponse,
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
-import { canJoinWaitlist } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const patientAppointmentApp = new Hono<{
@@ -34,7 +31,7 @@ export const patientAppointmentApp = new Hono<{
 // Middleware to ensure user is authenticated
 patientAppointmentApp.use(authMiddleware(["patient"]));
 
-// POST /api/patient/appointments/book
+// POST /api/appointment/patient/book
 patientAppointmentApp.post(
   "/book",
   zValidator("json", bookSelfPayAppointmentSchema, (result, c) => {
@@ -82,6 +79,7 @@ patientAppointmentApp.post(
         isDonation: false,
         status: "SCHEDULED",
         transactionId: transaction.id!, // Link appointment to transaction
+        // create helper function to generate check-in code
         checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -147,56 +145,7 @@ patientAppointmentApp.post(
   }
 );
 
-// POST /api/patient/waitlists/join
-patientAppointmentApp.post(
-  "/waitlists/join",
-  zValidator("json", joinWaitlistSchema, (result, c) => {
-    if (!result.success)
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-  }),
-  async (c) => {
-    const db = getDB();
-    console.log("join waitlist");
-    const { screeningTypeId } = c.req.valid("json");
-
-    const payload = c.get("jwtPayload");
-    if (!payload) {
-      return c.json({ ok: false, message: "Unauthorized" }, 401);
-    }
-
-    const patientId = payload.id!; // Assuming JWT payload contains userId
-    if (!patientId) {
-      return c.json({ ok: false, message: "User ID not found in token" }, 401);
-    }
-
-    // Check eligibility to join waitlist
-    const canJoin = await canJoinWaitlist(db, patientId, screeningTypeId!);
-    if (!canJoin) {
-      return c.json<TErrorResponse>(
-        {
-          ok: false,
-          error: "You already have an active waitlist entry for this screening type.",
-          err_code: "WAITLIST_ALREADY_EXISTS",
-          
-        },
-        400
-      );
-    }
-
-    // Create waitlist entry
-    const waitlist = await db.waitlist.create({
-      data: {
-        screeningTypeId: screeningTypeId!,
-        patientId: patientId!,
-        status: "PENDING",
-      },
-    });
-
-    return c.json<TJoinWaitlistResponse>({ ok: true, data: { waitlist } });
-  }
-);
-
-// GET /api/patient/matches/eligible-centers/:allocationId
+// GET /api/appointment/patient/matches/eligible-centers/:allocationId
 patientAppointmentApp.get(
   "/matches/eligible-centers/:allocationId",
   async (c) => {
@@ -267,7 +216,7 @@ patientAppointmentApp.get(
   }
 );
 
-// POST /api/patient/matches/select-center
+// POST /api/appointment/patient/matches/select-center
 patientAppointmentApp.post(
   "/matches/select-center",
   zValidator("json", selectCenterSchema, (result, c) => {
@@ -375,7 +324,7 @@ patientAppointmentApp.post(
   }
 );
 
-// GET /api/patient/appointments
+// GET /api/appointment/patient - List patient appointments
 patientAppointmentApp.get(
   "/",
   zValidator("query", getPatientAppointmentsSchema, (result, c) => {
@@ -470,7 +419,7 @@ patientAppointmentApp.get(
   }
 );
 
-// GET /api/patient/results
+// GET /api/appointment/patient/results - List patient results
 patientAppointmentApp.get(
   "/patient/results",
   zValidator("query", getPatientResultsSchema, (result, c) => {
@@ -531,7 +480,7 @@ patientAppointmentApp.get(
   }
 );
 
-// GET /api/patient/results/:id
+// GET /api/appointment/patient/results/:id - Get specific patient result
 patientAppointmentApp.get("/patient/results/:id", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
@@ -571,7 +520,7 @@ patientAppointmentApp.get("/patient/results/:id", async (c) => {
   return c.json<TGetPatientResultResponse>({ ok: true, data: safeResult });
 });
 
-// GET /api/patient/receipts
+// GET /api/appointment/patient/receipts - List patient receipts
 patientAppointmentApp.get(
   "/patient/receipts",
   zValidator("query", getPatientReceiptsSchema, (result, c) => {
@@ -629,7 +578,7 @@ patientAppointmentApp.get(
   }
 );
 
-// GET /api/patient/receipts/:id
+// GET /api/appointment/patient/receipts/:id - Get specific patient receipt
 patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
@@ -665,7 +614,7 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
   return c.json<TGetPatientReceiptResponse>({ ok: true, data: safeReceipt });
 });
 
-// GET /api/patient/appointments/:id/checkin-code
+// GET /api/appointment/patient/:id/checkin-code - Get appointment check-in code
 patientAppointmentApp.get("/:id/checkin-code", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");

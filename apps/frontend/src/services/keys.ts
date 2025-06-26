@@ -3,6 +3,7 @@ export enum QueryKeys {
   authUser = 'authUser',
   patientAppointments = 'patientAppointments',
   patientWaitlists = 'patientWaitlists',
+  allWaitlists = 'allWaitlists',
   patientResults = 'patientResults',
   patientQR = 'patientQR',
   patientReceipt = 'patientReceipt',

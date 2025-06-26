@@ -96,7 +96,7 @@ export const getCheckInCode = async (
 export const verifyCheckInCode = async (
   code: string,
 ): Promise<TVerifyCheckInCodeResponse> => {
-  const res = await request.get(endpoints.verifyCheckInCode(code))
+  const res = await request.post(endpoints.verifyCheckInCode(), { code })
   return res as TVerifyCheckInCodeResponse
 }
 

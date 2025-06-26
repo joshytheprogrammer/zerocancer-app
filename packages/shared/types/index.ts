@@ -248,6 +248,24 @@ export type TGetPatientWaitlistsResponse = TDataResponse<{
   total: number;
   totalPages: number;
 }>;
+
+export type TGetAllWaitlistsResponse = TDataResponse<{
+  waitlists: Array<{
+    screeningTypeId: string;
+    screeningType: {
+      id: string;
+      name: string;
+    };
+    pendingCount: number;
+    totalCount: number;
+    demand: number; // Same as pendingCount, for clarity
+  }>;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
 export type TGetEligibleCentersResponse = TDataResponse<{
   centers: TCenterSummary[];
   page: number;

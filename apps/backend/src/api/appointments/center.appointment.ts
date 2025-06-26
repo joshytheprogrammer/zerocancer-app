@@ -24,7 +24,7 @@ export const centerAppointmentApp = new Hono<{
 // Middleware to ensure user is authenticated
 centerAppointmentApp.use(authMiddleware(["center", "center_staff"]));
 
-// GET /api/center/appointments - List appointments (paginated, filterable)
+// GET /api/appointment/center - List appointments (paginated, filterable)
 centerAppointmentApp.get(
   "/",
   zValidator("query", getCenterAppointmentsSchema, (result, c) => {
@@ -67,7 +67,7 @@ centerAppointmentApp.get(
   }
 );
 
-// GET /api/center/appointments/:id - Get appointment details
+// GET /api/appointment/center/:id - Get appointment details
 centerAppointmentApp.get(
   "/:id",
   zValidator("param", getCenterAppointmentByIdSchema, (result, c) => {
@@ -97,7 +97,7 @@ centerAppointmentApp.get(
   }
 );
 
-// POST /api/center/appointments/:id/cancel - Cancel appointment
+// POST /api/appointment/center/:id/cancel - Cancel appointment
 centerAppointmentApp.post(
   "/:id/cancel",
   zValidator("json", cancelCenterAppointmentSchema, (result, c) => {
@@ -139,7 +139,7 @@ centerAppointmentApp.post(
   }
 );
 
-// POST /api/center/appointments/:id/reschedule - Reschedule appointment
+// POST /api/appointment/center/:id/reschedule - Reschedule appointment
 // NOTE TO SELF: Make a more robust rescheduling system later
 // This is a simple version that just updates the date/time & resets status
 centerAppointmentApp.post(
@@ -193,7 +193,7 @@ centerAppointmentApp.post(
   }
 );
 
-// POST /api/center/appointments/verify - Verify check-in code
+// POST /api/appointment/center/verify - Verify check-in code
 centerAppointmentApp.post(
   "/verify",
   zValidator("json", verifyCheckInCodeSchema, (result, c) => {
