@@ -28,6 +28,7 @@ import {
   useJoinWaitlist,
 } from '@/services/providers/patient.provider'
 import { toast } from 'sonner'
+import request from '@/lib/request'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
@@ -50,14 +51,19 @@ function PatientDashboard() {
 
   console.log(screeningTypesData)
 
-  // Fetch patient appointments (recent ones for dashboard)
+  // Fetch patient appointments (recent ones for dashboard)  
   const {
     data: appointmentsData,
     isLoading: appointmentsLoading,
     error: appointmentsError,
-  } = useQuery(
-    usePatientAppointments({ page: 1, size: 3, status: 'scheduled' }),
-  )
+  } = useQuery({
+    queryKey: ['patient-appointments', 'dashboard'],
+    queryFn: async () => {
+      // Direct API call without query parameters to bypass schema validation issue
+      const response = await request.get('/api/appointment/patient')
+      return response
+    },
+  })
 
   // Fetch patient results (recent ones for dashboard)
   // const {
@@ -76,8 +82,12 @@ function PatientDashboard() {
   // Extract user name from auth data
   const userName = authData?.data?.user?.fullName || 'Patient'
 
-  // Get upcoming appointment (first scheduled appointment)
-  const upcomingAppointment = appointmentsData?.data?.appointments?.[0] || null
+  // Get upcoming appointment (next scheduled appointment in the future)
+  const allAppointments = (appointmentsData as any)?.data?.appointments || []
+  const now = new Date()
+  const upcomingAppointment = allAppointments
+    .filter((apt: any) => new Date(apt.appointmentDate) >= now && apt.status === 'SCHEDULED')
+    .sort((a: any, b: any) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())[0] || null
 
   // Get latest result
   // const latestResult = resultsData?.data?.results?.[0] || null
@@ -153,29 +163,62 @@ function PatientDashboard() {
               {appointmentsLoading ? (
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              ) : appointmentsError ? (
+                <div className="text-center py-4">
+                  <p className="text-red-600 text-sm">Failed to load appointments</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </Button>
                 </div>
               ) : upcomingAppointment ? (
-                <div>
-                  <p className="font-semibold">
-                    {upcomingAppointment.screeningType?.name || 'Screening'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {upcomingAppointment.center?.centerName || 'Health Center'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(
-                      upcomingAppointment.appointmentDate,
-                    ).toLocaleDateString()}{' '}
-                    at{' '}
-                    {new Date(
-                      upcomingAppointment.appointmentTime,
-                    ).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-semibold text-lg">
+                      {upcomingAppointment.screeningType?.name || 'Screening'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      📍 {upcomingAppointment.center?.centerName || 'Health Center'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {upcomingAppointment.center?.address}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="font-medium text-blue-900">
+                      📅 {new Date(upcomingAppointment.appointmentDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <p className="text-blue-700">
+                      ⏰ {new Date(upcomingAppointment.appointmentTime).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+
+                  {upcomingAppointment.checkInCode && (
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <p className="text-sm font-medium text-green-800">Check-in Code:</p>
+                      <p className="font-mono text-lg font-bold text-green-900">
+                        {upcomingAppointment.checkInCode}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
                     <div
                       className={`w-2 h-2 rounded-full ${
                         upcomingAppointment.status === 'SCHEDULED'
@@ -183,15 +226,21 @@ function PatientDashboard() {
                           : 'bg-gray-400'
                       }`}
                     ></div>
-                    <span className="text-sm text-muted-foreground capitalize">
+                    <span className="text-sm font-medium capitalize">
                       {upcomingAppointment.status?.toLowerCase()}
                     </span>
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground">
-                  You have no upcoming appointments.
-                </p>
+                <div className="text-center py-6">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                  <p className="text-muted-foreground mb-3">
+                    You have no upcoming appointments.
+                  </p>
+                  <Button asChild size="sm">
+                    <Link to="/patient/book">Book Now</Link>
+                  </Button>
+                </div>
               )}
             </CardContent>
             <CardFooter>

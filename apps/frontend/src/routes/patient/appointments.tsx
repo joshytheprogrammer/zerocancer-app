@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { Loader2 } from 'lucide-react'
-import request from '@/lib/request'
 
 export const Route = createFileRoute('/patient/appointments')({
   component: PatientAppointments,
@@ -80,19 +79,11 @@ function AppointmentCard({ appointment }: { appointment: any }) {
 }
 
 function PatientAppointments() {
-  // Fetch all appointments - using direct API call to bypass schema validation issue
-  const { data: appointmentsData, isLoading, error } = useQuery({
-    queryKey: ['patient-appointments'],
-    queryFn: async () => {
-      // Direct API call without schema validation
-      const response = await request.get('/api/appointment/patient')
-      return response
-    },
-  })
-
-  // Debug logging
-  console.log('Appointments API Response:', appointmentsData)
-  console.log('Appointments API Error:', error)
+  // Fetch all appointments using the proper provider function
+  // Using empty object to avoid pagination validation issues
+  const { data: appointmentsData, isLoading, error } = useQuery(
+    usePatientAppointments({})
+  )
 
   const appointments = appointmentsData?.data?.appointments || []
 
