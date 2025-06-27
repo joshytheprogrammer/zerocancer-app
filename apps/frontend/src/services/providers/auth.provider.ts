@@ -5,7 +5,6 @@ import {
   QueryClient,
   queryOptions,
   useMutation,
-  useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -28,6 +27,9 @@ export const useLogin = () => {
       if (data?.data?.token) {
         // Store access token in React Query cache
         queryClient.setQueryData([ACCESS_TOKEN_KEY], data.data.token)
+        queryClient.invalidateQueries({
+          queryKey: ['authUser'],
+        })
       }
     },
   })
