@@ -288,6 +288,53 @@ export type TBookSelfPayAppointmentResponse = TDataResponse<{
   appointment: TPatientAppointment;
 }>;
 export type TJoinWaitlistResponse = TDataResponse<{ waitlist: TWaitlist }>;
+
+export type TGetPatientWaitlistResponse = TDataResponse<{
+  waitlist: {
+    id: string;
+    screeningTypeId: string;
+    patientId: string;
+    status: string;
+    joinedAt: string;
+    claimedAt: string | null;
+    screeningType: {
+      id: string;
+      name: string;
+    };
+    allocation?: {
+      id: string;
+      campaign: {
+        id: string;
+        purpose: string;
+        donor: {
+          id: string;
+          fullName: string;
+        };
+      };
+    } | null;
+  };
+}>;
+
+export type TCheckWaitlistStatusResponse = TDataResponse<{
+  inWaitlist: boolean;
+  waitlist?: {
+    id: string;
+    screeningTypeId: string;
+    patientId: string;
+    status: string;
+    joinedAt: string;
+    claimedAt: string | null;
+    screeningType: {
+      id: string;
+      name: string;
+    };
+    allocation?: {
+      id: string;
+      campaign: null;
+    } | null;
+  } | null;
+}>;
+
 export type TGetPatientWaitlistsResponse = TDataResponse<{
   waitlists: Array<{
     id: string;

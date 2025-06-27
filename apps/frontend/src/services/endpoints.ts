@@ -66,6 +66,10 @@ export const getAllWaitlists = (params: {
     demandOrder: params.demandOrder ?? 'desc',
   })}`
 export const joinWaitlist = () => '/api/waitlist/patient/join'
+export const getWaitlist = (waitlistId: string) =>
+  `/api/waitlist/patient/${waitlistId}`
+export const checkWaitlistStatus = (screeningTypeId: string) =>
+  `/api/waitlist/patient/status/${screeningTypeId}`
 export const selectCenter = () => '/api/patient/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
 export const getEligibleCenters = (

@@ -52,6 +52,23 @@ export const usePatientWaitlistsInfinite = (params: {
     },
   })
 
+// Get a specific waitlist entry
+export const usePatientWaitlist = (waitlistId: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.patientWaitlists, waitlistId],
+    queryFn: () => patientService.getPatientWaitlist(waitlistId),
+    enabled: !!waitlistId,
+  })
+
+// Check if patient is already in waitlist for a specific screening type
+export const useCheckWaitlistStatus = (screeningTypeId: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.patientWaitlists, 'status', screeningTypeId],
+    queryFn: () => patientService.checkWaitlistStatus(screeningTypeId),
+    enabled: !!screeningTypeId,
+    staleTime: 1000 * 60 * 45, // 45 minutes
+  })
+
 // Get eligible centers for a matched allocation
 export const useEligibleCenters = (
   allocationId: string,

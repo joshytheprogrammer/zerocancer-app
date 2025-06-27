@@ -6,22 +6,21 @@ import {
   getPatientReceiptsSchema,
   selectCenterSchema,
 } from '@zerocancer/shared/schemas/register.schema'
-import {
-  getPatientResultByIdSchema,
-  // getPatientResultsSchema,
-} from '@zerocancer/shared/schemas/result.schema'
+import { getPatientResultByIdSchema } from '@zerocancer/shared/schemas/result.schema'
 import {
   getPatientWaitlistsSchema,
   joinWaitlistSchema,
 } from '@zerocancer/shared/schemas/waitlist.schema'
 import type {
   TBookSelfPayAppointmentResponse,
+  TCheckWaitlistStatusResponse,
   TGetCheckInCodeResponse,
   TGetEligibleCentersResponse,
   TGetPatientAppointmentsResponse,
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
   TGetPatientResultByIdResponse,
+  TGetPatientWaitlistResponse,
   // TGetPatientResultsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
@@ -56,6 +55,22 @@ export const getPatientWaitlists = async (
   }
   const res = await request.get(endpoints.getWaitlists(parsed.data))
   return res as TGetPatientWaitlistsResponse
+}
+
+// Get a specific waitlist entry
+export const getPatientWaitlist = async (
+  waitlistId: string,
+): Promise<TGetPatientWaitlistResponse> => {
+  const res = await request.get(endpoints.getWaitlist(waitlistId))
+  return res as TGetPatientWaitlistResponse
+}
+
+// Check if patient is already in waitlist for a specific screening type
+export const checkWaitlistStatus = async (
+  screeningTypeId: string,
+): Promise<TCheckWaitlistStatusResponse> => {
+  const res = await request.get(endpoints.checkWaitlistStatus(screeningTypeId))
+  return res as TCheckWaitlistStatusResponse
 }
 
 // Get eligible centers for a matched allocation

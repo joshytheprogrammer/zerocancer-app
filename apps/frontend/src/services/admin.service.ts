@@ -45,9 +45,7 @@ const updateCampaignStatusSchema = z.object({
 const getAppointmentsSchema = z.object({
   page: z.number().min(1).default(1).optional(),
   pageSize: z.number().min(1).max(100).default(20).optional(),
-  status: z
-    .enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'])
-    .optional(),
+  status: z.enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
   centerId: z.string().uuid().optional(),
   isDonation: z.boolean().optional(),
   dateFrom: z.string().optional(),
@@ -105,14 +103,12 @@ type TDataResponse<T> = {
   data: T
 }
 
-type TPaginatedResponse<T> = TDataResponse<
-  {
-    page: number
-    pageSize: number
-    total: number
-    totalPages: number
-  } & T
->
+type TPaginatedResponse<T> = TDataResponse<{
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+} & T>
 
 // Center responses
 type TAdminCenter = {
@@ -343,14 +339,12 @@ type TWaitlistAggregation = {
   status?: string
 }
 
-type TGetAdminWaitlistResponse =
-  | TPaginatedResponse<{
-      waitlistEntries: TAdminWaitlistEntry[]
-    }>
-  | TDataResponse<{
-      aggregation: TWaitlistAggregation[]
-      groupBy: string
-    }>
+type TGetAdminWaitlistResponse = TPaginatedResponse<{
+  waitlistEntries: TAdminWaitlistEntry[]
+}> | TDataResponse<{
+  aggregation: TWaitlistAggregation[]
+  groupBy: string
+}>
 
 // Store responses
 type TAdminStoreProduct = {
@@ -409,10 +403,7 @@ export const updateAdminCampaignStatus = async (
   campaignId: string,
   data: z.infer<typeof updateCampaignStatusSchema>,
 ): Promise<TUpdateCampaignStatusResponse> => {
-  const res = await request.patch(
-    endpoints.updateAdminCampaignStatus(campaignId),
-    data,
-  )
+  const res = await request.patch(endpoints.updateAdminCampaignStatus(campaignId), data)
   return res as TUpdateCampaignStatusResponse
 }
 

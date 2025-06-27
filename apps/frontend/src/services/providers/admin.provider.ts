@@ -384,28 +384,28 @@ export const adminProviders = {
   useAdminCenters,
   useAdminCentersInfinite,
   useUpdateCenterStatus,
-
+  
   // Users
   useAdminUsers,
   useAdminUsersInfinite,
-
+  
   // Campaigns
   useAdminCampaigns,
   useAdminCampaignsInfinite,
   useUpdateAdminCampaignStatus,
-
+  
   // Appointments
   useAdminAppointments,
   useAdminAppointmentsInfinite,
-
+  
   // Transactions
   useAdminTransactions,
   useAdminTransactionsInfinite,
-
+  
   // Waitlist
   useAdminWaitlist,
   useAdminWaitlistInfinite,
-
+  
   // Store
   useAdminStoreProducts,
   useAdminStoreProductsInfinite,

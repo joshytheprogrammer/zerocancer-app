@@ -1,4 +1,3 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -8,27 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
+import request from '@/lib/request'
+import { useAuthUser } from '@/services/providers/auth.provider'
 import {
-  useAuthUser,
-  // useCheckProfiles,
-} from '@/services/providers/auth.provider'
-import { useQuery } from '@tanstack/react-query'
-import {
-  Calendar,
-  FileText,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react'
-import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
-import {
-  usePatientAppointments,
+  useBookSelfPayAppointment,
+  useCheckWaitlistStatus,
   // usePatientResults,
   useJoinWaitlist,
+  usePatientAppointments,
 } from '@/services/providers/patient.provider'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  FileText,
+} from 'lucide-react'
 import { toast } from 'sonner'
-import request from '@/lib/request'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
@@ -51,7 +49,7 @@ function PatientDashboard() {
 
   console.log(screeningTypesData)
 
-  // Fetch patient appointments (recent ones for dashboard)  
+  // Fetch patient appointments (recent ones for dashboard)
   const {
     data: appointmentsData,
     isLoading: appointmentsLoading,
@@ -75,9 +73,12 @@ function PatientDashboard() {
   // const joinWaitlistMutation = useJoinWaitlist();
 
   const handlePayAndBook = (screeningId: string) => {
-      console.log(`User wants to pay and book for: ${screeningId}`)
-      navigate({ to: '/patient/book/pay', search: { screeningTypeId: screeningId } })
-    }
+    console.log(`User wants to pay and book for: ${screeningId}`)
+    navigate({
+      to: '/patient/book/pay',
+      search: { screeningTypeId: screeningId },
+    })
+  }
 
   // Extract user name from auth data
   const userName = authData?.data?.user?.fullName || 'Patient'
@@ -85,9 +86,17 @@ function PatientDashboard() {
   // Get upcoming appointment (next scheduled appointment in the future)
   const allAppointments = (appointmentsData as any)?.data?.appointments || []
   const now = new Date()
-  const upcomingAppointment = allAppointments
-    .filter((apt: any) => new Date(apt.appointmentDate) >= now && apt.status === 'SCHEDULED')
-    .sort((a: any, b: any) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())[0] || null
+  const upcomingAppointment =
+    allAppointments
+      .filter(
+        (apt: any) =>
+          new Date(apt.appointmentDate) >= now && apt.status === 'SCHEDULED',
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.appointmentDate).getTime() -
+          new Date(b.appointmentDate).getTime(),
+      )[0] || null
 
   // Get latest result
   // const latestResult = resultsData?.data?.results?.[0] || null
@@ -132,7 +141,9 @@ function PatientDashboard() {
             {screeningTypesLoading ? (
               <div>Loading screening types...</div>
             ) : screeningTypesError ? (
-              <div>Error loading screening types. {screeningTypesError.message}</div>
+              <div>
+                Error loading screening types. {screeningTypesError.message}
+              </div>
             ) : (
               (screeningTypesData?.data || []).map((option) => (
                 <BookScreeningCard
@@ -168,10 +179,12 @@ function PatientDashboard() {
                 </div>
               ) : appointmentsError ? (
                 <div className="text-center py-4">
-                  <p className="text-red-600 text-sm">Failed to load appointments</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <p className="text-red-600 text-sm">
+                    Failed to load appointments
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="mt-2"
                     onClick={() => window.location.reload()}
                   >
@@ -185,24 +198,32 @@ function PatientDashboard() {
                       {upcomingAppointment.screeningType?.name || 'Screening'}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      📍 {upcomingAppointment.center?.centerName || 'Health Center'}
+                      📍{' '}
+                      {upcomingAppointment.center?.centerName ||
+                        'Health Center'}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {upcomingAppointment.center?.address}
                     </p>
                   </div>
-                  
+
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <p className="font-medium text-blue-900">
-                      📅 {new Date(upcomingAppointment.appointmentDate).toLocaleDateString('en-US', {
+                      📅{' '}
+                      {new Date(
+                        upcomingAppointment.appointmentDate,
+                      ).toLocaleDateString('en-US', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
                       })}
                     </p>
                     <p className="text-blue-700">
-                      ⏰ {new Date(upcomingAppointment.appointmentTime).toLocaleTimeString([], {
+                      ⏰{' '}
+                      {new Date(
+                        upcomingAppointment.appointmentTime,
+                      ).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -211,7 +232,9 @@ function PatientDashboard() {
 
                   {upcomingAppointment.checkInCode && (
                     <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-sm font-medium text-green-800">Check-in Code:</p>
+                      <p className="text-sm font-medium text-green-800">
+                        Check-in Code:
+                      </p>
                       <p className="font-mono text-lg font-bold text-green-900">
                         {upcomingAppointment.checkInCode}
                       </p>
@@ -286,7 +309,6 @@ function PatientDashboard() {
   )
 }
 
-
 type BookScreeningCardProps = {
   option: {
     id: string
@@ -303,6 +325,9 @@ const BookScreeningCard: React.FC<BookScreeningCardProps> = ({
   handlePayAndBook,
 }) => {
   const joinWaitlistMutation = useJoinWaitlist(option.id)
+  const { data } = useQuery(useCheckWaitlistStatus(option.id))
+
+  console.log('Join waitlist data:', data)
 
   const handleJoinWaitlist = (screeningId: string) => {
     joinWaitlistMutation.mutate(
@@ -339,9 +364,10 @@ const BookScreeningCard: React.FC<BookScreeningCardProps> = ({
         <Button
           variant="outline"
           onClick={() => handleJoinWaitlist(option.id)}
-          disabled={joinWaitlistMutation.isPending}
+          disabled={joinWaitlistMutation.isPending || data?.data?.inWaitlist}
+          // disabled={joinWaitlistMutation.isPending}
         >
-          Join Waitlist
+          {data?.data?.inWaitlist ? 'Already In' : 'Join Waitlist'}
         </Button>
       </CardFooter>
     </Card>

@@ -1,4 +1,3 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -7,10 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  useCheckWaitlistStatus,
+  useJoinWaitlist,
+} from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
-import { useJoinWaitlist } from '@/services/providers/patient.provider'
-import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/book/')({
   component: BookScreeningPage,
@@ -27,10 +30,11 @@ function BookScreeningPage() {
 
   const handlePayAndBook = (screeningId: string) => {
     console.log(`User wants to pay and book for: ${screeningId}`)
-    navigate({ to: '/patient/book/pay', search: { screeningTypeId: screeningId } })
+    navigate({
+      to: '/patient/book/pay',
+      search: { screeningTypeId: screeningId },
+    })
   }
-
-
 
   return (
     <div className="space-y-8">
@@ -44,7 +48,9 @@ function BookScreeningPage() {
         {screeningTypesLoading ? (
           <div>Loading screening types...</div>
         ) : screeningTypesError ? (
-          <div>Error loading screening types. {screeningTypesError.message}</div>
+          <div>
+            Error loading screening types. {screeningTypesError.message}
+          </div>
         ) : (
           (screeningTypesData?.data || []).map((option) => (
             <BookScreeningCard
@@ -79,6 +85,9 @@ const BookScreeningCard: React.FC<BookScreeningCardProps> = ({
   handlePayAndBook,
 }) => {
   const joinWaitlistMutation = useJoinWaitlist(option.id)
+  const { data } = useQuery(useCheckWaitlistStatus(option.id))
+
+  console.log('Join waitlist data:', data)
 
   const handleJoinWaitlist = (screeningId: string) => {
     joinWaitlistMutation.mutate(
@@ -115,9 +124,10 @@ const BookScreeningCard: React.FC<BookScreeningCardProps> = ({
         <Button
           variant="outline"
           onClick={() => handleJoinWaitlist(option.id)}
-          disabled={joinWaitlistMutation.isPending}
+          disabled={joinWaitlistMutation.isPending || data?.data?.inWaitlist}
+          // disabled={joinWaitlistMutation.isPending}
         >
-          Join Waitlist
+          {data?.data?.inWaitlist ? 'Already In' : 'Join Waitlist'}
         </Button>
       </CardFooter>
     </Card>
