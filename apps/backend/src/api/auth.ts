@@ -171,29 +171,37 @@ authApp.get(
     const jwtPayload = c.get("jwtPayload");
     const db = getDB();
 
-    if(jwtPayload.profile === "CENTER") {
+    console.log("JWT Payload:", jwtPayload);
+
+    if (
+      jwtPayload.profile === "CENTER" ||
+      jwtPayload.profile === "CENTER_STAFF"
+    ) {
       const center = await db.serviceCenter.findUnique({
         where: { id: jwtPayload.id! },
-        select: { id: true, centerName: true, email: true }
+        select: { id: true, centerName: true, email: true },
       });
-          if (!center) {
-      return c.json<TErrorResponse>({
-        ok: false,
-        error: "Center not found"
-      }, 404);
-    }
-    
-    return c.json<TAuthMeResponse>({ 
-      ok: true, 
-      data: { 
-        user: {
-          id: center.id!,
-          fullName: center.centerName!,
-          email: center.email!,
-          profile: jwtPayload.profile
-        } 
-      } 
-    });
+      if (!center) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Center not found",
+          },
+          404
+        );
+      }
+
+      return c.json<TAuthMeResponse>({
+        ok: true,
+        data: {
+          user: {
+            id: center.id!,
+            fullName: center.centerName!,
+            email: center.email!,
+            profile: jwtPayload.profile,
+          },
+        },
+      });
     }
     // Fetch user data from database to get full name
     const user = await db.user.findUnique({
