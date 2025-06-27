@@ -40,10 +40,7 @@ app.route("/donor", donationApp);
 
 app.notFound((c) => {
   return c.json(
-    {
-      error: "Not Found",
-      message: "The requested resource was not found. Or no longer exist",
-    },
+    { error: "Not Found", message: "The requested resource was not found. Or no longer exist" },
     404
   );
 });

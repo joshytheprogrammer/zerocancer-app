@@ -2,16 +2,20 @@ import { zValidator } from "@hono/zod-validator";
 import {
   anonymousDonationSchema,
   createCampaignSchema,
+  fundCampaignSchema,
   getCampaignsSchema,
   paystackWebhookSchema,
+  updateCampaignSchema,
 } from "@zerocancer/shared";
 import type {
   TAnonymousDonationResponse,
   TCreateCampaignResponse,
   TDonationCampaign,
   TErrorResponse,
+  TFundCampaignResponse,
   TGetCampaignResponse,
   TGetCampaignsResponse,
+  TUpdateCampaignResponse,
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
 import { Hono } from "hono";
@@ -533,6 +537,276 @@ donationApp.get("/campaigns/:id", async (c) => {
     );
   }
 });
+
+// POST /api/donor/campaigns/:id/fund - Add funds to existing campaign
+donationApp.post(
+  "/campaigns/:id/fund",
+  zValidator("json", fundCampaignSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const campaignId = c.req.param("id");
+    const fundData = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+    const donorId = payload?.id!;
+
+    // Validate required fields
+    if (!fundData.amount || fundData.amount < 100) {
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Invalid funding amount",
+        },
+        400
+      );
+    }
+
+    try {
+      // Get donor profile for email
+      const donor = await db.user.findUnique({
+        where: { id: donorId },
+        include: { donorProfile: true },
+      });
+
+      if (!donor) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Donor not found",
+          },
+          404
+        );
+      }
+
+      // Verify campaign exists and belongs to donor
+      const campaign = await db.donationCampaign.findFirst({
+        where: {
+          id: campaignId,
+          donorId: donorId,
+          status: "ACTIVE", // Only allow funding active campaigns
+        },
+      });
+
+      if (!campaign) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Campaign not found or not active",
+          },
+          404
+        );
+      }
+
+      // Generate funding reference for payment
+      const reference = `campaign-fund-${campaignId}-${Date.now()}-${crypto
+        .randomBytes(6)
+        .toString("hex")}`;
+
+      // Initialize Paystack payment for campaign funding
+      const paystackResponse = await initializePaystackPayment({
+        email: donor.email,
+        amount: fundData.amount * 100, // Convert to kobo
+        reference,
+        metadata: {
+          payment_type: "campaign_funding",
+          campaign_id: campaignId,
+          donor_id: donorId,
+          funding_amount: fundData.amount,
+        },
+      });
+
+      // Create pending transaction
+      await db.transaction.create({
+        data: {
+          type: "DONATION",
+          status: "PENDING",
+          amount: fundData.amount,
+          paymentReference: reference,
+          paymentChannel: "PAYSTACK",
+          relatedDonationId: campaignId,
+        },
+      });
+
+      return c.json<TFundCampaignResponse>({
+        ok: true,
+        data: {
+          campaignId: campaignId,
+          transactionId: reference,
+          reference: reference,
+          authorizationUrl: paystackResponse.authorization_url,
+          accessCode: paystackResponse.access_code,
+        },
+      });
+    } catch (error) {
+      console.error("Campaign funding error:", error);
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Failed to initialize campaign funding",
+        },
+        500
+      );
+    }
+  }
+);
+
+// PATCH /api/donor/campaigns/:id - Update campaign details (doesn't affect existing allocations)
+donationApp.patch(
+  "/campaigns/:id",
+  zValidator("json", updateCampaignSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const campaignId = c.req.param("id");
+    const updateData = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+    const donorId = payload?.id!;
+
+    try {
+      // Verify campaign exists and belongs to donor
+      const existingCampaign = await db.donationCampaign.findFirst({
+        where: {
+          id: campaignId,
+          donorId: donorId,
+          status: "ACTIVE", // Only allow updating active campaigns
+        },
+        include: {
+          screeningTypes: true,
+          allocations: true,
+        },
+      });
+
+      if (!existingCampaign) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Campaign not found or not active",
+          },
+          404
+        );
+      }
+
+      // Check if any funds are already allocated
+      const hasAllocations = existingCampaign.allocations.length > 0;
+      if (hasAllocations) {
+        // Log that this update won't affect existing allocations
+        console.log(`Updating campaign ${campaignId} with existing allocations. Changes will only affect future matching.`);
+      }
+
+      // Validate screening types if provided
+      if (updateData.screeningTypeIds?.length) {
+        const screeningTypes = await db.screeningType.findMany({
+          where: { id: { in: updateData.screeningTypeIds } },
+        });
+
+        if (screeningTypes.length !== updateData.screeningTypeIds.length) {
+          return c.json<TErrorResponse>(
+            {
+              ok: false,
+              error: "Some screening types not found",
+            },
+            400
+          );
+        }
+      }
+
+      // Prepare update data
+      const updateFields: any = {};
+      
+      if (updateData.title !== undefined) {
+        updateFields.purpose = updateData.title; // Map title to purpose field
+      }
+      
+      if (updateData.targetGender !== undefined) {
+        updateFields.targetGender = updateData.targetGender === "ALL" ? null : updateData.targetGender === "MALE";
+      }
+      
+      if (updateData.targetAgeMin !== undefined && updateData.targetAgeMax !== undefined) {
+        updateFields.targetAgeRange = `${updateData.targetAgeMin}-${updateData.targetAgeMax}`;
+      } else if (updateData.targetAgeMin !== undefined || updateData.targetAgeMax !== undefined) {
+        // If only one age limit is provided, we need to handle it carefully
+        const currentRange = existingCampaign.targetAgeRange?.split("-");
+        const currentMin = currentRange?.[0] ? parseInt(currentRange[0]) : undefined;
+        const currentMax = currentRange?.[1] ? parseInt(currentRange[1]) : undefined;
+        
+        const newMin = updateData.targetAgeMin ?? currentMin;
+        const newMax = updateData.targetAgeMax ?? currentMax;
+        
+        if (newMin !== undefined && newMax !== undefined) {
+          updateFields.targetAgeRange = `${newMin}-${newMax}`;
+        }
+      }
+      
+      if (updateData.targetStates !== undefined) {
+        updateFields.targetState = updateData.targetStates.length > 0 ? updateData.targetStates.join(",") : null;
+      }
+      
+      if (updateData.targetLgas !== undefined) {
+        updateFields.targetLga = updateData.targetLgas.length > 0 ? updateData.targetLgas.join(",") : null;
+      }
+
+      // Update campaign with new data
+      const updatedCampaign = await db.donationCampaign.update({
+        where: { id: campaignId },
+        data: {
+          ...updateFields,
+          // Update screening types if provided
+          ...(updateData.screeningTypeIds && {
+            screeningTypes: {
+              set: [], // Clear existing relationships
+              connect: updateData.screeningTypeIds.map((id: string) => ({ id })),
+            },
+          }),
+        },
+        include: {
+          donor: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              donorProfile: {
+                select: { organizationName: true },
+              },
+            },
+          },
+          screeningTypes: {
+            select: { id: true, name: true },
+          },
+          allocations: {
+            include: {
+              patient: {
+                select: { id: true, fullName: true },
+              },
+            },
+          },
+        },
+      });
+
+      // Format response
+      const formattedCampaign = formatCampaignForResponse(updatedCampaign);
+
+      return c.json<TUpdateCampaignResponse>({
+        ok: true,
+        data: {
+          campaign: formattedCampaign,
+        },
+      });
+    } catch (error) {
+      console.error("Campaign update error:", error);
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Failed to update campaign",
+        },
+        500
+      );
+    }
+  }
+);
 
 // ========================================
 // WEBHOOK ENDPOINTS

@@ -3,13 +3,17 @@ import * as endpoints from '@/services/endpoints'
 import {
   anonymousDonationSchema,
   createCampaignSchema,
+  fundCampaignSchema,
   getCampaignsSchema,
+  updateCampaignSchema,
 } from '@zerocancer/shared/schemas/donation.schema'
 import type {
   TAnonymousDonationResponse,
   TCreateCampaignResponse,
+  TFundCampaignResponse,
   TGetCampaignResponse,
   TGetCampaignsResponse,
+  TUpdateCampaignResponse,
 } from '@zerocancer/shared/types'
 import { z } from 'zod'
 
@@ -43,4 +47,22 @@ export const getCampaign = async (
 ): Promise<TGetCampaignResponse> => {
   const res = await request.get(endpoints.getCampaign(campaignId))
   return res as TGetCampaignResponse
+}
+
+// Fund existing campaign
+export const fundCampaign = async (
+  campaignId: string,
+  data: z.infer<typeof fundCampaignSchema>,
+): Promise<TFundCampaignResponse> => {
+  const res = await request.post(endpoints.fundCampaign(campaignId), data)
+  return res as TFundCampaignResponse
+}
+
+// Update existing campaign details
+export const updateCampaign = async (
+  campaignId: string,
+  data: z.infer<typeof updateCampaignSchema>,
+): Promise<TUpdateCampaignResponse> => {
+  const res = await request.patch(endpoints.updateCampaign(campaignId), data)
+  return res as TUpdateCampaignResponse
 }

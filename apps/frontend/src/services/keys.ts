@@ -55,6 +55,8 @@ export enum MutationKeys {
   uploadResult = 'uploadResult',
   verifyPatient = 'verifyPatient',
   createCampaign = 'createCampaign',
+  fundCampaign = 'fundCampaign',
+  updateCampaign = 'updateCampaign',
   deleteCampaign = 'deleteCampaign',
   approveCenter = 'approveCenter',
   updateCampaignStatus = 'updateCampaignStatus',

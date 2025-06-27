@@ -107,6 +107,10 @@ export const updateCampaignSchema = z
     targetGender: z.enum(["MALE", "FEMALE", "ALL"]).optional(),
     targetAgeMin: z.number().min(0).max(100).optional(),
     targetAgeMax: z.number().min(0).max(100).optional(),
+    screeningTypeIds: z
+      .array(z.string().uuid())
+      .min(1, "At least one screening type is required")
+      .optional(),
     expiryDate: z.string().datetime().optional(),
   })
   .refine(

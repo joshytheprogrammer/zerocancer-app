@@ -328,6 +328,45 @@ centerAppointmentApp.post(
       console.error("Failed to send notification:", error);
     }
 
+    // Send notification to donors if this is a donated appointment
+    if (appointment.isDonation) {
+      try {
+        // Find all donors who funded this appointment
+        const allocations = await db.donationAllocation.findMany({
+          where: { appointmentId: appointment.id },
+          include: {
+            campaign: {
+              select: { donorId: true },
+            },
+          },
+        });
+
+        const donorIds = [
+          ...new Set(
+            allocations.map((allocation) => allocation.campaign.donorId)
+          ),
+        ];
+
+        if (donorIds.length > 0) {
+          await createNotificationForUsers({
+            type: "PATIENT_CHECKED_IN",
+            title: "Patient Has Checked In",
+            message: `A patient you funded has checked in for their ${appointment.screeningType.name} screening at ${appointment.center.centerName}. Their appointment is now in progress.`,
+            userIds: donorIds,
+            data: {
+              appointmentId: appointment.id,
+              screeningType: appointment.screeningType.name,
+              centerName: appointment.center.centerName,
+              patientId: appointment.patientId,
+            },
+          });
+        }
+      } catch (error) {
+        // Log the error but don't fail the request
+        console.error("Failed to send donor check-in notification:", error);
+      }
+    }
+
     return c.json<TVerifyCheckInCodeResponse>({
       ok: true,
       data: {
@@ -434,7 +473,7 @@ centerAppointmentApp.post(
       });
 
       // NOTE: No patient notification on upload - only when manually completed
-      
+
       return c.json<TUploadResultsResponse>({
         ok: true,
         data: {
@@ -468,23 +507,23 @@ centerAppointmentApp.post(
 
     // Verify appointment belongs to center and is in correct status
     const appointment = await db.appointment.findFirst({
-      where: { 
+      where: {
         id,
         centerId: payload?.id,
-        status: "IN_PROGRESS" // Can only complete in-progress appointments
+        status: "IN_PROGRESS", // Can only complete in-progress appointments
       },
       include: {
         result: {
           include: {
             files: {
-              where: { isDeleted: false }
-            }
-          }
+              where: { isDeleted: false },
+            },
+          },
         },
         patient: { select: { id: true, fullName: true } },
         center: { select: { centerName: true } },
-        screeningType: { select: { name: true } }
-      }
+        screeningType: { select: { name: true } },
+      },
     });
 
     if (!appointment) {
@@ -497,7 +536,10 @@ centerAppointmentApp.post(
     // Check if results have been uploaded
     if (!appointment.result || appointment.result.files.length === 0) {
       return c.json<TErrorResponse>(
-        { ok: false, error: "Cannot complete appointment without uploading results" },
+        {
+          ok: false,
+          error: "Cannot complete appointment without uploading results",
+        },
         400
       );
     }
@@ -505,10 +547,10 @@ centerAppointmentApp.post(
     // Mark appointment as completed
     const completedAppointment = await db.appointment.update({
       where: { id },
-      data: { 
-        status: "COMPLETED"
+      data: {
+        status: "COMPLETED",
         // Note: completedAt and completionNotes could be added to schema later
-      }
+      },
     });
 
     // NOW send notification to patient about results availability
@@ -524,13 +566,53 @@ centerAppointmentApp.post(
       console.error("Failed to send completion notification:", error);
     }
 
+    // Send notification to donors if this is a donated appointment
+    if (appointment.isDonation) {
+      try {
+        // Find all donors who funded this appointment
+        const allocations = await db.donationAllocation.findMany({
+          where: { appointmentId: id },
+          include: {
+            campaign: {
+              select: { donorId: true },
+            },
+          },
+        });
+
+        const donorIds = [
+          ...new Set(
+            allocations.map((allocation) => allocation.campaign.donorId)
+          ),
+        ];
+
+        if (donorIds.length > 0) {
+          await createNotificationForUsers({
+            type: "APPOINTMENT_COMPLETED",
+            title: "Screening Completed",
+            message: `A patient you funded has completed their ${appointment.screeningType.name} screening at ${appointment.center.centerName}. The screening results have been uploaded.`,
+            userIds: donorIds,
+            data: {
+              appointmentId: id,
+              screeningType: appointment.screeningType.name,
+              centerName: appointment.center.centerName,
+              patientId: appointment.patient.id,
+              resultId: appointment.result.id,
+            },
+          });
+        }
+      } catch (error) {
+        // Log the error but don't fail the request
+        console.error("Failed to send donor completion notification:", error);
+      }
+    }
+
     return c.json<TCompleteAppointmentResponse>({
       ok: true,
       data: {
         appointmentId: completedAppointment.id!,
         completedAt: new Date().toISOString(),
-        status: "COMPLETED"
-      }
+        status: "COMPLETED",
+      },
     });
   }
 );
@@ -552,28 +634,28 @@ centerAppointmentApp.delete(
 
     // Verify file exists and belongs to center's appointment
     const file = await db.screeningResultFile.findFirst({
-      where: { 
+      where: {
         id: fileId,
         isDeleted: false, // Can't delete already deleted files
         result: {
           appointment: {
-            centerId: payload?.id // Use the center ID from auth payload
-          }
-        }
+            centerId: payload?.id, // Use the center ID from auth payload
+          },
+        },
       },
       include: {
         result: {
           include: {
             appointment: {
-              select: { 
+              select: {
                 id: true,
                 status: true,
-                patientId: true 
-              }
-            }
-          }
-        }
-      }
+                patientId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!file) {
@@ -591,12 +673,13 @@ centerAppointmentApp.delete(
         deletedAt: new Date(),
         deletedBy: staffId,
         deletionReason: reason || null,
-      }
+      },
     });
 
     // Only notify patient if appointment is COMPLETED and notification is not disabled
-    const shouldNotifyPatient = file.result.appointment.status === "COMPLETED" && notifyPatient;
-    
+    const shouldNotifyPatient =
+      file.result.appointment.status === "COMPLETED" && notifyPatient;
+
     if (shouldNotifyPatient) {
       try {
         await createNotificationForUsers({
@@ -615,8 +698,8 @@ centerAppointmentApp.delete(
       ok: true,
       data: {
         fileId: deletedFile.id!,
-        deletedAt: deletedFile.deletedAt!.toISOString()
-      }
+        deletedAt: deletedFile.deletedAt!.toISOString(),
+      },
     });
   }
 );
@@ -636,28 +719,28 @@ centerAppointmentApp.post(
 
     // Verify file exists and is deleted
     const file = await db.screeningResultFile.findFirst({
-      where: { 
+      where: {
         id: fileId,
         isDeleted: true, // Can only restore deleted files
         result: {
           appointment: {
-            centerId: payload?.id
-          }
-        }
+            centerId: payload?.id,
+          },
+        },
       },
       include: {
         result: {
           include: {
             appointment: {
-              select: { 
+              select: {
                 id: true,
                 status: true,
-                patientId: true 
-              }
-            }
-          }
-        }
-      }
+                patientId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!file) {
@@ -675,7 +758,7 @@ centerAppointmentApp.post(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
-      }
+      },
     });
 
     // Only notify patient if appointment is COMPLETED
@@ -697,8 +780,8 @@ centerAppointmentApp.post(
       ok: true,
       data: {
         fileId: restoredFile.id!,
-        restoredAt: new Date().toISOString()
-      }
+        restoredAt: new Date().toISOString(),
+      },
     });
   }
 );

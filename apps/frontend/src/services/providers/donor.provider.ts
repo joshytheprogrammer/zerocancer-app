@@ -31,6 +31,63 @@ export const useCreateCampaign = () => {
   })
 }
 
+// Fund campaign mutation
+export const useFundCampaign = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: [MutationKeys.fundCampaign],
+    mutationFn: ({
+      campaignId,
+      amount,
+    }: {
+      campaignId: string
+      amount: number
+    }) => donorService.fundCampaign(campaignId, { campaignId, amount }),
+    onSuccess: (_, variables) => {
+      // Invalidate campaigns list and specific campaign when funded
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.donorCampaigns],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.donorCampaign, variables.campaignId],
+      })
+    },
+  })
+}
+
+// Update campaign mutation
+export const useUpdateCampaign = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: [MutationKeys.updateCampaign],
+    mutationFn: ({
+      campaignId,
+      ...data
+    }: {
+      campaignId: string
+      title?: string
+      description?: string
+      targetStates?: string[]
+      targetLgas?: string[]
+      targetGender?: 'MALE' | 'FEMALE' | 'ALL'
+      targetAgeMin?: number
+      targetAgeMax?: number
+      screeningTypeIds?: string[]
+    }) => donorService.updateCampaign(campaignId, { campaignId, ...data }),
+    onSuccess: (_, variables) => {
+      // Invalidate campaigns list and specific campaign when updated
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.donorCampaigns],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.donorCampaign, variables.campaignId],
+      })
+    },
+  })
+}
+
 // Get donor's campaigns (paginated, filterable)
 export const useDonorCampaigns = (params: {
   page?: number

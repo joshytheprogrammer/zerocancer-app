@@ -98,16 +98,28 @@ export const getCheckInCode = (appointmentId: string) =>
 export const verifyCheckInCode = () => `/api/appointment/center/verify`
 
 // DONOR
-export const donateAnonymous = () => '/api/v1/donor/donations/anonymous'
-export const createCampaign = () => '/api/v1/donor/campaigns'
+export const donateAnonymous = () => '/api/donor/donations/anonymous'
+export const createCampaign = () => '/api/donor/campaigns'
 export const getCampaigns = (params: {
   page?: number
   pageSize?: number
-  status?: string
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED'
   search?: string
-}) => `/api/v1/donor/campaigns${buildQuery(params)}`
-export const getCampaign = (id: string) => `/api/v1/donor/campaigns/${id}`
-export const paystackWebhook = () => '/api/v1/donor/paystack-webhook'
+}) =>
+  `/api/donor/campaigns${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    status: params.status ?? undefined,
+    search: params.search ?? undefined,
+  })}`
+export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
+export const fundCampaign = (id: string) => `/api/donor/campaigns/${id}/fund`
+export const updateCampaign = (id: string) => `/api/donor/campaigns/${id}`
+export const deleteCampaign = (id: string) =>
+  `/api/donor/campaigns/${id}/delete`
+export const getDonorReceipts = (page = 1, size = 20) =>
+  `/api/donor/receipts${buildQuery({ page, size })}`
+export const getDonationImpact = () => '/api/donor/impact'
 
 // CENTER
 export const getCenters = (params: {
