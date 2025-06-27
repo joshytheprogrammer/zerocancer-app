@@ -87,7 +87,7 @@ export type TCheckProfilesResponse = TDataResponse<{
   profiles: ("PATIENT" | "DONOR")[];
 }>;
 
-export type TActors = "patient" | "donor" | "center";
+export type TActors = "patient" | "donor" | "center" | "admin";
 
 export type TNotification = {
   id: string;
@@ -253,17 +253,19 @@ export type TRestoreResultFileResponse = TDataResponse<{
 export type TCompleteAppointmentResponse = TDataResponse<{
   appointmentId: string;
   completedAt: string;
-  status: 'COMPLETED';
+  status: "COMPLETED";
 }>;
 
 // For admin (post-MVP)
 export type TGetDeletedFilesResponse = TDataResponse<{
-  files: Array<TResultFile & {
-    appointmentId: string;
-    patientName: string;
-    centerName: string;
-    deletedByStaffName: string;
-  }>;
+  files: Array<
+    TResultFile & {
+      appointmentId: string;
+      patientName: string;
+      centerName: string;
+      deletedByStaffName: string;
+    }
+  >;
   page: number;
   pageSize: number;
   total: number;
@@ -479,16 +481,16 @@ export type TDonationCampaign = {
   reservedAmount: number;
   usedAmount: number;
   purpose?: string;
-  targetGender?: 'MALE' | 'FEMALE' | 'ALL';
+  targetGender?: "MALE" | "FEMALE" | "ALL";
   targetAgeMin?: number;
   targetAgeMax?: number;
   targetStates?: string[];
   targetLgas?: string[];
-  status: 'ACTIVE' | 'COMPLETED' | 'DELETED';
+  status: "ACTIVE" | "COMPLETED" | "DELETED";
   expiryDate: string;
   createdAt: string;
   updatedAt: string;
-  
+
   // Relations
   donor: {
     id: string;
@@ -506,13 +508,13 @@ export type TDonationCampaign = {
 
 export type TDonationTransaction = {
   id: string;
-  type: 'DONATION' | 'APPOINTMENT' | 'PAYOUT' | 'REFUND';
-  status: 'PENDING' | 'COMPLETED' | 'FAILED';
+  type: "DONATION" | "APPOINTMENT" | "PAYOUT" | "REFUND";
+  status: "PENDING" | "COMPLETED" | "FAILED";
   amount: number;
   paymentReference: string;
   paymentChannel: string;
   createdAt: string;
-  
+
   // For donations
   donationData?: {
     message?: string;
@@ -605,7 +607,7 @@ export type TUpdateCampaignResponse = TDataResponse<{
 
 export type TDeleteCampaignResponse = TDataResponse<{
   campaignId: string;
-  action: 'recycle_to_general' | 'transfer_to_campaign' | 'request_refund';
+  action: "recycle_to_general" | "transfer_to_campaign" | "request_refund";
   amountProcessed: number;
   message: string;
 }>;
@@ -618,11 +620,11 @@ export type TPaymentInitializationResponse = TDataResponse<{
 
 export type TPaymentVerificationResponse = TDataResponse<{
   reference: string;
-  status: 'success' | 'failed' | 'pending';
+  status: "success" | "failed" | "pending";
   amount: number;
   paidAt?: string;
   channel?: string;
-  paymentType: 'anonymous_donation' | 'campaign_creation' | 'campaign_funding';
+  paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
   relatedData?: {
     campaignId?: string;
     transactionId?: string;
@@ -632,9 +634,9 @@ export type TPaymentVerificationResponse = TDataResponse<{
 export type TGetDonationHistoryResponse = TDataResponse<{
   donations: Array<{
     id: string;
-    type: 'anonymous_donation' | 'campaign_creation' | 'campaign_funding';
+    type: "anonymous_donation" | "campaign_creation" | "campaign_funding";
     amount: number;
-    status: 'PENDING' | 'COMPLETED' | 'FAILED';
+    status: "PENDING" | "COMPLETED" | "FAILED";
     reference: string;
     createdAt: string;
     campaign?: {
