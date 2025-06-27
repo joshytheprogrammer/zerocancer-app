@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
 import {
   Form,
   FormControl,
@@ -26,13 +25,14 @@ import {
 import { toast } from 'sonner'
 import { createCenterStaffPasswordSchema } from '@zerocancer/shared/schemas/centerStaff.schema'
 import { useCreateCenterStaffPassword } from '@/services/providers/center.provider'
-import type { z } from 'zod'
+import { z } from 'zod'
+import PasswordInput from '@/components/ui/password-input'
 
 type SearchParams = {
   token: string
 }
 
-export const Route = createFileRoute('/(auth)/staff/create-password')({
+export const Route = createFileRoute('/staff/create-new-password')({
   component: CreateStaffPassword,
   validateSearch: (search): SearchParams => ({
     token: String(search.token || ''),
@@ -76,7 +76,7 @@ function CreateStaffPassword() {
       setIsSuccess(true)
       toast.success('Password created successfully!')
       
-      // Redirect to center login after 3 seconds
+      // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate({ to: '/login', search: { actor: 'center' } })
       }, 3000)
@@ -143,7 +143,7 @@ function CreateStaffPassword() {
               <CheckCircle className="h-4 w-4" />
               <AlertTitle>Account Created Successfully</AlertTitle>
               <AlertDescription>
-                You can now login to access your center's features. You'll be redirected to the login page in a moment.
+                You can now login to access the staff portal. You'll be redirected to the login page in a moment.
               </AlertDescription>
             </Alert>
             
@@ -224,56 +224,41 @@ function CreateStaffPassword() {
                 )}
               />
 
-              {/* Password requirements */}
-              <Alert>
-                <Shield className="h-4 w-4" />
-                <AlertTitle>Password Requirements</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                    <li>At least 8 characters long</li>
-                    <li>Include both letters and numbers</li>
-                    <li>Avoid common passwords</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-
               <Button
                 type="submit"
                 className="w-full"
                 disabled={createPasswordMutation.isPending}
               >
                 {createPasswordMutation.isPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Creating Account...
-                  </>
+                  'Creating Account...'
                 ) : (
-                  <>
-                    Create Account
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
+                  'Create Staff Account'
                 )}
               </Button>
             </form>
           </Form>
 
           {/* Information about staff access */}
-          <div className="mt-6 pt-6 border-t">
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-900 mb-3">As a staff member, you'll be able to:</h4>
-            <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span>Verify patient check-ins</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                <span>Upload screening results</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                <span>Manage appointments</span>
-              </div>
-            </div>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-3 w-3 text-green-600" />
+                Verify patient check-ins
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-3 w-3 text-green-600" />
+                Upload screening results
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-3 w-3 text-green-600" />
+                Manage center appointments
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-3 w-3 text-green-600" />
+                Access results history
+              </li>
+            </ul>
           </div>
         </CardContent>
       </Card>

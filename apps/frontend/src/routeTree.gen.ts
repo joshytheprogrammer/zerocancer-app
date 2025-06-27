@@ -11,17 +11,24 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as DonorRouteImport } from './routes/donor'
 import { Route as CenterRouteImport } from './routes/center'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as StaffIndexRouteImport } from './routes/staff/index'
 import { Route as PatientIndexRouteImport } from './routes/patient/index'
 import { Route as DonorIndexRouteImport } from './routes/donor/index'
 import { Route as CenterIndexRouteImport } from './routes/center/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
+import { Route as StaffVerifyCodeRouteImport } from './routes/staff/verify-code'
+import { Route as StaffUploadResultsRouteImport } from './routes/staff/upload-results'
+import { Route as StaffResultsHistoryRouteImport } from './routes/staff/results-history'
+import { Route as StaffCreateNewPasswordRouteImport } from './routes/staff.create-new-password'
+import { Route as StaffAppointmentsRouteImport } from './routes/staff/appointments'
 import { Route as PatientResultsRouteImport } from './routes/patient/results'
 import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
@@ -50,7 +57,6 @@ import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
 import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
 import { Route as DonorCampaignsCreateRouteImport } from './routes/donor/campaigns/create'
-import { Route as authStaffCreatePasswordRouteImport } from './routes/(auth)/staff/create-password'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
 import { Route as authSignUpLayoutPatientRouteImport } from './routes/(auth)/sign-up/_layout/patient'
@@ -59,6 +65,11 @@ import { Route as authSignUpLayoutCenterRouteImport } from './routes/(auth)/sign
 
 const authSignUpRouteImport = createFileRoute('/(auth)/sign-up')()
 
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientRoute = PatientRouteImport.update({
   id: '/patient',
   path: '/patient',
@@ -93,6 +104,11 @@ const authSignUpRoute = authSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => authRouteRoute,
 } as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
 const PatientIndexRoute = PatientIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -117,6 +133,31 @@ const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StaffVerifyCodeRoute = StaffVerifyCodeRouteImport.update({
+  id: '/verify-code',
+  path: '/verify-code',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffUploadResultsRoute = StaffUploadResultsRouteImport.update({
+  id: '/upload-results',
+  path: '/upload-results',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffResultsHistoryRoute = StaffResultsHistoryRouteImport.update({
+  id: '/results-history',
+  path: '/results-history',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffCreateNewPasswordRoute = StaffCreateNewPasswordRouteImport.update({
+  id: '/create-new-password',
+  path: '/create-new-password',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffAppointmentsRoute = StaffAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => StaffRoute,
 } as any)
 const PatientResultsRoute = PatientResultsRouteImport.update({
   id: '/results',
@@ -258,11 +299,6 @@ const DonorCampaignsCreateRoute = DonorCampaignsCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => DonorCampaignsRoute,
 } as any)
-const authStaffCreatePasswordRoute = authStaffCreatePasswordRouteImport.update({
-  id: '/staff/create-password',
-  path: '/staff/create-password',
-  getParentRoute: () => authRouteRoute,
-} as any)
 const authSignUpLayoutRouteRoute = authSignUpLayoutRouteRouteImport.update({
   id: '/_layout',
   getParentRoute: () => authSignUpRoute,
@@ -295,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/center': typeof CenterRouteWithChildren
   '/donor': typeof DonorRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
+  '/staff': typeof StaffRouteWithChildren
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
@@ -320,12 +357,17 @@ export interface FileRoutesByFullPath {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
+  '/staff/appointments': typeof StaffAppointmentsRoute
+  '/staff/create-new-password': typeof StaffCreateNewPasswordRoute
+  '/staff/results-history': typeof StaffResultsHistoryRoute
+  '/staff/upload-results': typeof StaffUploadResultsRoute
+  '/staff/verify-code': typeof StaffVerifyCodeRoute
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
   '/donor/': typeof DonorIndexRoute
   '/patient/': typeof PatientIndexRoute
+  '/staff/': typeof StaffIndexRoute
   '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
-  '/staff/create-password': typeof authStaffCreatePasswordRoute
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
@@ -362,12 +404,17 @@ export interface FileRoutesByTo {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
+  '/staff/appointments': typeof StaffAppointmentsRoute
+  '/staff/create-new-password': typeof StaffCreateNewPasswordRoute
+  '/staff/results-history': typeof StaffResultsHistoryRoute
+  '/staff/upload-results': typeof StaffUploadResultsRoute
+  '/staff/verify-code': typeof StaffVerifyCodeRoute
   '/admin': typeof AdminIndexRoute
   '/center': typeof CenterIndexRoute
   '/donor': typeof DonorIndexRoute
   '/patient': typeof PatientIndexRoute
+  '/staff': typeof StaffIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
-  '/staff/create-password': typeof authStaffCreatePasswordRoute
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
@@ -383,6 +430,7 @@ export interface FileRoutesById {
   '/center': typeof CenterRouteWithChildren
   '/donor': typeof DonorRouteWithChildren
   '/patient': typeof PatientRouteWithChildren
+  '/staff': typeof StaffRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/verify-email': typeof authVerifyEmailRoute
@@ -408,14 +456,19 @@ export interface FileRoutesById {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
+  '/staff/appointments': typeof StaffAppointmentsRoute
+  '/staff/create-new-password': typeof StaffCreateNewPasswordRoute
+  '/staff/results-history': typeof StaffResultsHistoryRoute
+  '/staff/upload-results': typeof StaffUploadResultsRoute
+  '/staff/verify-code': typeof StaffVerifyCodeRoute
   '/(public)/': typeof publicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
   '/donor/': typeof DonorIndexRoute
   '/patient/': typeof PatientIndexRoute
+  '/staff/': typeof StaffIndexRoute
   '/(auth)/sign-up': typeof authSignUpRouteWithChildren
   '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
-  '/(auth)/staff/create-password': typeof authStaffCreatePasswordRoute
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book/': typeof PatientBookIndexRoute
@@ -433,6 +486,7 @@ export interface FileRouteTypes {
     | '/center'
     | '/donor'
     | '/patient'
+    | '/staff'
     | '/login'
     | '/reset-password'
     | '/verify-email'
@@ -458,12 +512,17 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
+    | '/staff/appointments'
+    | '/staff/create-new-password'
+    | '/staff/results-history'
+    | '/staff/upload-results'
+    | '/staff/verify-code'
     | '/admin/'
     | '/center/'
     | '/donor/'
     | '/patient/'
+    | '/staff/'
     | '/sign-up'
-    | '/staff/create-password'
     | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book'
@@ -500,12 +559,17 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
+    | '/staff/appointments'
+    | '/staff/create-new-password'
+    | '/staff/results-history'
+    | '/staff/upload-results'
+    | '/staff/verify-code'
     | '/admin'
     | '/center'
     | '/donor'
     | '/patient'
+    | '/staff'
     | '/sign-up'
-    | '/staff/create-password'
     | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book'
@@ -520,6 +584,7 @@ export interface FileRouteTypes {
     | '/center'
     | '/donor'
     | '/patient'
+    | '/staff'
     | '/(auth)/login'
     | '/(auth)/reset-password'
     | '/(auth)/verify-email'
@@ -545,14 +610,19 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
+    | '/staff/appointments'
+    | '/staff/create-new-password'
+    | '/staff/results-history'
+    | '/staff/upload-results'
+    | '/staff/verify-code'
     | '/(public)/'
     | '/admin/'
     | '/center/'
     | '/donor/'
     | '/patient/'
+    | '/staff/'
     | '/(auth)/sign-up'
     | '/(auth)/sign-up/_layout'
-    | '/(auth)/staff/create-password'
     | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book/'
@@ -569,12 +639,20 @@ export interface RootRouteChildren {
   CenterRoute: typeof CenterRouteWithChildren
   DonorRoute: typeof DonorRouteWithChildren
   PatientRoute: typeof PatientRouteWithChildren
+  StaffRoute: typeof StaffRouteWithChildren
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   publicIndexRoute: typeof publicIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patient': {
       id: '/patient'
       path: '/patient'
@@ -624,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authSignUpRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/patient/': {
       id: '/patient/'
       path: '/'
@@ -658,6 +743,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/staff/verify-code': {
+      id: '/staff/verify-code'
+      path: '/verify-code'
+      fullPath: '/staff/verify-code'
+      preLoaderRoute: typeof StaffVerifyCodeRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/upload-results': {
+      id: '/staff/upload-results'
+      path: '/upload-results'
+      fullPath: '/staff/upload-results'
+      preLoaderRoute: typeof StaffUploadResultsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/results-history': {
+      id: '/staff/results-history'
+      path: '/results-history'
+      fullPath: '/staff/results-history'
+      preLoaderRoute: typeof StaffResultsHistoryRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/create-new-password': {
+      id: '/staff/create-new-password'
+      path: '/create-new-password'
+      fullPath: '/staff/create-new-password'
+      preLoaderRoute: typeof StaffCreateNewPasswordRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/appointments': {
+      id: '/staff/appointments'
+      path: '/appointments'
+      fullPath: '/staff/appointments'
+      preLoaderRoute: typeof StaffAppointmentsRouteImport
+      parentRoute: typeof StaffRoute
     }
     '/patient/results': {
       id: '/patient/results'
@@ -855,13 +975,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DonorCampaignsCreateRouteImport
       parentRoute: typeof DonorCampaignsRoute
     }
-    '/(auth)/staff/create-password': {
-      id: '/(auth)/staff/create-password'
-      path: '/staff/create-password'
-      fullPath: '/staff/create-password'
-      preLoaderRoute: typeof authStaffCreatePasswordRouteImport
-      parentRoute: typeof authRouteRoute
-    }
     '/(auth)/sign-up/_layout': {
       id: '/(auth)/sign-up/_layout'
       path: '/sign-up'
@@ -936,7 +1049,6 @@ interface authRouteRouteChildren {
   authResetPasswordRoute: typeof authResetPasswordRoute
   authVerifyEmailRoute: typeof authVerifyEmailRoute
   authSignUpRoute: typeof authSignUpRouteWithChildren
-  authStaffCreatePasswordRoute: typeof authStaffCreatePasswordRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
@@ -944,7 +1056,6 @@ const authRouteRouteChildren: authRouteRouteChildren = {
   authResetPasswordRoute: authResetPasswordRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
   authSignUpRoute: authSignUpRouteWithChildren,
-  authStaffCreatePasswordRoute: authStaffCreatePasswordRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
@@ -1051,6 +1162,26 @@ const PatientRouteChildren: PatientRouteChildren = {
 const PatientRouteWithChildren =
   PatientRoute._addFileChildren(PatientRouteChildren)
 
+interface StaffRouteChildren {
+  StaffAppointmentsRoute: typeof StaffAppointmentsRoute
+  StaffCreateNewPasswordRoute: typeof StaffCreateNewPasswordRoute
+  StaffResultsHistoryRoute: typeof StaffResultsHistoryRoute
+  StaffUploadResultsRoute: typeof StaffUploadResultsRoute
+  StaffVerifyCodeRoute: typeof StaffVerifyCodeRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffAppointmentsRoute: StaffAppointmentsRoute,
+  StaffCreateNewPasswordRoute: StaffCreateNewPasswordRoute,
+  StaffResultsHistoryRoute: StaffResultsHistoryRoute,
+  StaffUploadResultsRoute: StaffUploadResultsRoute,
+  StaffVerifyCodeRoute: StaffVerifyCodeRoute,
+  StaffIndexRoute: StaffIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
   AboutRoute: AboutRoute,
@@ -1058,6 +1189,7 @@ const rootRouteChildren: RootRouteChildren = {
   CenterRoute: CenterRouteWithChildren,
   DonorRoute: DonorRouteWithChildren,
   PatientRoute: PatientRouteWithChildren,
+  StaffRoute: StaffRouteWithChildren,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   publicIndexRoute: publicIndexRoute,
 }
