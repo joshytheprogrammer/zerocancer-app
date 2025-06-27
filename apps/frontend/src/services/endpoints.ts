@@ -115,8 +115,7 @@ export const getCampaigns = (params: {
 export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
 export const fundCampaign = (id: string) => `/api/donor/campaigns/${id}/fund`
 export const updateCampaign = (id: string) => `/api/donor/campaigns/${id}`
-export const deleteCampaign = (id: string) =>
-  `/api/donor/campaigns/${id}/delete`
+export const deleteCampaign = (id: string) => `/api/donor/campaigns/${id}`
 export const getDonorReceipts = (page = 1, size = 20) =>
   `/api/donor/receipts${buildQuery({ page, size })}`
 export const getDonationImpact = () => '/api/donor/impact'

@@ -3,6 +3,7 @@ import * as endpoints from '@/services/endpoints'
 import {
   anonymousDonationSchema,
   createCampaignSchema,
+  deleteCampaignSchema,
   fundCampaignSchema,
   getCampaignsSchema,
   updateCampaignSchema,
@@ -10,6 +11,7 @@ import {
 import type {
   TAnonymousDonationResponse,
   TCreateCampaignResponse,
+  TDeleteCampaignResponse,
   TFundCampaignResponse,
   TGetCampaignResponse,
   TGetCampaignsResponse,
@@ -65,4 +67,16 @@ export const updateCampaign = async (
 ): Promise<TUpdateCampaignResponse> => {
   const res = await request.patch(endpoints.updateCampaign(campaignId), data)
   return res as TUpdateCampaignResponse
+}
+
+// Delete existing campaign and recycle funds
+export const deleteCampaign = async (
+  campaignId: string,
+  data: z.infer<typeof deleteCampaignSchema>,
+): Promise<TDeleteCampaignResponse> => {
+  const res = await request.deleteWithOptions(
+    endpoints.deleteCampaign(campaignId),
+    { data },
+  )
+  return res as TDeleteCampaignResponse
 }

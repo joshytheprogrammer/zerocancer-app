@@ -88,6 +88,34 @@ export const useUpdateCampaign = () => {
   })
 }
 
+// Delete campaign mutation
+export const useDeleteCampaign = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: [MutationKeys.deleteCampaign],
+    mutationFn: ({
+      campaignId,
+      ...data
+    }: {
+      campaignId: string
+      action: 'recycle_to_general' | 'transfer_to_campaign' | 'request_refund'
+      targetCampaignId?: string
+      reason?: string
+    }) => donorService.deleteCampaign(campaignId, { campaignId, ...data }),
+    onSuccess: (_, variables) => {
+      // Invalidate campaigns list when deleted
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.donorCampaigns],
+      })
+      // Remove the specific campaign from cache
+      queryClient.removeQueries({
+        queryKey: [QueryKeys.donorCampaign, variables.campaignId],
+      })
+    },
+  })
+}
+
 // Get donor's campaigns (paginated, filterable)
 export const useDonorCampaigns = (params: {
   page?: number

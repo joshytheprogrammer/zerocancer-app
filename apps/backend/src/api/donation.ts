@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import {
   anonymousDonationSchema,
   createCampaignSchema,
+  deleteCampaignSchema,
   fundCampaignSchema,
   getCampaignsSchema,
   paystackWebhookSchema,
@@ -10,6 +11,7 @@ import {
 import type {
   TAnonymousDonationResponse,
   TCreateCampaignResponse,
+  TDeleteCampaignResponse,
   TDonationCampaign,
   TErrorResponse,
   TFundCampaignResponse,
@@ -21,6 +23,7 @@ import crypto from "crypto";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
+import { createNotificationForUsers } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const donationApp = new Hono<{
@@ -694,7 +697,9 @@ donationApp.patch(
       const hasAllocations = existingCampaign.allocations.length > 0;
       if (hasAllocations) {
         // Log that this update won't affect existing allocations
-        console.log(`Updating campaign ${campaignId} with existing allocations. Changes will only affect future matching.`);
+        console.log(
+          `Updating campaign ${campaignId} with existing allocations. Changes will only affect future matching.`
+        );
       }
 
       // Validate screening types if provided
@@ -716,37 +721,56 @@ donationApp.patch(
 
       // Prepare update data
       const updateFields: any = {};
-      
+
       if (updateData.title !== undefined) {
         updateFields.purpose = updateData.title; // Map title to purpose field
       }
-      
+
       if (updateData.targetGender !== undefined) {
-        updateFields.targetGender = updateData.targetGender === "ALL" ? null : updateData.targetGender === "MALE";
+        updateFields.targetGender =
+          updateData.targetGender === "ALL"
+            ? null
+            : updateData.targetGender === "MALE";
       }
-      
-      if (updateData.targetAgeMin !== undefined && updateData.targetAgeMax !== undefined) {
+
+      if (
+        updateData.targetAgeMin !== undefined &&
+        updateData.targetAgeMax !== undefined
+      ) {
         updateFields.targetAgeRange = `${updateData.targetAgeMin}-${updateData.targetAgeMax}`;
-      } else if (updateData.targetAgeMin !== undefined || updateData.targetAgeMax !== undefined) {
+      } else if (
+        updateData.targetAgeMin !== undefined ||
+        updateData.targetAgeMax !== undefined
+      ) {
         // If only one age limit is provided, we need to handle it carefully
         const currentRange = existingCampaign.targetAgeRange?.split("-");
-        const currentMin = currentRange?.[0] ? parseInt(currentRange[0]) : undefined;
-        const currentMax = currentRange?.[1] ? parseInt(currentRange[1]) : undefined;
-        
+        const currentMin = currentRange?.[0]
+          ? parseInt(currentRange[0])
+          : undefined;
+        const currentMax = currentRange?.[1]
+          ? parseInt(currentRange[1])
+          : undefined;
+
         const newMin = updateData.targetAgeMin ?? currentMin;
         const newMax = updateData.targetAgeMax ?? currentMax;
-        
+
         if (newMin !== undefined && newMax !== undefined) {
           updateFields.targetAgeRange = `${newMin}-${newMax}`;
         }
       }
-      
+
       if (updateData.targetStates !== undefined) {
-        updateFields.targetState = updateData.targetStates.length > 0 ? updateData.targetStates.join(",") : null;
+        updateFields.targetState =
+          updateData.targetStates.length > 0
+            ? updateData.targetStates.join(",")
+            : null;
       }
-      
+
       if (updateData.targetLgas !== undefined) {
-        updateFields.targetLga = updateData.targetLgas.length > 0 ? updateData.targetLgas.join(",") : null;
+        updateFields.targetLga =
+          updateData.targetLgas.length > 0
+            ? updateData.targetLgas.join(",")
+            : null;
       }
 
       // Update campaign with new data
@@ -758,7 +782,9 @@ donationApp.patch(
           ...(updateData.screeningTypeIds && {
             screeningTypes: {
               set: [], // Clear existing relationships
-              connect: updateData.screeningTypeIds.map((id: string) => ({ id })),
+              connect: updateData.screeningTypeIds.map((id: string) => ({
+                id,
+              })),
             },
           }),
         },
@@ -801,6 +827,167 @@ donationApp.patch(
         {
           ok: false,
           error: "Failed to update campaign",
+        },
+        500
+      );
+    }
+  }
+);
+
+// DELETE /api/donor/campaigns/:id - Delete campaign and recycle funds
+donationApp.delete(
+  "/campaigns/:id",
+  zValidator("json", deleteCampaignSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const campaignId = c.req.param("id");
+    const deleteData = c.req.valid("json");
+    const payload = c.get("jwtPayload");
+    const donorId = payload?.id!;
+
+    try {
+      // Verify campaign exists and belongs to donor
+      const existingCampaign = await db.donationCampaign.findFirst({
+        where: {
+          id: campaignId,
+          donorId: donorId,
+          status: "ACTIVE", // Only allow deleting active campaigns
+        },
+        include: {
+          allocations: {
+            include: {
+              appointment: {
+                select: { id: true, status: true },
+              },
+            },
+          },
+        },
+      });
+
+      if (!existingCampaign) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Campaign not found or not active",
+          },
+          404
+        );
+      }
+
+      // Check if there are ongoing appointments that would be affected
+      const ongoingAppointments = existingCampaign.allocations.filter(
+        (allocation) =>
+          allocation.appointment &&
+        ["SCHEDULED", "IN_PROGRESS"].includes(allocation.appointment.status)
+      );
+      
+      // NOTE TO SELF: Update so that allocations are connected to general donor pool instead of returning an error message
+      if (ongoingAppointments.length > 0) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error:
+              "Cannot delete campaign with ongoing appointments. Please wait for appointments to complete.",
+          },
+          400
+        );
+      }
+
+      // Calculate total funds to transfer (available + reserved)
+      const fundsToTransfer =
+        existingCampaign.availableAmount + existingCampaign.reservedAmount;
+
+      if (fundsToTransfer <= 0) {
+        // If no funds to transfer, just mark as deleted
+        await db.donationCampaign.update({
+          where: { id: campaignId },
+          data: { status: "DELETED" },
+        });
+
+        return c.json<TDeleteCampaignResponse>({
+          ok: true,
+          data: {
+            campaignId: campaignId,
+            action: "recycle_to_general",
+            amountProcessed: 0,
+            message: "Campaign deleted successfully. No funds to transfer.",
+          },
+        });
+      }
+
+      // Generate transaction reference
+      const reference = `campaign-deletion-${campaignId}-${Date.now()}-${crypto
+        .randomBytes(6)
+        .toString("hex")}`;
+
+      // Perform the transfer in a transaction
+      await db.$transaction(async (tx) => {
+        // Mark campaign as deleted and zero out funds
+        await tx.donationCampaign.update({
+          where: { id: campaignId },
+          data: {
+            status: "DELETED",
+            availableAmount: 0,
+            reservedAmount: 0,
+          },
+        });
+
+        // Add funds to general donor pool
+        await addToGeneralDonorPool(fundsToTransfer);
+
+        // Create transaction record for the fund transfer
+        await tx.transaction.create({
+          data: {
+            type: "REFUND", // Using REFUND type for fund recycling
+            status: "COMPLETED",
+            amount: fundsToTransfer,
+            paymentReference: reference,
+            paymentChannel: "INTERNAL_TRANSFER",
+            relatedDonationId: "general-donor-pool",
+          },
+        });
+      });
+
+      // Send notification to donor about campaign deletion
+      try {
+        await createNotificationForUsers({
+          type: "CAMPAIGN_DELETED",
+          title: "Campaign Deleted Successfully",
+          message: `Your campaign has been deleted and ₦${fundsToTransfer.toFixed(
+            2
+          )} has been transferred to the general donation pool to help other patients.`,
+          userIds: [donorId],
+          data: {
+            campaignId: campaignId,
+            transferredAmount: fundsToTransfer,
+            transferReference: reference,
+          },
+        });
+      } catch (error) {
+        // Log the error but don't fail the request
+        console.error("Failed to send campaign deletion notification:", error);
+      }
+
+      return c.json<TDeleteCampaignResponse>({
+        ok: true,
+        data: {
+          campaignId: campaignId,
+          action: "recycle_to_general",
+          amountProcessed: fundsToTransfer,
+          message: `Campaign deleted successfully. ₦${fundsToTransfer.toFixed(
+            2
+          )} transferred to general donation pool.`,
+        },
+      });
+    } catch (error) {
+      console.error("Campaign deletion error:", error);
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Failed to delete campaign",
         },
         500
       );
