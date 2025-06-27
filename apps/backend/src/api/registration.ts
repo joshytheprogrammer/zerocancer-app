@@ -1,6 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
-import { centerSchema, donorSchema, patientSchema } from "@zerocancer/shared";
-import { checkProfilesSchema } from "@zerocancer/shared";
+import {
+  centerSchema,
+  checkProfilesSchema,
+  donorSchema,
+  patientSchema,
+} from "@zerocancer/shared";
 import {
   TCheckProfilesResponse,
   TDonorRegisterResponse,
@@ -11,6 +15,7 @@ import {
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
@@ -154,7 +159,8 @@ registerApp.post(
       to: patient.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${
-        process.env.FRONTEND_URL || "http://localhost:3000"
+        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
+        "http://localhost:3000"
       }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
     });
 
@@ -281,7 +287,8 @@ registerApp.post(
       to: donor.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${
-        process.env.FRONTEND_URL || "http://localhost:3000"
+        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
+        "http://localhost:3000"
       }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
     });
 

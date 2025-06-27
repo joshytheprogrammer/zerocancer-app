@@ -87,9 +87,7 @@ authApp.post(
         );
       }
 
-      if (
-        !userProfiles.includes(actor.toUpperCase() as "PATIENT" | "DONOR")
-      ) {
+      if (!userProfiles.includes(actor.toUpperCase() as "PATIENT" | "DONOR")) {
         return c.json<TErrorResponse>(
           {
             ok: false,
@@ -100,7 +98,7 @@ authApp.post(
         );
       }
       passwordHash = user.passwordHash!;
-      id = user.id!
+      id = user.id!;
     }
 
     // If user not found or password doesn't match
@@ -115,7 +113,12 @@ authApp.post(
       );
     }
 
-    const authProfile = actor === "center" ? "CENTER" : (user.profiles.includes(actor.toUpperCase()) ? actor.toUpperCase() : user.profiles[0]) // Use first profile for non-center actors
+    const authProfile =
+      actor === "center"
+        ? "CENTER"
+        : user.profiles.includes(actor.toUpperCase())
+        ? actor.toUpperCase()
+        : user.profiles[0]; // Use first profile for non-center actors
     const payload = {
       id: id!,
       email: user.email!,
@@ -206,26 +209,29 @@ authApp.get(
     // Fetch user data from database to get full name
     const user = await db.user.findUnique({
       where: { id: jwtPayload.id! },
-      select: { id: true, fullName: true, email: true }
+      select: { id: true, fullName: true, email: true },
     });
-    
+
     if (!user) {
-      return c.json<TErrorResponse>({
-        ok: false,
-        error: "User not found"
-      }, 404);
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "User not found",
+        },
+        404
+      );
     }
-    
-    return c.json<TAuthMeResponse>({ 
-      ok: true, 
-      data: { 
+
+    return c.json<TAuthMeResponse>({
+      ok: true,
+      data: {
         user: {
           id: user.id!,
           fullName: user.fullName!,
           email: user.email!,
-          profile: jwtPayload.profile
-        } 
-      } 
+          profile: jwtPayload.profile,
+        },
+      },
     });
   }
 );
@@ -352,9 +358,10 @@ authApp.post("/forgot-password", async (c) => {
     data: { userId: user.id!, token, expiresAt: expires },
   });
   // Send email
-  const resetUrl = `$
-    {process.env.FRONTEND_URL || "http://localhost:3000"}
-  /reset-password?token=${token}`;
+  const resetUrl = `${
+    env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
+    "http://localhost:3000"
+  }/reset-password?token=${token}`;
   await sendEmail({
     to: email,
     subject: "Reset your password",
@@ -469,9 +476,10 @@ authApp.post("/resend-verification", async (c) => {
   await sendEmail({
     to: user.email!,
     subject: "Verify your email",
-    html: `<p>Click <a href='$
-      {process.env.FRONTEND_URL || "http://localhost:3000"}
-    /verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
+    html: `<p>Click <a href='${
+      env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
+      "http://localhost:3000"
+    }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
   });
   return c.json<TResendVerificationResponse>({ ok: true, data: {} });
 });

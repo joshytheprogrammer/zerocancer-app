@@ -185,7 +185,9 @@ centerApp.post(
         },
       });
       // Send invite email
-      const inviteUrl = `${process.env.FRONTEND_URL}/staff/create-new-password?token=${token}`;
+      const inviteUrl = `${
+        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+      }/staff/create-new-password?token=${token}`;
       await sendEmail({
         to: email!,
         subject: "You're invited to join a center on Zerocancer",
@@ -278,7 +280,9 @@ centerApp.post(
       },
     });
     // Send reset email
-    const resetUrl = `${process.env.FRONTEND_URL}/staff/reset-password?token=${token}`;
+    const resetUrl = `${
+      env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+    }/staff/reset-password?token=${token}`;
     await sendEmail({
       to: email!,
       subject: "Reset your Zerocancer Center Staff password",

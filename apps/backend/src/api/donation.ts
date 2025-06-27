@@ -21,6 +21,7 @@ import type {
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { createNotificationForUsers } from "src/lib/utils";
@@ -35,15 +36,24 @@ export const donationApp = new Hono<{
 // ========================================
 
 // Helper function to initialize Paystack payment with context-aware callback URLs
-async function initializePaystackPayment(data: {
-  email: string;
-  amount: number; // in kobo
-  reference: string;
-  paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
-  campaignId?: string; // Required for campaign-related payments
-  metadata?: any;
-}) {
-  const { PAYSTACK_SECRET_KEY, FRONTEND_URL } = process.env;
+async function initializePaystackPayment(
+  c: any,
+  data: {
+    email: string;
+    amount: number; // in kobo
+    reference: string;
+    paymentType:
+      | "anonymous_donation"
+      | "campaign_creation"
+      | "campaign_funding";
+    campaignId?: string; // Required for campaign-related payments
+    metadata?: any;
+  }
+) {
+  const { PAYSTACK_SECRET_KEY, FRONTEND_URL } = env<{
+    PAYSTACK_SECRET_KEY: string;
+    FRONTEND_URL: string;
+  }>(c, "node");
 
   // Generate context-aware callback URL based on payment type
   let callbackUrl: string;
@@ -210,7 +220,8 @@ donationApp.post(
     // Determine email for Paystack
     const email = donationData.wantsReceipt
       ? donationData.email!
-      : process.env.ANONYMOUS_DONOR_EMAIL || "anon-donor@zerocancer.africa";
+      : env<{ ANONYMOUS_DONOR_EMAIL: string }>(c, "node")
+          .ANONYMOUS_DONOR_EMAIL || "anon-donor@zerocancer.africa";
 
     // Generate unique reference
     const reference = `donation-anon-${Date.now()}-${crypto
@@ -219,7 +230,7 @@ donationApp.post(
 
     try {
       // Initialize Paystack payment
-      const paystackResponse = await initializePaystackPayment({
+      const paystackResponse = await initializePaystackPayment(c, {
         email,
         amount: donationData.amount * 100, // Convert to kobo
         reference,
@@ -380,7 +391,7 @@ donationApp.post(
       });
 
       // Initialize Paystack payment for initial funding
-      const paystackResponse = await initializePaystackPayment({
+      const paystackResponse = await initializePaystackPayment(c, {
         email: donor.email,
         amount: campaignData.initialFunding * 100, // Convert to kobo
         reference,
@@ -635,7 +646,7 @@ donationApp.post(
         .toString("hex")}`;
 
       // Initialize Paystack payment for campaign funding
-      const paystackResponse = await initializePaystackPayment({
+      const paystackResponse = await initializePaystackPayment(c, {
         email: donor.email,
         amount: fundData.amount * 100, // Convert to kobo
         reference,
@@ -1030,7 +1041,10 @@ donationApp.delete(
 donationApp.get("/verify-payment/:reference", async (c) => {
   const db = getDB();
   const reference = c.req.param("reference");
-  const { PAYSTACK_SECRET_KEY } = process.env;
+  const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
+    c,
+    "node"
+  );
 
   try {
     // Verify payment with Paystack
@@ -1169,8 +1183,12 @@ donationApp.post(
     const signature = c.req.header("x-paystack-signature");
 
     // Verify webhook signature
+    const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
+      c,
+      "node"
+    );
     const hash = crypto
-      .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY!)
+      .createHmac("sha512", PAYSTACK_SECRET_KEY)
       .update(JSON.stringify(payload))
       .digest("hex");
 
