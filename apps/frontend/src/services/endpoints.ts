@@ -76,7 +76,8 @@ export const getEligibleCenters = (
   lga?: string,
 ) =>
   `/api/appointment/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
-export const selectCenterAfterMatch = () => `/api/appointment/patient/matches/select-center`
+export const selectCenterAfterMatch = () =>
+  `/api/appointment/patient/matches/select-center`
 export const getPatientAppointments = (params: {
   page?: number
   size?: number
@@ -99,11 +100,22 @@ export const verifyCheckInCode = () => `/api/appointment/center/verify`
 // DONOR
 export const donateAnonymous = () => '/api/donor/donations/anonymous'
 export const createCampaign = () => '/api/donor/campaigns'
-export const getCampaigns = (page = 1, size = 20) =>
-  `/api/donor/campaigns${buildQuery({ page, size })}`
+export const getCampaigns = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED'
+  search?: string
+}) =>
+  `/api/donor/campaigns${buildQuery({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    status: params.status ?? undefined,
+    search: params.search ?? undefined,
+  })}`
 export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
-export const deleteCampaign = (id: string) =>
-  `/api/donor/campaigns/${id}/delete`
+export const fundCampaign = (id: string) => `/api/donor/campaigns/${id}/fund`
+export const updateCampaign = (id: string) => `/api/donor/campaigns/${id}`
+export const deleteCampaign = (id: string) => `/api/donor/campaigns/${id}`
 export const getDonorReceipts = (page = 1, size = 20) =>
   `/api/donor/receipts${buildQuery({ page, size })}`
 export const getDonationImpact = () => '/api/donor/impact'
@@ -159,26 +171,75 @@ export const completeAppointment = (appointmentId: string) =>
   `/api/appointment/center/${appointmentId}/complete`
 
 // ADMIN
-export const getUsers = (page = 1, size = 20) =>
-  `/api/admin/users${buildQuery({ page, size })}`
-export const getAdminCenters = (page = 1, size = 20) =>
-  `/api/admin/centers${buildQuery({ page, size })}`
-export const approveCenter = (id: string) => `/api/admin/centers/${id}/approve`
-export const getAllCampaigns = (page = 1, size = 20) =>
-  `/api/admin/campaigns${buildQuery({ page, size })}`
-export const updateCampaignStatus = (id: number) =>
+// Center Management
+export const getAdminCenters = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  state?: string
+  search?: string
+}) => `/api/admin/centers${buildQuery(params)}`
+export const updateCenterStatus = (id: string) =>
+  `/api/admin/centers/${id}/status`
+
+// User Management
+export const getAdminUsers = (params: {
+  page?: number
+  pageSize?: number
+  profileType?: 'PATIENT' | 'DONOR'
+  search?: string
+}) => `/api/admin/users${buildQuery(params)}`
+
+// Campaign Management
+export const getAdminCampaigns = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED'
+  search?: string
+}) => `/api/admin/campaigns${buildQuery(params)}`
+export const updateAdminCampaignStatus = (id: string) =>
   `/api/admin/campaigns/${id}/status`
-export const getAllAppointments = (page = 1, size = 20) =>
-  `/api/admin/appointments${buildQuery({ page, size })}`
-export const getTransactions = (page = 1, size = 20) =>
-  `/api/admin/transactions${buildQuery({ page, size })}`
-export const getAnalytics = (page = 1, size = 20) =>
-  `/api/admin/analytics${buildQuery({ page, size })}`
-export const getStoreItems = (page = 1, size = 20) =>
-  `/api/admin/store${buildQuery({ page, size })}`
-export const manageRoles = (page = 1, size = 20) =>
-  `/api/admin/roles${buildQuery({ page, size })}`
-export const resendReceipt = () => '/api/admin/receipts/resend'
+
+// Appointment Monitoring
+export const getAdminAppointments = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  centerId?: string
+  isDonation?: boolean
+  dateFrom?: string
+  dateTo?: string
+}) => `/api/admin/appointments${buildQuery(params)}`
+
+// Transaction Monitoring
+export const getAdminTransactions = (params: {
+  page?: number
+  pageSize?: number
+  type?: 'DONATION' | 'APPOINTMENT' | 'PAYOUT' | 'REFUND'
+  status?: 'PENDING' | 'COMPLETED' | 'FAILED'
+  dateFrom?: string
+  dateTo?: string
+}) => `/api/admin/transactions${buildQuery(params)}`
+
+// Waitlist Analytics
+export const getAdminWaitlist = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'PENDING' | 'MATCHED' | 'CLAIMED' | 'EXPIRED'
+  screeningTypeId?: string
+  state?: string
+  groupBy?: 'state' | 'screening_type' | 'status'
+}) => `/api/admin/waitlist${buildQuery(params)}`
+
+// Store Management
+export const getAdminStoreProducts = (params: {
+  page?: number
+  pageSize?: number
+  search?: string
+}) => `/api/admin/store/products${buildQuery(params)}`
+export const createStoreProduct = () => '/api/admin/store/products'
+export const updateStoreProduct = (id: string) =>
+  `/api/admin/store/products/${id}`
 
 // Notification endpoints
 export const getNotifications = () => `/api/notifications`
@@ -222,7 +283,8 @@ export const getScreeningTypeByName = (name: string) =>
   `/api/screening-types/by-name/${encodeURIComponent(name)}`
 
 // CENTER STAFF
-export const centerStaffForgotPassword = () => '/api/center/staff/forgot-password'
+export const centerStaffForgotPassword = () =>
+  '/api/center/staff/forgot-password'
 export const centerStaffResetPassword = () => '/api/center/staff/reset-password'
 export const inviteStaff = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>

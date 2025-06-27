@@ -87,7 +87,7 @@ export type TCheckProfilesResponse = TDataResponse<{
   profiles: ("PATIENT" | "DONOR")[];
 }>;
 
-export type TActors = "patient" | "donor" | "center";
+export type TActors = "patient" | "donor" | "center" | "admin";
 
 export type TNotification = {
   id: string;
@@ -253,17 +253,19 @@ export type TRestoreResultFileResponse = TDataResponse<{
 export type TCompleteAppointmentResponse = TDataResponse<{
   appointmentId: string;
   completedAt: string;
-  status: 'COMPLETED';
+  status: "COMPLETED";
 }>;
 
 // For admin (post-MVP)
 export type TGetDeletedFilesResponse = TDataResponse<{
-  files: Array<TResultFile & {
-    appointmentId: string;
-    patientName: string;
-    centerName: string;
-    deletedByStaffName: string;
-  }>;
+  files: Array<
+    TResultFile & {
+      appointmentId: string;
+      patientName: string;
+      centerName: string;
+      deletedByStaffName: string;
+    }
+  >;
   page: number;
   pageSize: number;
   total: number;
@@ -463,3 +465,191 @@ export type TCancelCenterAppointmentResponse = {
   ok: boolean;
   data: { id: string };
 };
+
+// ========================================
+// DONATION & CAMPAIGN TYPES
+// ========================================
+
+export type TDonationCampaign = {
+  id: string;
+  donorId: string;
+  title: string;
+  description: string;
+  targetAmount: number;
+  initialAmount: number;
+  availableAmount: number;
+  reservedAmount: number;
+  usedAmount: number;
+  purpose?: string;
+  targetGender?: "MALE" | "FEMALE" | "ALL";
+  targetAgeMin?: number;
+  targetAgeMax?: number;
+  targetStates?: string[];
+  targetLgas?: string[];
+  status: "ACTIVE" | "COMPLETED" | "DELETED";
+  expiryDate: string;
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  donor: {
+    id: string;
+    fullName: string;
+    email: string;
+    organizationName?: string;
+  };
+  screeningTypes: Array<{
+    id: string;
+    name: string;
+  }>;
+  patientsHelped: number;
+  allocationsCount: number;
+};
+
+export type TDonationTransaction = {
+  id: string;
+  type: "DONATION" | "APPOINTMENT" | "PAYOUT" | "REFUND";
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  amount: number;
+  paymentReference: string;
+  paymentChannel: string;
+  createdAt: string;
+
+  // For donations
+  donationData?: {
+    message?: string;
+    isAnonymous: boolean;
+    campaignId?: string;
+  };
+};
+
+export type TCampaignAnalytics = {
+  overview: {
+    totalFunded: number;
+    totalUsed: number;
+    totalReserved: number;
+    availableAmount: number;
+    patientsHelped: number;
+    averagePerPatient: number;
+    completionPercentage: number;
+  };
+  timeline: Array<{
+    date: string;
+    allocations: number;
+    amountUsed: number;
+    patientsHelped: number;
+  }>;
+  demographics: {
+    ageGroups: Record<string, number>;
+    genderDistribution: Record<string, number>;
+    stateDistribution: Record<string, number>;
+    lgaDistribution: Record<string, number>;
+  };
+  screeningTypes: Array<{
+    id: string;
+    name: string;
+    count: number;
+    totalAmount: number;
+    percentage: number;
+  }>;
+  centers: Array<{
+    id: string;
+    name: string;
+    patientCount: number;
+    totalAmount: number;
+  }>;
+};
+
+// ========================================
+// DONATION API RESPONSE TYPES
+// ========================================
+
+export type TAnonymousDonationResponse = TDataResponse<{
+  transactionId: string;
+  reference: string;
+  authorizationUrl: string;
+  accessCode: string;
+}>;
+
+export type TCreateCampaignResponse = TDataResponse<{
+  campaign: TDonationCampaign;
+  payment: {
+    transactionId: string;
+    reference: string;
+    authorizationUrl: string;
+    accessCode: string;
+  };
+}>;
+
+export type TFundCampaignResponse = TDataResponse<{
+  campaignId: string;
+  transactionId: string;
+  reference: string;
+  authorizationUrl: string;
+  accessCode: string;
+}>;
+
+export type TGetCampaignsResponse = TDataResponse<{
+  campaigns: TDonationCampaign[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
+export type TGetCampaignResponse = TDataResponse<TDonationCampaign>;
+
+export type TGetCampaignAnalyticsResponse = TDataResponse<TCampaignAnalytics>;
+
+export type TUpdateCampaignResponse = TDataResponse<{
+  campaign: TDonationCampaign;
+}>;
+
+export type TDeleteCampaignResponse = TDataResponse<{
+  campaignId: string;
+  action: "recycle_to_general" | "transfer_to_campaign" | "request_refund";
+  amountProcessed: number;
+  message: string;
+}>;
+
+export type TPaymentInitializationResponse = TDataResponse<{
+  authorizationUrl: string;
+  accessCode: string;
+  reference: string;
+}>;
+
+export type TPaymentVerificationResponse = TDataResponse<{
+  reference: string;
+  status: "success" | "failed" | "pending";
+  amount: number;
+  paidAt?: string;
+  channel?: string;
+  paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
+  relatedData?: {
+    campaignId?: string;
+    transactionId?: string;
+  };
+}>;
+
+export type TGetDonationHistoryResponse = TDataResponse<{
+  donations: Array<{
+    id: string;
+    type: "anonymous_donation" | "campaign_creation" | "campaign_funding";
+    amount: number;
+    status: "PENDING" | "COMPLETED" | "FAILED";
+    reference: string;
+    createdAt: string;
+    campaign?: {
+      id: string;
+      title: string;
+    };
+    receipt?: {
+      id: string;
+      downloadUrl: string;
+    };
+  }>;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;

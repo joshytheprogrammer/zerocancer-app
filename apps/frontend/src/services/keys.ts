@@ -25,6 +25,8 @@ export enum QueryKeys {
   adminCampaigns = 'adminCampaigns',
   adminAppointments = 'adminAppointments',
   adminTransactions = 'adminTransactions',
+  adminWaitlist = 'adminWaitlist',
+  adminStoreProducts = 'adminStoreProducts',
   adminAnalytics = 'adminAnalytics',
   adminStore = 'adminStore',
   adminRoles = 'adminRoles',
@@ -55,6 +57,8 @@ export enum MutationKeys {
   uploadResult = 'uploadResult',
   verifyPatient = 'verifyPatient',
   createCampaign = 'createCampaign',
+  fundCampaign = 'fundCampaign',
+  updateCampaign = 'updateCampaign',
   deleteCampaign = 'deleteCampaign',
   approveCenter = 'approveCenter',
   updateCampaignStatus = 'updateCampaignStatus',
@@ -77,6 +81,11 @@ export enum MutationKeys {
   deleteResultFile = 'deleteResultFile',
   restoreResultFile = 'restoreResultFile',
   completeAppointment = 'completeAppointment',
+  // Admin mutations
+  updateCenterStatus = 'updateCenterStatus',
+  updateAdminCampaignStatus = 'updateAdminCampaignStatus',
+  createStoreProduct = 'createStoreProduct',
+  updateStoreProduct = 'updateStoreProduct',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
