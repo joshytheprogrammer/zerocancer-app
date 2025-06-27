@@ -56,10 +56,6 @@ export type TDonorRegisterResponse = TDataResponse<{
 }>;
 
 export type TLoginResponse = TDataResponse<{
-  // tokens: {
-  //   accessToken: string;
-  //   refreshToken: string;
-  // };
   token: string;
   user: {
     userId: string;
