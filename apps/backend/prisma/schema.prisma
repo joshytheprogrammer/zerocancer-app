@@ -70,7 +70,7 @@ model PatientProfile {
   emailVerified  DateTime?
 
 
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DonorProfile {
@@ -81,7 +81,7 @@ model DonorProfile {
   emailVerified  DateTime?
 
 
-  user              User     @relation(fields: [userId], references: [id])
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Admins {
@@ -125,7 +125,7 @@ model ScreeningType {
   screeningTypeCategoryId String
   active                  Boolean  @default(true)
 
-  category                ScreeningTypeCategory @relation(fields: [screeningTypeCategoryId], references: [id])
+  category                ScreeningTypeCategory @relation(fields: [screeningTypeCategoryId], references: [id], onDelete: Restrict)
   appointments            Appointment[]
   waitlists               Waitlist[]
   campaigns               DonationCampaign[] @relation("DonationCampaignScreeningTypes")
@@ -148,8 +148,8 @@ model Waitlist {
   joinedAt        DateTime         @default(now())
   claimedAt       DateTime?
 
-  screening       ScreeningType    @relation(fields: [screeningTypeId], references: [id])
-  patient         User             @relation("UserWaitlists", fields: [patientId], references: [id])
+  screening       ScreeningType    @relation(fields: [screeningTypeId], references: [id], onDelete: Restrict)
+  patient         User             @relation("UserWaitlists", fields: [patientId], references: [id], onDelete: Cascade)
   allocation      DonationAllocation?
 }
 
@@ -167,7 +167,7 @@ model DonationCampaign {
   status          CampaignStatus
   createdAt       DateTime         @default(now())
 
-  donor           User             @relation("UserDonationCampaigns", fields: [donorId], references: [id])
+  donor           User             @relation("UserDonationCampaigns", fields: [donorId], references: [id], onDelete: Cascade)
   allocations     DonationAllocation[]
   transactions    Transaction[]    @relation("DonationTransactions")
   screeningTypes  ScreeningType[]  @relation("DonationCampaignScreeningTypes")
@@ -181,10 +181,10 @@ model DonationAllocation {
   campaignId    String
   claimedAt     DateTime?
 
-  waitlist      Waitlist    @relation(fields: [waitlistId], references: [id])
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
-  patient       User        @relation("UserDonationAllocations", fields: [patientId], references: [id])
-  campaign      DonationCampaign @relation(fields: [campaignId], references: [id])
+  waitlist      Waitlist    @relation(fields: [waitlistId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  patient       User        @relation("UserDonationAllocations", fields: [patientId], references: [id], onDelete: Cascade)
+  campaign      DonationCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 model Appointment {
@@ -204,10 +204,10 @@ model Appointment {
   checkInCode             String   @unique
   checkInCodeExpiresAt    DateTime?
 
-  patient                 User     @relation("UserAppointments", fields: [patientId], references: [id])
-  center                  ServiceCenter @relation(fields: [centerId], references: [id])
-  screeningType           ScreeningType @relation(fields: [screeningTypeId], references: [id])
-  transaction             Transaction?  @relation("TransactionAppointments", fields: [transactionId], references: [id])
+  patient                 User     @relation("UserAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+  center                  ServiceCenter @relation(fields: [centerId], references: [id], onDelete: Restrict)
+  screeningType           ScreeningType @relation(fields: [screeningTypeId], references: [id], onDelete: Restrict)
+  transaction             Transaction?  @relation("TransactionAppointments", fields: [transactionId], references: [id], onDelete: SetNull)
   verification            AppointmentVerification? @relation("AppointmentVerificationAppointment")
   result                  ScreeningResult? @relation("ScreeningResultAppointment")
   allocation              DonationAllocation[]
@@ -215,22 +215,22 @@ model Appointment {
 
 model AppointmentVerification {
   id             String   @id @default(uuid())
-  verifiedBy     String
+  verifiedBy     String?
   verifiedAt     DateTime
 
-  appointment Appointment @relation("AppointmentVerificationAppointment", fields: [id], references: [id])
-  verifier CenterStaff @relation("StaffVerifications", fields: [verifiedBy], references: [id])
+  appointment Appointment @relation("AppointmentVerificationAppointment", fields: [id], references: [id], onDelete: Cascade)
+  verifier CenterStaff? @relation("StaffVerifications", fields: [verifiedBy], references: [id], onDelete: SetNull)
 }
 
 model ScreeningResult {
   id            String   @id @default(uuid())
   appointmentId String   @unique
   notes         String?
-  uploadedBy    String
+  uploadedBy    String?
   uploadedAt    DateTime @default(now())
 
-  appointment Appointment @relation("ScreeningResultAppointment", fields: [appointmentId], references: [id])
-  uploader    CenterStaff @relation("StaffUploadedResults", fields: [uploadedBy], references: [id])
+  appointment Appointment @relation("ScreeningResultAppointment", fields: [appointmentId], references: [id], onDelete: Cascade)
+  uploader    CenterStaff? @relation("StaffUploadedResults", fields: [uploadedBy], references: [id], onDelete: SetNull)
   files       ScreeningResultFile[]
 }
 
@@ -251,8 +251,8 @@ model ScreeningResultFile {
   deletedBy     String?
   deletionReason String? // Optional reason for deletion
   
-  result        ScreeningResult @relation(fields: [resultId], references: [id])
-  deletedByStaff CenterStaff? @relation("StaffDeletedFiles", fields: [deletedBy], references: [id])
+  result        ScreeningResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  deletedByStaff CenterStaff? @relation("StaffDeletedFiles", fields: [deletedBy], references: [id], onDelete: SetNull)
   
   @@index([isDeleted, resultId]) // For efficient filtering
 }
@@ -276,7 +276,7 @@ model Transaction {
   paymentChannel      String?
   createdAt           DateTime @default(now())
 
-  donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id])
+  donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id], onDelete: SetNull)
   appointments Appointment[] @relation("TransactionAppointments")
 }
 
@@ -291,7 +291,7 @@ model PasswordResetToken {
   userId    String
   token     String   @unique
   expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmailVerificationToken {
@@ -300,7 +300,7 @@ model EmailVerificationToken {
   token     String   @unique
   profileType ProfileType
   expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -319,8 +319,8 @@ model NotificationRecipient {
   userId         String
   read           Boolean  @default(false)
   readAt         DateTime?
-  notification   Notification @relation(fields: [notificationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CenterStaff {
@@ -331,7 +331,7 @@ model CenterStaff {
   role      String?
   createdAt DateTime @default(now())
 
-  center    ServiceCenter @relation(fields: [centerId], references: [id])
+  center    ServiceCenter @relation(fields: [centerId], references: [id], onDelete: Cascade)
   verifications AppointmentVerification[] @relation("StaffVerifications")
   uploadedResults ScreeningResult[] @relation("StaffUploadedResults")
   deletedResultFiles ScreeningResultFile[] @relation("StaffDeletedFiles")
@@ -348,7 +348,7 @@ model CenterStaffInvite {
   expiresAt DateTime?
   acceptedAt DateTime?
 
-  center    ServiceCenter @relation(fields: [centerId], references: [id])
+  center    ServiceCenter @relation(fields: [centerId], references: [id], onDelete: Cascade)
 }
 
 model CenterStaffResetToken {
@@ -357,5 +357,5 @@ model CenterStaffResetToken {
   token     String   @unique
   expiresAt DateTime
 
-  staff     CenterStaff @relation(fields: [staffId], references: [id])
+  staff     CenterStaff @relation(fields: [staffId], references: [id], onDelete: Cascade)
 }
