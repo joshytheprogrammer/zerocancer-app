@@ -76,7 +76,8 @@ export const getEligibleCenters = (
   lga?: string,
 ) =>
   `/api/appointment/patient/matches/eligible-centers/${allocationId}${buildQuery({ page, size, state, lga })}`
-export const selectCenterAfterMatch = () => `/api/appointment/patient/matches/select-center`
+export const selectCenterAfterMatch = () =>
+  `/api/appointment/patient/matches/select-center`
 export const getPatientAppointments = (params: {
   page?: number
   size?: number
@@ -97,16 +98,16 @@ export const getCheckInCode = (appointmentId: string) =>
 export const verifyCheckInCode = () => `/api/appointment/center/verify`
 
 // DONOR
-export const donateAnonymous = () => '/api/donor/donations/anonymous'
-export const createCampaign = () => '/api/donor/campaigns'
-export const getCampaigns = (page = 1, size = 20) =>
-  `/api/donor/campaigns${buildQuery({ page, size })}`
-export const getCampaign = (id: string) => `/api/donor/campaigns/${id}`
-export const deleteCampaign = (id: string) =>
-  `/api/donor/campaigns/${id}/delete`
-export const getDonorReceipts = (page = 1, size = 20) =>
-  `/api/donor/receipts${buildQuery({ page, size })}`
-export const getDonationImpact = () => '/api/donor/impact'
+export const donateAnonymous = () => '/api/v1/donor/donations/anonymous'
+export const createCampaign = () => '/api/v1/donor/campaigns'
+export const getCampaigns = (params: {
+  page?: number
+  pageSize?: number
+  status?: string
+  search?: string
+}) => `/api/v1/donor/campaigns${buildQuery(params)}`
+export const getCampaign = (id: string) => `/api/v1/donor/campaigns/${id}`
+export const paystackWebhook = () => '/api/v1/donor/paystack-webhook'
 
 // CENTER
 export const getCenters = (params: {
@@ -222,7 +223,8 @@ export const getScreeningTypeByName = (name: string) =>
   `/api/screening-types/by-name/${encodeURIComponent(name)}`
 
 // CENTER STAFF
-export const centerStaffForgotPassword = () => '/api/center/staff/forgot-password'
+export const centerStaffForgotPassword = () =>
+  '/api/center/staff/forgot-password'
 export const centerStaffResetPassword = () => '/api/center/staff/reset-password'
 export const inviteStaff = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>

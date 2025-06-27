@@ -5,6 +5,7 @@ import { logger } from "hono/logger";
 import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
 import { centerApp } from "./api/center";
+import { donationApp } from "./api/donation";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistsApp } from "./api/waitlist";
@@ -35,10 +36,14 @@ app.route("/center", centerApp);
 app.route("/appointment", appointmentApp);
 app.route("/screening-types", screeningTypesApp);
 app.route("/waitlist", waitlistsApp);
+app.route("/donor", donationApp);
 
 app.notFound((c) => {
   return c.json(
-    { error: "Not Found", message: "The requested resource was not found. Or no longer exist" },
+    {
+      error: "Not Found",
+      message: "The requested resource was not found. Or no longer exist",
+    },
     404
   );
 });
