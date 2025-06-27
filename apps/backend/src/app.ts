@@ -10,6 +10,7 @@ import { donationApp } from "./api/donation";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistsApp } from "./api/waitlist";
+import { notificationApp } from "./api/notification";
 
 const app = new Hono().basePath("/api/v1");
 
@@ -39,6 +40,7 @@ app.route("/screening-types", screeningTypesApp);
 app.route("/waitlist", waitlistsApp);
 app.route("/donor", donationApp);
 app.route("/admin", adminApp);
+app.route("/notifications", notificationApp)
 
 app.notFound((c) => {
   return c.json(
