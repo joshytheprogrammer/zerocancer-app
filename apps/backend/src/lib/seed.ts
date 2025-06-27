@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
 import { getDB } from "./db";
 
 const prisma = getDB();
@@ -185,7 +186,7 @@ async function main() {
       id: "general-public",
       fullName: "General Donor Pool",
       email: "donorpool@zerocancer.org",
-      passwordHash: "secret",
+      passwordHash: await bcrypt.hash("password", 10),
       donorProfile: {
         create: {
           country: "Nigeria",
@@ -202,7 +203,7 @@ async function main() {
     create: {
       id: faker.string.uuid(),
       email: "ttaiwo4910@gmail.com",
-      passwordHash: faker.internet.password(),
+      passwordHash: await bcrypt.hash("fake.password", 10),
     },
   });
 
@@ -222,7 +223,7 @@ async function main() {
 
   console.log("📤 Creating test donors...");
   const testDonors = await Promise.all(
-    TEST_PASSWORDS.map((password, index) =>
+    TEST_PASSWORDS.map(async (password, index) =>
       prisma.user.upsert({
         where: { email: `testdonor${index + 1}@example.com` },
         update: {},
@@ -230,7 +231,7 @@ async function main() {
           fullName: `Test Donor ${index + 1}`,
           email: `testdonor${index + 1}@example.com`,
           phone: faker.phone.number({ style: "human" }),
-          passwordHash: password,
+          passwordHash: await bcrypt.hash(password, 10),
           donorProfile: {
             create: {
               organizationName: `Donor Org ${index + 1}`,
@@ -245,7 +246,7 @@ async function main() {
 
   console.log("📥 Creating test patients...");
   const testPatients = await Promise.all(
-    TEST_PASSWORDS.map((password, index) =>
+    TEST_PASSWORDS.map(async (password, index) =>
       prisma.user.upsert({
         where: { email: `testpatient${index + 1}@example.com` },
         update: {},
@@ -253,7 +254,7 @@ async function main() {
           fullName: `Test Patient ${index + 1}`,
           email: `testpatient${index + 1}@example.com`,
           phone: faker.phone.number({ style: "international" }),
-          passwordHash: password,
+          passwordHash: await bcrypt.hash(password, 10),
           patientProfile: {
             create: {
               gender: faker.helpers.arrayElement(["male", "female"]),
@@ -287,6 +288,7 @@ async function main() {
   }
 
   console.log("🎯 Creating donation allocations...");
+  // comment out if giving errors
   const waitlists = await prisma.waitlist.findMany({
     where: { status: "PENDING" },
   });
@@ -315,12 +317,13 @@ async function main() {
 
   await Promise.allSettled(
     centerLocations.map(async (loc, i) => {
+      const hashedPassword = await bcrypt.hash("centerpass", 10);
       const center = await prisma.serviceCenter.upsert({
         where: { email: `center${i + 1}@zerocancer.org` },
         update: {},
         create: {
           email: `center${i + 1}@zerocancer.org`,
-          passwordHash: "centerpass",
+          passwordHash: hashedPassword,
           centerName: `Health Center ${i + 1}`,
           address: faker.location.streetAddress(),
           state: loc.state,
@@ -342,7 +345,7 @@ async function main() {
           update: {},
           create: {
             email: `staff${i + 1}a@zerocancer.africa`,
-            passwordHash: "staffpass",
+            passwordHash: await bcrypt.hash("staffpass", 10),
             role: "admin",
             centerId: center.id,
           },
@@ -357,7 +360,7 @@ async function main() {
           update: {},
           create: {
             email: `staff${i + 1}b@zerocancer.africa`,
-            passwordHash: "staffpass",
+            passwordHash: await bcrypt.hash("staffpass", 10),
             role: "nurse",
             centerId: center.id,
           },
