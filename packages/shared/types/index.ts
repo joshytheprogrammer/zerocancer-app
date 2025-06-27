@@ -659,44 +659,37 @@ export type TDeleteCampaignResponse = TDataResponse<{
   message: string;
 }>;
 
-export type TPaymentInitializationResponse = TDataResponse<{
-  authorizationUrl: string;
-  accessCode: string;
-  reference: string;
-}>;
+// ========================================
+// PAYMENT VERIFICATION TYPES
+// ========================================
 
 export type TPaymentVerificationResponse = TDataResponse<{
   reference: string;
-  status: "success" | "failed" | "pending";
   amount: number;
-  paidAt?: string;
-  channel?: string;
+  status: "success" | "failed" | "abandoned" | "pending";
   paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
-  relatedData?: {
-    campaignId?: string;
-    transactionId?: string;
-  };
+  paidAt: string | null;
+  channel: string;
+  currency: string;
+  transactionDate: string;
+  context: TPaymentContext;
 }>;
 
-export type TGetDonationHistoryResponse = TDataResponse<{
-  donations: Array<{
-    id: string;
-    type: "anonymous_donation" | "campaign_creation" | "campaign_funding";
-    amount: number;
-    status: "PENDING" | "COMPLETED" | "FAILED";
-    reference: string;
-    createdAt: string;
-    campaign?: {
-      id: string;
-      title: string;
+export type TPaymentContext =
+  | {
+      type: "anonymous_donation";
+      wantsReceipt: boolean;
+      message: string | null;
+    }
+  | {
+      type: "campaign_creation";
+      campaignId: string;
+      campaign: TDonationCampaign | null;
+      initialFunding: number;
+    }
+  | {
+      type: "campaign_funding";
+      campaignId: string;
+      campaign: TDonationCampaign | null;
+      fundingAmount: number;
     };
-    receipt?: {
-      id: string;
-      downloadUrl: string;
-    };
-  }>;
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}>;

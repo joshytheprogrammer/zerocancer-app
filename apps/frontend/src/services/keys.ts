@@ -12,6 +12,7 @@ export enum QueryKeys {
   donorCampaign = 'donorCampaign',
   donorReceipts = 'donorReceipts',
   donorImpact = 'donorImpact',
+  verifyPayment = 'verifyPayment',
 
   centerAppointments = 'centerAppointments',
   centerResults = 'centerResults',

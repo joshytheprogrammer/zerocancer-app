@@ -34,14 +34,37 @@ export const donationApp = new Hono<{
 // HELPER FUNCTIONS
 // ========================================
 
-// Helper function to initialize Paystack payment
+// Helper function to initialize Paystack payment with context-aware callback URLs
 async function initializePaystackPayment(data: {
   email: string;
   amount: number; // in kobo
   reference: string;
+  paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
+  campaignId?: string; // Required for campaign-related payments
   metadata?: any;
 }) {
   const { PAYSTACK_SECRET_KEY, FRONTEND_URL } = process.env;
+
+  // Generate context-aware callback URL based on payment type
+  let callbackUrl: string;
+
+  switch (data.paymentType) {
+    case "anonymous_donation":
+      callbackUrl = `${FRONTEND_URL}/donation/payment-status?ref=${data.reference}&type=anonymous`;
+      break;
+    case "campaign_creation":
+      if (!data.campaignId)
+        throw new Error("Campaign ID required for campaign creation");
+      callbackUrl = `${FRONTEND_URL}/donor/campaigns/payment-status?ref=${data.reference}&type=create&campaignId=${data.campaignId}`;
+      break;
+    case "campaign_funding":
+      if (!data.campaignId)
+        throw new Error("Campaign ID required for campaign funding");
+      callbackUrl = `${FRONTEND_URL}/donor/campaigns/${data.campaignId}/payment-status?ref=${data.reference}&type=fund`;
+      break;
+    default:
+      throw new Error(`Unknown payment type: ${data.paymentType}`);
+  }
 
   const response = await fetch(
     "https://api.paystack.co/transaction/initialize",
@@ -55,8 +78,12 @@ async function initializePaystackPayment(data: {
         email: data.email,
         amount: data.amount,
         reference: data.reference,
-        callback_url: `${FRONTEND_URL}/payment-callback`,
-        metadata: data.metadata,
+        callback_url: callbackUrl,
+        metadata: {
+          ...data.metadata,
+          payment_type: data.paymentType,
+          campaign_id: data.campaignId || null,
+        },
       }),
     }
   );
@@ -196,8 +223,8 @@ donationApp.post(
         email,
         amount: donationData.amount * 100, // Convert to kobo
         reference,
+        paymentType: "anonymous_donation",
         metadata: {
-          payment_type: "anonymous_donation",
           wants_receipt: donationData.wantsReceipt,
           actual_email: donationData.email || null,
           message: donationData.message || null,
@@ -357,9 +384,9 @@ donationApp.post(
         email: donor.email,
         amount: campaignData.initialFunding * 100, // Convert to kobo
         reference,
+        paymentType: "campaign_creation",
+        campaignId: campaign.id,
         metadata: {
-          payment_type: "campaign_creation",
-          campaign_id: campaign.id,
           donor_id: donorId,
           initial_funding: campaignData.initialFunding,
         },
@@ -612,9 +639,9 @@ donationApp.post(
         email: donor.email,
         amount: fundData.amount * 100, // Convert to kobo
         reference,
+        paymentType: "campaign_funding",
+        campaignId: campaignId,
         metadata: {
-          payment_type: "campaign_funding",
-          campaign_id: campaignId,
           donor_id: donorId,
           funding_amount: fundData.amount,
         },
@@ -881,9 +908,9 @@ donationApp.delete(
       const ongoingAppointments = existingCampaign.allocations.filter(
         (allocation) =>
           allocation.appointment &&
-        ["SCHEDULED", "IN_PROGRESS"].includes(allocation.appointment.status)
+          ["SCHEDULED", "IN_PROGRESS"].includes(allocation.appointment.status)
       );
-      
+
       // NOTE TO SELF: Update so that allocations are connected to general donor pool instead of returning an error message
       if (ongoingAppointments.length > 0) {
         return c.json<TErrorResponse>(
@@ -994,6 +1021,136 @@ donationApp.delete(
     }
   }
 );
+
+// ========================================
+// PAYMENT VERIFICATION ENDPOINT
+// ========================================
+
+// GET /api/donor/verify-payment/:reference - Verify payment status with Paystack
+donationApp.get("/verify-payment/:reference", async (c) => {
+  const db = getDB();
+  const reference = c.req.param("reference");
+  const { PAYSTACK_SECRET_KEY } = process.env;
+
+  try {
+    // Verify payment with Paystack
+    const response = await fetch(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Failed to verify payment with Paystack",
+        },
+        500
+      );
+    }
+
+    const paystackData = await response.json();
+    const { data: paymentData } = paystackData;
+
+    if (!paymentData) {
+      return c.json<TErrorResponse>(
+        {
+          ok: false,
+          error: "Payment not found",
+        },
+        404
+      );
+    }
+
+    // Get local transaction record
+    const transaction = await db.transaction.findFirst({
+      where: { paymentReference: reference },
+      include: {
+        donation: {
+          include: {
+            donor: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                donorProfile: {
+                  select: { organizationName: true },
+                },
+              },
+            },
+            screeningTypes: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Determine payment context from metadata
+    const metadata = paymentData.metadata || {};
+    const paymentType = metadata.payment_type;
+    const campaignId = metadata.campaign_id;
+
+    // Prepare response data based on payment type and status
+    const responseData: any = {
+      reference: paymentData.reference,
+      amount: paymentData.amount / 100, // Convert from kobo
+      status: paymentData.status, // success, failed, abandoned
+      paymentType,
+      paidAt: paymentData.paid_at,
+      channel: paymentData.channel,
+      currency: paymentData.currency,
+      transactionDate: paymentData.transaction_date,
+    };
+
+    // Add context-specific data
+    if (paymentType === "anonymous_donation") {
+      responseData.context = {
+        type: "anonymous_donation",
+        wantsReceipt: metadata.wants_receipt || false,
+        message: metadata.message || null,
+      };
+    } else if (paymentType === "campaign_creation" && campaignId) {
+      // Get campaign details
+      const campaign = transaction?.donation;
+      responseData.context = {
+        type: "campaign_creation",
+        campaignId,
+        campaign: campaign ? formatCampaignForResponse(campaign) : null,
+        initialFunding: metadata.initial_funding,
+      };
+    } else if (paymentType === "campaign_funding" && campaignId) {
+      // Get campaign details
+      const campaign = transaction?.donation;
+      responseData.context = {
+        type: "campaign_funding",
+        campaignId,
+        campaign: campaign ? formatCampaignForResponse(campaign) : null,
+        fundingAmount: metadata.funding_amount,
+      };
+    }
+
+    return c.json({
+      ok: true,
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    return c.json<TErrorResponse>(
+      {
+        ok: false,
+        error: "Failed to verify payment",
+      },
+      500
+    );
+  }
+});
 
 // ========================================
 // WEBHOOK ENDPOINTS

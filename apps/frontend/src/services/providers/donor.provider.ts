@@ -156,3 +156,71 @@ export const useDonorCampaign = (campaignId: string) =>
     queryFn: () => donorService.getCampaign(campaignId),
     enabled: !!campaignId,
   })
+
+// ========================================
+// PAYMENT VERIFICATION
+// ========================================
+
+/**
+ * PAYMENT VERIFICATION PROVIDER USAGE:
+ *
+ * This provider is specifically designed for payment status pages.
+ * Use it when users return from Paystack payment to verify their payment status.
+ *
+ * Example usage in a payment status page component:
+ *
+ * ```tsx
+ * import { useVerifyPayment } from '@/services/providers/donor.provider'
+ * import { useSearchParams } from '@tanstack/react-router'
+ *
+ * export function PaymentStatusPage() {
+ *   const { ref, type, campaignId } = useSearchParams() // Get URL params
+ *   const { data, isLoading, error } = useVerifyPayment(ref)
+ *
+ *   if (isLoading) return <PaymentVerificationSpinner />
+ *   if (error) return <PaymentErrorMessage />
+ *
+ *   const { status, context } = data.data
+ *
+ *   if (status === 'success') {
+ *     switch (context.type) {
+ *       case 'anonymous_donation':
+ *         return <AnonymousDonationSuccess message={context.message} />
+ *       case 'campaign_creation':
+ *         return <CampaignCreationSuccess campaign={context.campaign} />
+ *       case 'campaign_funding':
+ *         return <CampaignFundingSuccess campaign={context.campaign} amount={context.fundingAmount} />
+ *     }
+ *   }
+ *
+ *   return <PaymentFailedMessage status={status} />
+ * }
+ * ```
+ *
+ * The hook automatically refetches every 5 seconds if payment is still pending,
+ * and stops refetching once payment is complete (success/failed/abandoned).
+ */
+
+// Verify payment status (used on payment status pages)
+export const useVerifyPayment = (reference: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.verifyPayment, reference],
+    queryFn: () => donorService.verifyPayment(reference),
+    enabled: !!reference,
+    // Refetch every 5 seconds if payment is pending
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status
+      return status === 'pending' ? 5000 : false
+    },
+    // Stop refetching on window focus if payment is complete
+    refetchOnWindowFocus: (query) => {
+      const status = query.state.data?.data?.status
+      return status === 'pending'
+    },
+    // Cache for 1 minute for completed payments
+    gcTime: 60 * 1000,
+    staleTime: (query) => {
+      const status = query.state.data?.data?.status
+      return status === 'pending' ? 0 : 30 * 1000
+    },
+  })

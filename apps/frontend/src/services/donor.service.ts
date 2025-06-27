@@ -15,6 +15,7 @@ import type {
   TFundCampaignResponse,
   TGetCampaignResponse,
   TGetCampaignsResponse,
+  TPaymentVerificationResponse,
   TUpdateCampaignResponse,
 } from '@zerocancer/shared/types'
 import { z } from 'zod'
@@ -79,4 +80,51 @@ export const deleteCampaign = async (
     { data },
   )
   return res as TDeleteCampaignResponse
+}
+
+// ========================================
+// PAYMENT VERIFICATION
+// ========================================
+
+/**
+ * PAYMENT FLOW EXPLANATION FOR FRONTEND DEVELOPERS:
+ *
+ * 1. PAYMENT INITIATION:
+ *    - User clicks donate/fund button → Frontend calls donateAnonymous(), createCampaign(), or fundCampaign()
+ *    - Backend returns Paystack authorization URL → Frontend redirects user to this URL
+ *    - User completes payment on Paystack's secure checkout page
+ *
+ * 2. RETURN TO APP (Context-Aware Redirects):
+ *    - After payment, Paystack redirects to these URLs based on payment type:
+ *      • Anonymous donations: `/donation/payment-status?ref=${reference}&type=anonymous`
+ *      • Campaign creation: `/donor/campaigns/payment-status?ref=${reference}&type=create&campaignId=${campaignId}`
+ *      • Campaign funding: `/donor/campaigns/${campaignId}/payment-status?ref=${reference}&type=fund`
+ *
+ * 3. PAYMENT STATUS PAGE IMPLEMENTATION:
+ *    - Parse URL parameters: reference (required), type (required), campaignId (optional)
+ *    - Call verifyPayment(reference) to get payment status and context data
+ *    - Show appropriate success/failure message based on payment type and status
+ *    - Redirect user to appropriate next page (dashboard, campaign details, etc.)
+ *
+ * 4. PAYMENT VERIFICATION RESPONSE:
+ *    - Contains payment status (success/failed/abandoned/pending)
+ *    - Contains context object with payment-type-specific data:
+ *      • anonymous_donation: { wantsReceipt, message }
+ *      • campaign_creation: { campaignId, campaign, initialFunding }
+ *      • campaign_funding: { campaignId, campaign, fundingAmount }
+ *
+ * 5. UI RECOMMENDATIONS:
+ *    - Show loading spinner while verifying payment
+ *    - Handle all payment statuses (success, failed, abandoned, pending)
+ *    - For successful payments, show context-appropriate success message
+ *    - For failed payments, show retry option or contact support
+ *    - Auto-redirect to relevant page after 3-5 seconds
+ */
+
+// Verify payment status with Paystack and get context data
+export const verifyPayment = async (
+  reference: string,
+): Promise<TPaymentVerificationResponse> => {
+  const res = await request.get(endpoints.verifyPayment(reference))
+  return res as TPaymentVerificationResponse
 }
