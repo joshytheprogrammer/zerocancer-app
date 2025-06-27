@@ -8,26 +8,33 @@ import {
   ClipboardCheck,
   LogOut
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
 import logo from '@/assets/images/logo-blue.svg'
-import { isAuthMiddleware } from '@/services/providers/auth.provider'
+import { isAuthMiddleware, useAuthUser } from '@/services/providers/auth.provider'
 import { useLogout } from '@/services/providers/auth.provider'
 import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/center')({
   component: CenterLayout,
   beforeLoad: async ({ context }) => {
-    const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
+    const { isAuth, profile } = await isAuthMiddleware(
       context.queryClient,
-      'center',
     )
 
     if (!isAuth) return redirect({ to: `/` })
 
+    // Check if user is CENTER or CENTER_STAFF
+    const isCenterUser = (profile as string) === 'CENTER' || (profile as string) === 'CENTER_STAFF'
+    
     // If authenticated but wrong role, redirect to correct dashboard
-    if (!isAuthorized) {
+    if (!isCenterUser) {
       if (profile === 'PATIENT') return redirect({ to: '/patient' })
       if (profile === 'DONOR') return redirect({ to: '/donor' })
+      if (profile === 'ADMIN') return redirect({ to: '/admin' })
+      
+      // If unknown profile, redirect to home
+      return redirect({ to: '/' })
     }
 
     return null
@@ -37,6 +44,13 @@ export const Route = createFileRoute('/center')({
 function CenterLayout() {
   const { mutate: logout } = useLogout();
   const navigate = useNavigate();
+  
+  // Get current user to determine role-based navigation
+  const authUserQuery = useQuery(useAuthUser())
+  const user = authUserQuery.data?.data?.user
+  const isStaff = (user?.profile as string) === 'CENTER_STAFF'
+  const isAdmin = (user?.profile as string) === 'CENTER'
+
   return (
     <div className="min-h-screen w-full">
       {/* Fixed Sidebar */}
@@ -45,6 +59,7 @@ function CenterLayout() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[70px] lg:px-6">
             <Link to="/center" className="flex items-center gap-2 font-semibold">
               <img src={logo} alt="ZeroCancer" className="h-12" />
+              {isStaff && <span className="text-sm text-muted-foreground ml-2">Staff Portal</span>}
             </Link>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -90,22 +105,27 @@ function CenterLayout() {
                 <FileText className="h-4 w-4" />
                 Results History
               </Link>
-              <Link
-                to="/center/receipt-history"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <FileText className="h-4 w-4" />
-                Payouts
-              </Link>
-              <Link
-                to="/center/staff"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <Users className="h-4 w-4" />
-                Staff
-              </Link>
+              {/* Admin-only features */}
+              {isAdmin && (
+                <>
+                  <Link
+                    to="/center/receipt-history"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                    activeProps={{ className: 'bg-muted text-primary' }}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Payouts
+                  </Link>
+                  <Link
+                    to="/center/staff"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                    activeProps={{ className: 'bg-muted text-primary' }}
+                  >
+                    <Users className="h-4 w-4" />
+                    Staff
+                  </Link>
+                </>
+              )}
               <div className="border-t p-2 lg:p-4">
                 <button
                   onClick={() => {
