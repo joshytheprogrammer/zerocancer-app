@@ -5,9 +5,9 @@ const prisma = getDB();
 const TEST_PASSWORDS = ["password123", "testpass456", "demo789"];
 
 async function main() {
-  console.log("🌱 Seeding Zerocancer database...");
+  console.log("\u{1F331} Seeding Zerocancer database...");
 
-  // --- Seed Screening Type Categories ---
+  console.log("🌿 Seeding screening type categories...");
   await prisma.screeningTypeCategory.createMany({
     data: [
       {
@@ -39,10 +39,9 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // --- Seed Screening Types ---
+  console.log("🌿 Seeding screening types...");
   await prisma.screeningType.createMany({
     data: [
-      // Cancer
       {
         name: "Cervical Cancer Screening",
         description: "Pap smear test",
@@ -58,8 +57,17 @@ async function main() {
         description: "PSA blood test",
         screeningTypeCategoryId: "cancer",
       },
-  
-      // Vaccine
+      {
+        name: "Colorectal Cancer Screening",
+        description: "Colonoscopy and stool tests",
+        screeningTypeCategoryId: "cancer",
+      },
+      {
+        name: "Skin Cancer Screening",
+        description: "Dermatological evaluation",
+        screeningTypeCategoryId: "cancer",
+      },
+
       {
         name: "Polio Vaccine",
         description: "Polio immunization",
@@ -75,8 +83,17 @@ async function main() {
         description: "Protect against HPV infection",
         screeningTypeCategoryId: "vaccine",
       },
-  
-      // General
+      {
+        name: "COVID-19 Vaccine",
+        description: "Immunization against COVID-19",
+        screeningTypeCategoryId: "vaccine",
+      },
+      {
+        name: "Measles Vaccine",
+        description: "Prevent measles infection",
+        screeningTypeCategoryId: "vaccine",
+      },
+
       {
         name: "Blood Pressure Check",
         description: "Basic BP screening",
@@ -92,8 +109,17 @@ async function main() {
         description: "Basic eye check",
         screeningTypeCategoryId: "general",
       },
-  
-      // Treatment
+      {
+        name: "Cholesterol Check",
+        description: "Lipid profile test",
+        screeningTypeCategoryId: "general",
+      },
+      {
+        name: "Liver Function Test",
+        description: "Check liver health",
+        screeningTypeCategoryId: "general",
+      },
+
       {
         name: "Antiretroviral Therapy",
         description: "HIV treatment access",
@@ -109,8 +135,17 @@ async function main() {
         description: "Free TB treatment",
         screeningTypeCategoryId: "treatement",
       },
-  
-      // Screening (General-purpose category)
+      {
+        name: "Typhoid Treatment",
+        description: "Treat typhoid fever",
+        screeningTypeCategoryId: "treatement",
+      },
+      {
+        name: "Pneumonia Treatment",
+        description: "Respiratory illness management",
+        screeningTypeCategoryId: "treatement",
+      },
+
       {
         name: "Body Mass Index (BMI) Screening",
         description: "General obesity and weight check",
@@ -126,14 +161,41 @@ async function main() {
         description: "Depression and anxiety screening",
         screeningTypeCategoryId: "screening",
       },
+      {
+        name: "Dental Check",
+        description: "Routine oral hygiene exam",
+        screeningTypeCategoryId: "screening",
+      },
+      {
+        name: "Allergy Test",
+        description: "Common allergen panel",
+        screeningTypeCategoryId: "screening",
+      },
     ],
     skipDuplicates: true,
   });
-  
 
   const screeningTypes = await prisma.screeningType.findMany();
 
-  // --- Seed Admin ---
+  console.log("👤 Creating general public donor...");
+  await prisma.user.upsert({
+    where: { id: "general-public" },
+    update: {},
+    create: {
+      id: "general-public",
+      fullName: "General Donor Pool",
+      email: "donorpool@zerocancer.org",
+      passwordHash: "secret",
+      donorProfile: {
+        create: {
+          country: "Nigeria",
+          emailVerified: new Date(),
+        },
+      },
+    },
+  });
+
+  console.log("🔐 Creating admin...");
   await prisma.admins.upsert({
     where: { email: "ttaiwo4910@gmail.com" },
     update: {},
@@ -144,7 +206,7 @@ async function main() {
     },
   });
 
-  // --- General Campaign Pool ---
+  console.log("💰 Seeding general donation campaign...");
   await prisma.donationCampaign.upsert({
     where: { id: "general-donor-pool" },
     update: {},
@@ -158,7 +220,7 @@ async function main() {
     },
   });
 
-  // --- Seed Test Donors ---
+  console.log("📤 Creating test donors...");
   const testDonors = await Promise.all(
     TEST_PASSWORDS.map((password, index) =>
       prisma.user.upsert({
@@ -167,7 +229,7 @@ async function main() {
         create: {
           fullName: `Test Donor ${index + 1}`,
           email: `testdonor${index + 1}@example.com`,
-          phone: faker.phone.number({ style: "human"}),
+          phone: faker.phone.number({ style: "human" }),
           passwordHash: password,
           donorProfile: {
             create: {
@@ -181,7 +243,7 @@ async function main() {
     )
   );
 
-  // --- Seed Test Patients ---
+  console.log("📥 Creating test patients...");
   const testPatients = await Promise.all(
     TEST_PASSWORDS.map((password, index) =>
       prisma.user.upsert({
@@ -195,7 +257,11 @@ async function main() {
           patientProfile: {
             create: {
               gender: faker.helpers.arrayElement(["male", "female"]),
-              dateOfBirth: faker.date.birthdate({ min: 18, max: 65, mode: "age" }),
+              dateOfBirth: faker.date.birthdate({
+                min: 18,
+                max: 65,
+                mode: "age",
+              }),
               city: index === 0 ? "Lagos" : index === 1 ? "Kano" : "Enugu",
               state: index === 0 ? "Lagos" : index === 1 ? "Kano" : "Enugu",
               emailVerified: new Date(),
@@ -206,7 +272,37 @@ async function main() {
     )
   );
 
-  // --- Seed 7 Service Centers ---
+  console.log("📝 Creating waitlists...");
+  for (const patient of testPatients) {
+    const screenings = faker.helpers.arrayElements(screeningTypes, 2);
+    for (const screening of screenings) {
+      await prisma.waitlist.create({
+        data: {
+          screeningTypeId: screening.id,
+          patientId: patient.id,
+          status: "PENDING",
+        },
+      });
+    }
+  }
+
+  console.log("🎯 Creating donation allocations...");
+  const waitlists = await prisma.waitlist.findMany({
+    where: { status: "PENDING" },
+  });
+  await Promise.all(
+    waitlists.slice(0, 5).map(async (w) => {
+      await prisma.donationAllocation.create({
+        data: {
+          waitlistId: w.id,
+          patientId: w.patientId,
+          campaignId: "general-donor-pool",
+        },
+      });
+    })
+  );
+
+  console.log("🏥 Creating service centers...");
   const centerLocations = [
     { state: "Lagos", lga: "Ikeja" },
     { state: "Lagos", lga: "Surulere" },
@@ -235,31 +331,39 @@ async function main() {
         },
       });
 
-      // Add 2 staff
       await Promise.all([
         prisma.centerStaff.upsert({
-          where: { centerId_email: { centerId: center.id, email: `staff${i + 1}a@zerocancer.africa` } },
+          where: {
+            centerId_email: {
+              centerId: center.id,
+              email: `staff${i + 1}a@zerocancer.africa`,
+            },
+          },
           update: {},
           create: {
-        email: `staff${i + 1}a@zerocancer.africa`,
-        passwordHash: "staffpass",
-        role: "admin",
-        centerId: center.id,
+            email: `staff${i + 1}a@zerocancer.africa`,
+            passwordHash: "staffpass",
+            role: "admin",
+            centerId: center.id,
           },
         }),
         prisma.centerStaff.upsert({
-          where: { centerId_email: { centerId: center.id, email: `staff${i + 1}b@zerocancer.africa` } },
+          where: {
+            centerId_email: {
+              centerId: center.id,
+              email: `staff${i + 1}b@zerocancer.africa`,
+            },
+          },
           update: {},
           create: {
-        email: `staff${i + 1}b@zerocancer.africa`,
-        passwordHash: "staffpass",
-        role: "nurse",
-        centerId: center.id,
+            email: `staff${i + 1}b@zerocancer.africa`,
+            passwordHash: "staffpass",
+            role: "nurse",
+            centerId: center.id,
           },
         }),
       ]);
 
-      // Attach 2 screening types
       const types = faker.helpers.arrayElements(screeningTypes, 2);
       await prisma.serviceCenter.update({
         where: { id: center.id },
@@ -272,13 +376,13 @@ async function main() {
     })
   );
 
-  console.log("✅ Seeding complete!");
-  console.log("\n🧪 Test Accounts:");
-  console.log("📤 Donors:");
+  console.log("\u2705 Seeding complete!");
+  console.log("\n\u{1F9EA} Test Accounts:");
+  console.log("\u{1F4E4} Donors:");
   testDonors.forEach((u, i) =>
     console.log(`  ${u.email} / ${TEST_PASSWORDS[i]}`)
   );
-  console.log("📥 Patients:");
+  console.log("\u{1F4E5} Patients:");
   testPatients.forEach((u, i) =>
     console.log(`  ${u.email} / ${TEST_PASSWORDS[i]}`)
   );
