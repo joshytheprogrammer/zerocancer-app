@@ -57,54 +57,38 @@ function DonorLayout() {
                 <Home className="h-4 w-4" />
                 Dashboard
               </Link>
-              {/* <Link
-                to="/center/appointments"
+              <Link
+                to="/donor/campaigns"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
               >
                 <Briefcase className="h-4 w-4" />
-                Appointments
+                Campaigns
               </Link>
               <Link
-                to="/center/verify-code"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <ClipboardCheck className="h-4 w-4" />
-                Verify Code
-              </Link>
-              <Link
-                to="/center/upload-results"
+                to="/donor/campaigns/create"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
               >
                 <Upload className="h-4 w-4" />
-                Upload Results
+                Create Campaign
               </Link>
               <Link
-                to="/center/results-history"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <FileText className="h-4 w-4" />
-                Results History
-              </Link>
-              <Link
-                to="/center/receipt-history"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <FileText className="h-4 w-4" />
-                Payouts
-              </Link>
-              <Link
-                to="/center/staff"
+                to="/donor"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
               >
                 <Users className="h-4 w-4" />
-                Staff
-              </Link> */}
+                Donate Anonymous
+              </Link>
+              <Link
+                to="/donor"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                activeProps={{ className: 'bg-muted text-primary' }}
+              >
+                <FileText className="h-4 w-4" />
+                Receipts
+              </Link>
               {/* Add code below */}
               <div className="border-t p-2 lg:p-4">
                 <button

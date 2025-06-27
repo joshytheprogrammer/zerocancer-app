@@ -25,6 +25,7 @@ import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as PatientResultsRouteImport } from './routes/patient/results'
 import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
+import { Route as DonorCampaignsRouteImport } from './routes/donor/campaigns'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as CenterVerifyCodeRouteImport } from './routes/center/verify-code'
 import { Route as CenterUploadResultsRouteImport } from './routes/center/upload-results'
@@ -48,6 +49,7 @@ import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-pas
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
 import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
+import { Route as DonorCampaignsCreateRouteImport } from './routes/donor/campaigns/create'
 import { Route as authStaffCreatePasswordRouteImport } from './routes/(auth)/staff/create-password'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
@@ -130,6 +132,11 @@ const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
   getParentRoute: () => PatientRoute,
+} as any)
+const DonorCampaignsRoute = DonorCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => DonorRoute,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
@@ -246,6 +253,11 @@ const PatientBookPayRoute = PatientBookPayRouteImport.update({
   path: '/book/pay',
   getParentRoute: () => PatientRoute,
 } as any)
+const DonorCampaignsCreateRoute = DonorCampaignsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => DonorCampaignsRoute,
+} as any)
 const authStaffCreatePasswordRoute = authStaffCreatePasswordRouteImport.update({
   id: '/staff/create-password',
   path: '/staff/create-password',
@@ -304,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/donor/campaigns': typeof DonorCampaignsRouteWithChildren
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
@@ -313,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/patient/': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
   '/staff/create-password': typeof authStaffCreatePasswordRoute
+  '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -344,6 +358,7 @@ export interface FileRoutesByTo {
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/donor/campaigns': typeof DonorCampaignsRouteWithChildren
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
@@ -353,6 +368,7 @@ export interface FileRoutesByTo {
   '/patient': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
   '/staff/create-password': typeof authStaffCreatePasswordRoute
+  '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -388,6 +404,7 @@ export interface FileRoutesById {
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/donor/campaigns': typeof DonorCampaignsRouteWithChildren
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/results': typeof PatientResultsRoute
@@ -399,6 +416,7 @@ export interface FileRoutesById {
   '/(auth)/sign-up': typeof authSignUpRouteWithChildren
   '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
   '/(auth)/staff/create-password': typeof authStaffCreatePasswordRoute
+  '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/patient/book/pay': typeof PatientBookPayRoute
   '/patient/book/': typeof PatientBookIndexRoute
   '/(auth)/sign-up/_layout/center': typeof authSignUpLayoutCenterRoute
@@ -436,6 +454,7 @@ export interface FileRouteTypes {
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/donor/campaigns'
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
@@ -445,6 +464,7 @@ export interface FileRouteTypes {
     | '/patient/'
     | '/sign-up'
     | '/staff/create-password'
+    | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book'
     | '/sign-up/center'
@@ -476,6 +496,7 @@ export interface FileRouteTypes {
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/donor/campaigns'
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
@@ -485,6 +506,7 @@ export interface FileRouteTypes {
     | '/patient'
     | '/sign-up'
     | '/staff/create-password'
+    | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book'
     | '/sign-up/center'
@@ -519,6 +541,7 @@ export interface FileRouteTypes {
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
+    | '/donor/campaigns'
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/results'
@@ -530,6 +553,7 @@ export interface FileRouteTypes {
     | '/(auth)/sign-up'
     | '/(auth)/sign-up/_layout'
     | '/(auth)/staff/create-password'
+    | '/donor/campaigns/create'
     | '/patient/book/pay'
     | '/patient/book/'
     | '/(auth)/sign-up/_layout/center'
@@ -655,6 +679,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/patient/appointments'
       preLoaderRoute: typeof PatientAppointmentsRouteImport
       parentRoute: typeof PatientRoute
+    }
+    '/donor/campaigns': {
+      id: '/donor/campaigns'
+      path: '/campaigns'
+      fullPath: '/donor/campaigns'
+      preLoaderRoute: typeof DonorCampaignsRouteImport
+      parentRoute: typeof DonorRoute
     }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
@@ -817,6 +848,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientBookPayRouteImport
       parentRoute: typeof PatientRoute
     }
+    '/donor/campaigns/create': {
+      id: '/donor/campaigns/create'
+      path: '/create'
+      fullPath: '/donor/campaigns/create'
+      preLoaderRoute: typeof DonorCampaignsCreateRouteImport
+      parentRoute: typeof DonorCampaignsRoute
+    }
     '/(auth)/staff/create-password': {
       id: '/(auth)/staff/create-password'
       path: '/staff/create-password'
@@ -968,11 +1006,25 @@ const CenterRouteChildren: CenterRouteChildren = {
 const CenterRouteWithChildren =
   CenterRoute._addFileChildren(CenterRouteChildren)
 
+interface DonorCampaignsRouteChildren {
+  DonorCampaignsCreateRoute: typeof DonorCampaignsCreateRoute
+}
+
+const DonorCampaignsRouteChildren: DonorCampaignsRouteChildren = {
+  DonorCampaignsCreateRoute: DonorCampaignsCreateRoute,
+}
+
+const DonorCampaignsRouteWithChildren = DonorCampaignsRoute._addFileChildren(
+  DonorCampaignsRouteChildren,
+)
+
 interface DonorRouteChildren {
+  DonorCampaignsRoute: typeof DonorCampaignsRouteWithChildren
   DonorIndexRoute: typeof DonorIndexRoute
 }
 
 const DonorRouteChildren: DonorRouteChildren = {
+  DonorCampaignsRoute: DonorCampaignsRouteWithChildren,
   DonorIndexRoute: DonorIndexRoute,
 }
 
