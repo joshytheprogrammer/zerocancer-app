@@ -35,6 +35,7 @@ app.use("*", async (c, next) => {
       // "https://zerocancer-frontend.vercel.app",
       // "http://localhost:3000",
     ],
+    credentials: true,
   });
   return corsMiddlewareHandler(c, next);
 });
@@ -79,6 +80,66 @@ app.use("*", async (c, next) => {
 apiApp.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));
 apiApp.get("/healthz", (c) => c.json({ status: "ok" }));
 
+// Debug endpoint to check environment variables
+apiApp.get("/debug/env", (c) => {
+  // Use Hono's env helper to access environment variables
+  const {
+    NODE_ENV,
+    DATABASE_URL,
+    JWT_TOKEN_SECRET,
+    FRONTEND_URL,
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASS,
+    PAYSTACK_SECRET_KEY,
+    PAYSTACK_PUBLIC_KEY,
+    PORT,
+  } = env<{
+    NODE_ENV?: string;
+    DATABASE_URL?: string;
+    JWT_TOKEN_SECRET?: string;
+    FRONTEND_URL?: string;
+    SMTP_HOST?: string;
+    SMTP_PORT?: string;
+    SMTP_USER?: string;
+    SMTP_PASS?: string;
+    PAYSTACK_SECRET_KEY?: string;
+    PAYSTACK_PUBLIC_KEY?: string;
+    PORT?: string;
+  }>(c, "node");
+
+  const envVars = {
+    NODE_ENV,
+    DATABASE_URL, //: DATABASE_URL ? "***SET***" : "NOT SET",
+    JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
+    FRONTEND_URL,
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASS: SMTP_PASS ? "***SET***" : "NOT SET",
+    PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
+    PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
+    PORT,
+    // Also check process.env for comparison
+    processEnvKeys: Object.keys(process.env).filter(
+      (key) =>
+        key.includes("DATABASE") ||
+        key.includes("JWT") ||
+        key.includes("SMTP") ||
+        key.includes("PAYSTACK") ||
+        key.includes("FRONTEND")
+    ),
+  };
+
+  return c.json({
+    status: "ok",
+    environment: envVars,
+    cwd: process.cwd(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ROUTES
 apiApp.route("/auth", authApp);
 apiApp.route("/register", registerApp);
@@ -116,7 +177,7 @@ app.get("*", async (c) => {
           <h2>🔗 Available Endpoints:</h2>
           <ul>
             <li><a href="/api/v1/healthz">/api/v1/healthz</a> - Health check</li>
-            <li><a href="/api/v1/">/api/v1/</a> - API root</li>
+            <li><a href="/api/v1">/api/v1</a> - API root</li>
           </ul>
           <h2>🚀 Frontend Development:</h2>
           <p>Run <code>pnpm dev</code> in the frontend directory to start the development server.</p>

@@ -22,16 +22,4 @@ export default defineConfig({
       '@zerocancer/shared': resolve(__dirname, '../../packages/shared'),
     },
   },
-  server: {
-    proxy: {
-      '/api': {
-        target:
-          process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
-    // proxy: {
-    //   '/api/v1': 'http://localhost:8000',
-    // },
-  },
 })

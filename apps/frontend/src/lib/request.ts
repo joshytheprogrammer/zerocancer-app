@@ -177,6 +177,24 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
   // Axios request interceptor to attach access token from React Query cache
   axios.interceptors.request.use(
     (config) => {
+      // Handle API URL rewriting for both dev and production
+      if (
+        config.url?.startsWith('/api/') &&
+        !config.url.startsWith('/api/v1/') &&
+        !config.url.startsWith('http')
+      ) {
+        if (process.env.NODE_ENV !== 'production') {
+          // Development: Frontend (3000) -> Backend (8000)
+          config.url = config.url.replace(
+            '/api/',
+            'http://localhost:8000/api/v1/',
+          )
+        } else {
+          // Production: Same server, just rewrite path
+          config.url = config.url.replace('/api/', '/api/v1/')
+        }
+      }
+
       // Get access token from React Query cache
       const token = queryClient.getQueryData<string>([ACCESS_TOKEN_KEY])
       if (token) {

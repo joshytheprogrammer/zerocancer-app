@@ -13,7 +13,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build && pnpm build:copy-frontend",
+    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build",
     "build:copy-frontend": "node scripts/copy-frontend.js",
     "build:production": "pnpm build && pnpm build:copy-frontend",
     "dev": "pnpm --filter ./apps/backend prisma:generate && pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
@@ -21,7 +21,7 @@
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
     "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build",
-    "start:production": "cd apps/backend && NODE_ENV=production pnpm start",
+    "start:production": "cd apps/backend && cross-env NODE_ENV=production pnpm start",
     "test:production": "pnpm build:production && pnpm start:production"
   }
 }
