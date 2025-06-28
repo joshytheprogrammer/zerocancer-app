@@ -14,6 +14,7 @@ import logo from '@/assets/images/logo-blue.svg'
 import { isAuthMiddleware, useAuthUser } from '@/services/providers/auth.provider'
 import { useLogout } from '@/services/providers/auth.provider'
 import { useNavigate } from '@tanstack/react-router'
+import type { TAuthMeResponse } from '@zerocancer/shared/types'
 
 export const Route = createFileRoute('/center')({
   component: CenterLayout,
@@ -25,7 +26,7 @@ export const Route = createFileRoute('/center')({
     if (!isAuth) return redirect({ to: `/` })
 
     // Check if user is CENTER or CENTER_STAFF
-    const isCenterUser = (profile as string) === 'CENTER' || (profile as string) === 'CENTER_STAFF'
+    const isCenterUser = profile === 'CENTER' || profile === 'CENTER_STAFF'
     
     // If authenticated but wrong role, redirect to correct dashboard
     if (!isCenterUser) {
@@ -48,8 +49,8 @@ function CenterLayout() {
   // Get current user to determine role-based navigation
   const authUserQuery = useQuery(useAuthUser())
   const user = authUserQuery.data?.data?.user
-  const isStaff = (user?.profile as string) === 'CENTER_STAFF'
-  const isAdmin = (user?.profile as string) === 'CENTER'
+  const isStaff = user?.profile === 'CENTER_STAFF'
+  const isAdmin = user?.profile === 'CENTER'
 
   return (
     <div className="min-h-screen w-full">
