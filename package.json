@@ -1,6 +1,7 @@
 {
   "name": "hono-react-monorepo",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "workspaces": [
     "apps/*",
@@ -12,11 +13,15 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build",
+    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build && pnpm build:copy-frontend",
+    "build:copy-frontend": "node scripts/copy-frontend.js",
+    "build:production": "pnpm build && pnpm build:copy-frontend",
     "dev": "pnpm --filter ./apps/backend prisma:generate && pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
     "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
-    "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build"
+    "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build",
+    "start:production": "cd apps/backend && NODE_ENV=production pnpm start",
+    "test:production": "pnpm build:production && pnpm start:production"
   }
 }

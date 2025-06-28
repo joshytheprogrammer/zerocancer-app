@@ -57,7 +57,9 @@ awscliv2.zip
 
 # static files
 static
-dist
+dist/
+frontend-dist/
+# !apps/backend/frontend-dist/
 
 # prisma temp db file
 dev.db
