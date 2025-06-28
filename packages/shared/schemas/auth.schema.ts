@@ -5,11 +5,10 @@ export const loginSchema = z.object({
   password: z.string().min(6, { message: "Password is required." }),
 });
 
-export const actorSchema = z.enum(["patient", "donor", "center"], {
+export const actorSchema = z.enum(["patient", "donor", "center", "admin"], {
   errorMap: () => {
     return {
-      message:
-        "You are not allowed to be here.",
+      message: "You are not allowed to be here.",
     };
   },
 });

@@ -176,7 +176,13 @@ export const restoreResultFile = (fileId: string) =>
 export const completeAppointment = (appointmentId: string) =>
   `/api/appointment/center/${appointmentId}/complete`
 
-// ADMIN
+// ADMIN AUTH
+export const loginAdmin = () => '/api/admin/login'
+export const forgotPasswordAdmin = () => '/api/admin/forgot-password'
+export const resetPasswordAdmin = () => '/api/admin/reset-password'
+export const createAdmin = () => '/api/admin/create'
+
+// ADMIN MANAGEMENT
 // Center Management
 export const getAdminCenters = (params: {
   page?: number

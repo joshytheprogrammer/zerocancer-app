@@ -480,34 +480,29 @@ export type TCenterStaffLoginResponse = TDataResponse<{
   };
 }>;
 
-export type TCenterAppointment = {
-  id: string;
-  patient: { id: string; fullName: string };
-  screeningType: { id: string; name: string };
-  status: string;
-  [key: string]: any;
-};
-
-export type TGetCenterAppointmentsResponse = {
-  ok: boolean;
-  data: {
-    appointments: TCenterAppointment[];
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
+export type TAdminLoginResponse = TDataResponse<{
+  token: string;
+  user: {
+    userId: string;
+    email: string;
+    fullName: string;
+    profile: "ADMIN";
   };
-};
+}>;
 
-export type TGetCenterAppointmentByIdResponse = {
-  ok: boolean;
-  data: TCenterAppointment;
-};
+export type TAdminForgotPasswordResponse = TDataResponse<{
+  message: string;
+}>;
 
-export type TCancelCenterAppointmentResponse = {
-  ok: boolean;
-  data: { id: string };
-};
+export type TAdminResetPasswordResponse = TDataResponse<{
+  message: string;
+}>;
+
+export type TCreateAdminResponse = TDataResponse<{
+  adminId: string;
+  email: string;
+  fullName: string;
+}>;
 
 // ========================================
 // DONATION & CAMPAIGN TYPES

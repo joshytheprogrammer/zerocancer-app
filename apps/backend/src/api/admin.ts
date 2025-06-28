@@ -1,8 +1,30 @@
 import { zValidator } from "@hono/zod-validator";
+import {
+  adminForgotPasswordSchema,
+  adminLoginSchema,
+  adminResetPasswordSchema,
+  createAdminSchema,
+} from "@zerocancer/shared";
+import type {
+  TAdminForgotPasswordResponse,
+  TAdminLoginResponse,
+  TAdminResetPasswordResponse,
+  TCreateAdminResponse,
+  TErrorResponse,
+} from "@zerocancer/shared/types";
+import crypto from "crypto";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { setCookie } from "hono/cookie";
+import { sign } from "hono/jwt";
 import { getDB } from "src/lib/db";
+import { sendEmail } from "src/lib/email";
 import { THonoAppVariables } from "src/lib/types";
-import { createNotificationForUsers } from "src/lib/utils";
+import {
+  comparePassword,
+  createNotificationForUsers,
+  hashPassword,
+} from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 
@@ -10,7 +32,263 @@ export const adminApp = new Hono<{
   Variables: THonoAppVariables;
 }>();
 
-// Middleware to ensure user is authenticated as admin
+// ========================================
+// ADMIN AUTH ENDPOINTS (No auth required)
+// ========================================
+
+// POST /api/admin/login - Admin login
+adminApp.post(
+  "/login",
+  zValidator("json", adminLoginSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+    const db = getDB();
+    const { email, password } = c.req.valid("json");
+
+    try {
+      // Find admin
+      const admin = await db.admins.findUnique({
+        where: { email },
+      });
+
+      if (!admin || !admin.passwordHash) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Invalid credentials" },
+          401
+        );
+      }
+
+      // Compare password
+      const valid = await comparePassword(password, admin.passwordHash);
+      if (!valid) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Invalid credentials" },
+          401
+        );
+      }
+
+      const payload = {
+        id: admin.id,
+        email: admin.email,
+        profile: "ADMIN",
+      };
+
+      const token = await sign(
+        { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 8 }, // 8 hours
+        JWT_TOKEN_SECRET
+      );
+
+      const refreshToken = await sign(
+        { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 }, // 7 days
+        JWT_TOKEN_SECRET
+      );
+
+      // Set refresh token as httpOnly, secure cookie
+      setCookie(c, "refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+      });
+
+      return c.json<TAdminLoginResponse>({
+        ok: true,
+        data: {
+          token,
+          user: {
+            userId: admin.id,
+            email: admin.email,
+            fullName: admin.fullName,
+            profile: "ADMIN",
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Internal server error" },
+        500
+      );
+    }
+  }
+);
+
+// POST /api/admin/forgot-password - Admin forgot password
+adminApp.post(
+  "/forgot-password",
+  zValidator("json", adminForgotPasswordSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { email } = c.req.valid("json");
+
+    try {
+      // Find admin
+      const admin = await db.admins.findUnique({
+        where: { email },
+      });
+
+      if (!admin) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Admin not found" },
+          404
+        );
+      }
+
+      // Generate reset token
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      // Store token
+      await db.adminResetToken.create({
+        data: {
+          adminId: admin.id,
+          token,
+          expiresAt,
+        },
+      });
+
+      // Send reset email
+      const resetUrl = `${
+        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+      }/admin/reset-password?token=${token}`;
+
+      await sendEmail({
+        to: email,
+        subject: "Reset your Zerocancer Admin password",
+        html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
+      });
+
+      return c.json<TAdminForgotPasswordResponse>({
+        ok: true,
+        data: { message: "Reset email sent" },
+      });
+    } catch (error) {
+      console.error("Admin forgot password error:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Internal server error" },
+        500
+      );
+    }
+  }
+);
+
+// POST /api/admin/reset-password - Admin reset password using token
+adminApp.post(
+  "/reset-password",
+  zValidator("json", adminResetPasswordSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { token, password } = c.req.valid("json");
+
+    try {
+      // Find reset token
+      const reset = await db.adminResetToken.findUnique({
+        where: { token },
+      });
+
+      if (!reset || reset.expiresAt < new Date()) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Invalid or expired reset token" },
+          400
+        );
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+
+      // Update admin password
+      await db.admins.update({
+        where: { id: reset.adminId },
+        data: { passwordHash },
+      });
+
+      // Invalidate token
+      await db.adminResetToken.delete({ where: { token } });
+
+      return c.json<TAdminResetPasswordResponse>({
+        ok: true,
+        data: { message: "Password reset successful" },
+      });
+    } catch (error) {
+      console.error("Admin reset password error:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Internal server error" },
+        500
+      );
+    }
+  }
+);
+
+// POST /api/admin/create - Create new admin (super admin only)
+adminApp.post(
+  "/create",
+  authMiddleware(["admin"]), // Only existing admins can create new admins
+  zValidator("json", createAdminSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const { fullName, email, password } = c.req.valid("json");
+
+    try {
+      // Check if admin already exists
+      const existingAdmin = await db.admins.findUnique({
+        where: { email },
+      });
+
+      if (existingAdmin) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Admin with this email already exists" },
+          409
+        );
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+
+      // Create admin
+      const admin = await db.admins.create({
+        data: {
+          fullName,
+          email,
+          passwordHash,
+        },
+      });
+
+      return c.json<TCreateAdminResponse>({
+        ok: true,
+        data: {
+          adminId: admin.id,
+          email: admin.email,
+          fullName: admin.fullName,
+        },
+      });
+    } catch (error) {
+      console.error("Create admin error:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Internal server error" },
+        500
+      );
+    }
+  }
+);
+
+// Middleware to ensure user is authenticated as admin for management endpoints
 adminApp.use(authMiddleware(["admin"]));
 
 // ========================================

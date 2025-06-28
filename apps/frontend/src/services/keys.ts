@@ -83,6 +83,10 @@ export enum MutationKeys {
   restoreResultFile = 'restoreResultFile',
   completeAppointment = 'completeAppointment',
   // Admin mutations
+  adminLogin = 'adminLogin',
+  adminForgotPassword = 'adminForgotPassword',
+  adminResetPassword = 'adminResetPassword',
+  createAdmin = 'createAdmin',
   updateCenterStatus = 'updateCenterStatus',
   updateAdminCampaignStatus = 'updateAdminCampaignStatus',
   createStoreProduct = 'createStoreProduct',

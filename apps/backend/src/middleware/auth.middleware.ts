@@ -15,7 +15,9 @@ import { THonoAppVariables } from "src/lib/types";
 //     return jwtMiddleware(c, next);
 //   });
 
-export const authMiddleware = (actor?: (TActors | "center_staff")[]) =>
+export const authMiddleware = (
+  actor?: (TActors | "center_staff" | "admin")[]
+) =>
   createMiddleware<{ Variables: THonoAppVariables }>(async (c, next) => {
     const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
 

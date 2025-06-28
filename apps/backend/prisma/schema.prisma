@@ -89,6 +89,19 @@ model Admins {
   fullName     String
   email        String   @unique
   passwordHash String
+  createdAt    DateTime @default(now())
+  
+  resetTokens  AdminResetToken[]
+}
+
+model AdminResetToken {
+  id        String   @id @default(uuid())
+  adminId   String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  admin     Admins   @relation(fields: [adminId], references: [id], onDelete: Cascade)
 }
 
 model ServiceCenter {

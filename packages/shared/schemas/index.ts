@@ -1,3 +1,4 @@
+export * from "./admin.schema";
 export * from "./appointment.schema";
 export * from "./auth.schema";
 export * from "./center.schema";

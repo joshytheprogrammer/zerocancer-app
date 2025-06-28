@@ -1,5 +1,17 @@
 import request from '@/lib/request'
 import * as endpoints from '@/services/endpoints'
+import {
+  adminForgotPasswordSchema,
+  adminLoginSchema,
+  adminResetPasswordSchema,
+  createAdminSchema,
+} from '@zerocancer/shared/schemas/admin.schema'
+import type {
+  TAdminForgotPasswordResponse,
+  TAdminLoginResponse,
+  TAdminResetPasswordResponse,
+  TCreateAdminResponse,
+} from '@zerocancer/shared/types'
 import { z } from 'zod'
 
 // ========================================
@@ -45,7 +57,9 @@ const updateCampaignStatusSchema = z.object({
 const getAppointmentsSchema = z.object({
   page: z.number().min(1).default(1).optional(),
   pageSize: z.number().min(1).max(100).default(20).optional(),
-  status: z.enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
+  status: z
+    .enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'])
+    .optional(),
   centerId: z.string().uuid().optional(),
   isDonation: z.boolean().optional(),
   dateFrom: z.string().optional(),
@@ -103,12 +117,14 @@ type TDataResponse<T> = {
   data: T
 }
 
-type TPaginatedResponse<T> = TDataResponse<{
-  page: number
-  pageSize: number
-  total: number
-  totalPages: number
-} & T>
+type TPaginatedResponse<T> = TDataResponse<
+  {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  } & T
+>
 
 // Center responses
 type TAdminCenter = {
@@ -339,12 +355,14 @@ type TWaitlistAggregation = {
   status?: string
 }
 
-type TGetAdminWaitlistResponse = TPaginatedResponse<{
-  waitlistEntries: TAdminWaitlistEntry[]
-}> | TDataResponse<{
-  aggregation: TWaitlistAggregation[]
-  groupBy: string
-}>
+type TGetAdminWaitlistResponse =
+  | TPaginatedResponse<{
+      waitlistEntries: TAdminWaitlistEntry[]
+    }>
+  | TDataResponse<{
+      aggregation: TWaitlistAggregation[]
+      groupBy: string
+    }>
 
 // Store responses
 type TAdminStoreProduct = {
@@ -403,7 +421,10 @@ export const updateAdminCampaignStatus = async (
   campaignId: string,
   data: z.infer<typeof updateCampaignStatusSchema>,
 ): Promise<TUpdateCampaignStatusResponse> => {
-  const res = await request.patch(endpoints.updateAdminCampaignStatus(campaignId), data)
+  const res = await request.patch(
+    endpoints.updateAdminCampaignStatus(campaignId),
+    data,
+  )
   return res as TUpdateCampaignStatusResponse
 }
 
@@ -452,4 +473,46 @@ export const updateStoreProduct = async (
 ): Promise<TUpdateStoreProductResponse> => {
   const res = await request.patch(endpoints.updateStoreProduct(productId), data)
   return res as TUpdateStoreProductResponse
+}
+
+// ========================================
+// ADMIN AUTHENTICATION
+// ========================================
+
+// Admin login
+export const loginAdmin = async (
+  params: z.infer<typeof adminLoginSchema>,
+): Promise<TAdminLoginResponse> => {
+  const res = await request.post(`/api/admin/login`, params)
+  return res as TAdminLoginResponse
+}
+
+// Admin forgot password
+export const forgotPassword = async (
+  params: z.infer<typeof adminForgotPasswordSchema>,
+): Promise<TAdminForgotPasswordResponse> => {
+  const res = await request.post(`/api/admin/forgot-password`, params)
+  return res as TAdminForgotPasswordResponse
+}
+
+// Admin reset password
+export const resetPassword = async (
+  params: z.infer<typeof adminResetPasswordSchema>,
+): Promise<TAdminResetPasswordResponse> => {
+  const res = await request.post(`/api/admin/reset-password`, params)
+  return res as TAdminResetPasswordResponse
+}
+
+// Create new admin
+export const createAdmin = async (
+  params: z.infer<typeof createAdminSchema>,
+): Promise<TCreateAdminResponse> => {
+  const res = await request.post(`/api/admin/create`, params)
+  return res as TCreateAdminResponse
+}
+
+// Admin logout (client-side only)
+export const logoutAdmin = () => {
+  localStorage.removeItem('authToken')
+  // Clear any other admin-specific data if needed
 }
