@@ -266,6 +266,24 @@ export const getPatientReceipts = (params: { page?: number; size?: number }) =>
   })}`
 export const getPatientReceipt = (id: string) => `/api/patient/receipts/${id}`
 
+// V1 Receipt System Endpoints
+export const getReceiptV1 = (transactionId: string) =>
+  `/api/v1/receipts/${transactionId}`
+export const downloadReceiptPDF = (transactionId: string) =>
+  `/api/v1/receipts/${transactionId}/pdf`
+export const createReceiptV1 = (transactionId: string) =>
+  `/api/v1/receipts/${transactionId}`
+export const resendReceipt = (transactionId: string) =>
+  `/api/v1/receipts/${transactionId}/resend`
+export const listReceiptsV1 = (params: {
+  page?: number
+  limit?: number
+  type?: string
+  userId?: string
+  startDate?: string
+  endDate?: string
+}) => `/api/v1/receipts${buildQuery(params)}`
+
 // Screening types
 export const getScreeningTypes = (params: {
   page?: number

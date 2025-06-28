@@ -9,6 +9,7 @@ import { authApp } from "./api/auth";
 import { centerApp } from "./api/center";
 import { donationApp } from "./api/donation";
 import { notificationApp } from "./api/notification";
+import receiptApp from "./api/receipts";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistApp } from "./api/waitlist";
@@ -150,6 +151,7 @@ apiApp.route("/waitlist", waitlistApp);
 apiApp.route("/donor", donationApp);
 apiApp.route("/admin", adminApp);
 apiApp.route("/notifications", notificationApp);
+apiApp.route("/receipts", receiptApp);
 
 // Mount API app BEFORE static file serving
 app.route("/api/v1", apiApp);

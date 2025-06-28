@@ -423,6 +423,54 @@ export type TGetPatientReceiptsResponse = TDataResponse<{
 }>;
 export type TGetPatientReceiptResponse = TDataResponse<TPatientReceipt>;
 
+// V1 Receipt System Types
+export type TReceipt = {
+  id: string;
+  transactionId: string;
+  receiptNumber: string;
+  receiptData: {
+    receiptNumber: string;
+    transactionId: string;
+    type: "DONATION" | "APPOINTMENT" | "PAYOUT" | "REFUND";
+    amount: number;
+    date: string;
+    paymentReference: string | null;
+    paymentChannel: string | null;
+    recipientName: string;
+    recipientEmail: string;
+    recipientPhone: string | null;
+    campaignName: string | null;
+    campaignDescription: string | null;
+    taxDeductible: boolean;
+    centerName: string | null;
+    centerAddress: string | null;
+    appointmentDate: string | null;
+    serviceType: string | null;
+    organizationName: string;
+    organizationAddress: string;
+    organizationTaxId: string;
+    organizationEmail: string;
+    organizationPhone: string;
+  };
+  pdfPath: string | null;
+  emailSentAt: string | null;
+  emailRecipient: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TReceiptListData = {
+  receipts: TReceipt[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type TReceiptResponse = TDataResponse<TReceipt>;
+export type TReceiptListResponse = TDataResponse<TReceiptListData>;
+export type TCreateReceiptResponse = TDataResponse<TReceipt>;
+export type TResendReceiptResponse = TDataResponse<{ success: boolean }>;
+
 export type TScreeningType = {
   id: string;
   name: string;

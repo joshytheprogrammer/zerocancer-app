@@ -41,6 +41,10 @@ export enum QueryKeys {
   screeningType = 'screeningType',
   screeningTypeByName = 'screeningTypeByName',
   centerAppointmentById = 'centerAppointmentById',
+
+  // V1 Receipt System
+  receiptsV1 = 'receiptsV1',
+  receiptV1 = 'receiptV1',
 }
 
 export enum MutationKeys {
@@ -91,6 +95,10 @@ export enum MutationKeys {
   updateAdminCampaignStatus = 'updateAdminCampaignStatus',
   createStoreProduct = 'createStoreProduct',
   updateStoreProduct = 'updateStoreProduct',
+
+  // V1 Receipt System
+  createReceiptV1 = 'createReceiptV1',
+  resendReceiptV1 = 'resendReceiptV1',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

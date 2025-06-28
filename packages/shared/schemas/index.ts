@@ -5,6 +5,7 @@ export * from "./center.schema";
 export * from "./centerStaff.schema";
 export * from "./donation.schema";
 export * from "./notification.schema";
+export * from "./receipt.schema";
 export * from "./register.schema";
 export * from "./result.schema";
 export * from "./screeningType.schema";
