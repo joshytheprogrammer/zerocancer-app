@@ -609,42 +609,137 @@ export type TDonationTransaction = {
   };
 };
 
-export type TCampaignAnalytics = {
-  overview: {
-    totalFunded: number;
-    totalUsed: number;
-    totalReserved: number;
-    availableAmount: number;
-    patientsHelped: number;
-    averagePerPatient: number;
-    completionPercentage: number;
-  };
-  timeline: Array<{
-    date: string;
-    allocations: number;
-    amountUsed: number;
-    patientsHelped: number;
-  }>;
-  demographics: {
-    ageGroups: Record<string, number>;
-    genderDistribution: Record<string, number>;
-    stateDistribution: Record<string, number>;
-    lgaDistribution: Record<string, number>;
-  };
-  screeningTypes: Array<{
-    id: string;
-    name: string;
-    count: number;
-    totalAmount: number;
-    percentage: number;
-  }>;
-  centers: Array<{
-    id: string;
-    name: string;
-    patientCount: number;
-    totalAmount: number;
+// export type TCampaignAnalytics = {
+//   overview: {
+//     totalFunded: number;
+//     totalUsed: number;
+//     totalReserved: number;
+//     availableAmount: number;
+//     patientsHelped: number;
+//     averagePerPatient: number;
+//     completionPercentage: number;
+//   };
+//   timeline: Array<{
+//     date: string;
+//     allocations: number;
+//     amountUsed: number;
+//     patientsHelped: number;
+//   }>;
+//   demographics: {
+//     ageGroups: Record<string, number>;
+//     genderDistribution: Record<string, number>;
+//     stateDistribution: Record<string, number>;
+//     lgaDistribution: Record<string, number>;
+//   };
+//   screeningTypes: Array<{
+//     id: string;
+//     name: string;
+//     count: number;
+//     totalAmount: number;
+//     percentage: number;
+//   }>;
+//   centers: Array<{
+//     id: string;
+//     name: string;
+//     patientCount: number;
+//     totalAmount: number;
+//   }>;
+// };
+
+// Analytics Types
+export type TDashboardMetrics = {
+  // Financial Metrics
+  totalRevenue: number;
+  monthlyRevenue: number;
+  averageTransactionValue: number;
+
+  // User Metrics
+  totalUsers: number;
+  newUsersThisMonth: number;
+  activePatients: number;
+  activeDonors: number;
+
+  // Appointment Metrics
+  totalAppointments: number;
+  completedAppointments: number;
+  pendingAppointments: number;
+  appointmentCompletionRate: number;
+
+  // Campaign Metrics
+  activeCampaigns: number;
+  totalDonationAmount: number;
+  averageCampaignFunding: number;
+
+  // Center Metrics
+  activeCenters: number;
+  centerUtilizationRate: number;
+
+  // Waitlist Metrics
+  totalWaitlistUsers: number;
+  averageWaitTime: number;
+  matchingSuccessRate: number;
+};
+
+export type TTimeBasedReport = {
+  period: "daily" | "weekly" | "monthly" | "yearly";
+  dateRange: { from: string; to: string };
+  revenueByDay: Array<{ date: string; amount: number }>;
+  appointmentsByDay: Array<{ date: string; count: number }>;
+  registrationsByDay: Array<{ date: string; count: number }>;
+  userGrowthRate: number;
+  revenueGrowthRate: number;
+  appointmentGrowthRate: number;
+};
+
+export type TGeographicReport = {
+  usersByState: Array<{ state: string; count: number }>;
+  centersByState: Array<{ state: string; count: number }>;
+  appointmentsByState: Array<{ state: string; count: number }>;
+  revenueByState: Array<{ state: string; amount: number }>;
+  waitlistHotZones: Array<{
+    state: string;
+    waitlistCount: number;
+    averageWaitTime: number;
   }>;
 };
+
+export type TCenterPerformanceReport = {
+  centerId: string;
+  centerName: string;
+  totalAppointments: number;
+  completedAppointments: number;
+  completionRate: number;
+  averageRating: number;
+  totalRevenue: number;
+  averageAppointmentValue: number;
+  payoutsPending: number;
+  averageProcessingTime: number;
+  resultUploadRate: number;
+};
+
+export type TCampaignAnalytics = {
+  campaignId: string;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  fundingPercentage: number;
+  donorCount: number;
+  averageDonation: number;
+  patientsMatched: number;
+  appointmentsCompleted: number;
+  utilizationRate: number;
+  daysSinceCreated: number;
+  estimatedDepletion: number | null;
+};
+
+// Analytics Response Types
+export type TDashboardMetricsResponse = TDataResponse<TDashboardMetrics>;
+export type TTimeBasedReportResponse = TDataResponse<TTimeBasedReport>;
+export type TGeographicReportResponse = TDataResponse<TGeographicReport>;
+export type TCenterPerformanceResponse = TDataResponse<
+  TCenterPerformanceReport[]
+>;
+export type TCampaignAnalyticsResponse = TDataResponse<TCampaignAnalytics[]>;
 
 // ========================================
 // DONATION API RESPONSE TYPES

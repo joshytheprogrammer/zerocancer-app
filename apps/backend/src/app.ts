@@ -4,6 +4,7 @@ import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { adminApp } from "./api/admin";
+import analyticsApp from "./api/analytics";
 import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
 import { centerApp } from "./api/center";
@@ -150,6 +151,7 @@ apiApp.route("/screening-types", screeningTypesApp);
 apiApp.route("/waitlist", waitlistApp);
 apiApp.route("/donor", donationApp);
 apiApp.route("/admin", adminApp);
+apiApp.route("/analytics", analyticsApp);
 apiApp.route("/notifications", notificationApp);
 apiApp.route("/receipts", receiptApp);
 

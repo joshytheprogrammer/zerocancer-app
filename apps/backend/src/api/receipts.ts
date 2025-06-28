@@ -208,7 +208,7 @@ app.get("/", zValidator("query", ReceiptListQuerySchema), async (c) => {
     return c.json({
       success: true,
       data: {
-        receipts: result.receipts.map((receipt: any) => ({
+        receipts: result.receipts.map((receipt) => ({
           id: receipt.id,
           transactionId: receipt.transactionId,
           receiptNumber: receipt.receiptNumber,

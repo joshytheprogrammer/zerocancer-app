@@ -45,6 +45,13 @@ export enum QueryKeys {
   // V1 Receipt System
   receiptsV1 = 'receiptsV1',
   receiptV1 = 'receiptV1',
+
+  // Analytics
+  dashboardMetrics = 'dashboardMetrics',
+  timeBasedReport = 'timeBasedReport',
+  geographicReport = 'geographicReport',
+  centerPerformance = 'centerPerformance',
+  campaignAnalytics = 'campaignAnalytics',
 }
 
 export enum MutationKeys {

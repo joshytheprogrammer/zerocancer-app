@@ -320,3 +320,15 @@ export const inviteStaff = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>
   '/api/center/staff/create-new-password'
 export const centerStaffLogin = () => '/api/center/staff/login'
+
+// Analytics endpoints
+export const getDashboardMetrics = () => '/api/v1/analytics/dashboard'
+export const getTimeBasedReport = (params: {
+  period?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  from?: string
+  to?: string
+}) => `/api/v1/analytics/reports/time${buildQuery(params)}`
+export const getGeographicReport = () => '/api/v1/analytics/geographic'
+export const getCenterPerformance = (params?: { centerId?: string }) =>
+  `/api/v1/analytics/centers${params ? buildQuery(params) : ''}`
+export const getCampaignAnalytics = () => '/api/v1/analytics/campaigns'
