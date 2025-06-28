@@ -16,8 +16,8 @@ import { waitlistApp } from "./api/waitlist";
 // Create the main app (no basePath for root)
 const app = new Hono();
 
-// Create API app with basePath
-const apiApp = new Hono().basePath("/api/v1");
+// Create API app (no basePath since we'll mount it at /api/v1)
+const apiApp = new Hono();
 
 app.use(logger());
 
