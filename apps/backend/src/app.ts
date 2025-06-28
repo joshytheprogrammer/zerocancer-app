@@ -111,7 +111,7 @@ apiApp.get("/debug/env", (c) => {
 
   const envVars = {
     NODE_ENV,
-    DATABASE_URL, //: DATABASE_URL ? "***SET***" : "NOT SET",
+    DATABASE_URL: DATABASE_URL ? "***SET***" : "NOT SET",
     JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
     FRONTEND_URL,
     SMTP_HOST,
