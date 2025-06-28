@@ -1,11 +1,8 @@
+import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { serveStatic } from "hono/serve-static";
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { adminApp } from "./api/admin";
 import { appointmentApp } from "./api/appointments";
 import { authApp } from "./api/auth";
@@ -46,7 +43,7 @@ app.use("*", async (c, next) => {
 // PRODUCTION: SERVE STATIC FILES
 // ========================================
 
-// In production, serve the built frontend files
+// In production, serve the built frontend files using Hono's serveStatic
 app.use("*", async (c, next) => {
   const { NODE_ENV } = env<{ NODE_ENV?: string }>(c, "node");
 
@@ -58,59 +55,25 @@ app.use("*", async (c, next) => {
       return;
     }
 
-    const path = c.req.path;
-    const frontendDistPath = join(process.cwd(), "frontend-dist");
-
-    // Handle static assets (files with extensions)
-    if (path.includes(".")) {
-      const filePath = join(frontendDistPath, path);
-      if (existsSync(filePath)) {
-        try {
-          const content = await readFile(filePath);
-          const ext = path.split(".").pop()?.toLowerCase();
-
-          // Set appropriate content type
-          const contentTypes: Record<string, string> = {
-            html: "text/html",
-            css: "text/css",
-            js: "application/javascript",
-            json: "application/json",
-            png: "image/png",
-            jpg: "image/jpeg",
-            jpeg: "image/jpeg",
-            gif: "image/gif",
-            svg: "image/svg+xml",
-            ico: "image/x-icon",
-            webp: "image/webp",
-          };
-
-          const contentType =
-            contentTypes[ext || ""] || "application/octet-stream";
-          return c.body(content, 200, { "Content-Type": contentType });
-        } catch (error) {
-          // File not found, continue to next middleware
+    // Use Hono's Node.js serveStatic with simple configuration
+    return serveStatic({
+      root: "./frontend-dist",
+      rewriteRequestPath: (path: string) => {
+        // Handle React Router - serve index.html for non-asset paths
+        if (!path.includes(".") && path !== "/") {
+          return "/index.html";
         }
-      }
-    } else {
-      // Handle React Router - serve index.html for non-asset paths
-      const indexPath = join(frontendDistPath, "index.html");
-      if (existsSync(indexPath)) {
-        try {
-          const content = await readFile(indexPath, "utf-8");
-          return c.html(content);
-        } catch (error) {
-          // File not found, continue to next middleware
-        }
-      }
-    }
+        return path;
+      },
+    })(c, next);
   }
 
-  // Continue to next middleware
+  // Continue to next middleware in development
   await next();
 });
 
 // ========================================
-// API ROUTES
+// API ROUTES (BEFORE STATIC FILES)
 // ========================================
 
 apiApp.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));
@@ -127,8 +90,12 @@ apiApp.route("/donor", donationApp);
 apiApp.route("/admin", adminApp);
 apiApp.route("/notifications", notificationApp);
 
-// Mount API app
+// Mount API app BEFORE static file serving
 app.route("/api/v1", apiApp);
+
+// ========================================
+// PRODUCTION: SERVE STATIC FILES (AFTER API)
+// ========================================
 
 // ========================================
 // FALLBACK HANDLERS
