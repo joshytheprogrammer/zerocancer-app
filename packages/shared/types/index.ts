@@ -61,7 +61,7 @@ export type TLoginResponse = TDataResponse<{
     userId: string;
     fullName: string;
     email: string;
-    profile: "PATIENT" | "DONOR" | "CENTER" | "CENTER_STAFF";
+    profile: "PATIENT" | "DONOR" | "CENTER" | "CENTER_STAFF" | "ADMIN";
   };
 }>;
 
@@ -70,7 +70,7 @@ export type TAuthMeResponse = TDataResponse<{
     id: string;
     fullName: string;
     email: string;
-    profile: "PATIENT" | "DONOR" | "CENTER" | "CENTER_STAFF";
+    profile: "PATIENT" | "DONOR" | "CENTER" | "CENTER_STAFF" | "ADMIN";
   };
 }>;
 

@@ -176,6 +176,36 @@ authApp.get(
 
     console.log("JWT Payload:", jwtPayload);
 
+    if (jwtPayload.profile === "ADMIN") {
+      // Fetch admin data from database
+      const admin = await db.admins.findUnique({
+        where: { id: jwtPayload.id! },
+        select: { id: true, fullName: true, email: true },
+      });
+
+      if (!admin) {
+        return c.json<TErrorResponse>(
+          {
+            ok: false,
+            error: "Admin not found",
+          },
+          404
+        );
+      }
+
+      return c.json<TAuthMeResponse>({
+        ok: true,
+        data: {
+          user: {
+            id: admin.id!,
+            fullName: admin.fullName!,
+            email: admin.email!,
+            profile: jwtPayload.profile,
+          },
+        },
+      });
+    }
+
     if (
       jwtPayload.profile === "CENTER" ||
       jwtPayload.profile === "CENTER_STAFF"
