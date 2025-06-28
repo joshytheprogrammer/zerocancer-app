@@ -1,6 +1,7 @@
 import {
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
 import * as adminService from '../admin.service'
@@ -133,6 +134,79 @@ export const adminStoreProducts = (params: {
     queryFn: () => adminService.getAdminStoreProducts(params),
   })
 
+// --- Admin Management Query Providers ---
+
+// Admin query hooks
+export const useAdminCenters = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  state?: string
+  search?: string
+}) => {
+  return useQuery(adminCenters(params))
+}
+
+export const useAdminUsers = (params: {
+  page?: number
+  pageSize?: number
+  profileType?: 'PATIENT' | 'DONOR'
+  search?: string
+}) => {
+  return useQuery(adminUsers(params))
+}
+
+export const useAdminCampaigns = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED'
+  search?: string
+}) => {
+  return useQuery(adminCampaigns(params))
+}
+
+export const useAdminAppointments = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  centerId?: string
+  isDonation?: boolean
+  dateFrom?: string
+  dateTo?: string
+}) => {
+  return useQuery(adminAppointments(params))
+}
+
+export const useAdminTransactions = (params: {
+  page?: number
+  pageSize?: number
+  type?: 'DONATION' | 'APPOINTMENT' | 'PAYOUT' | 'REFUND'
+  status?: 'PENDING' | 'COMPLETED' | 'FAILED'
+  dateFrom?: string
+  dateTo?: string
+}) => {
+  return useQuery(adminTransactions(params))
+}
+
+export const useAdminWaitlist = (params: {
+  page?: number
+  pageSize?: number
+  status?: 'PENDING' | 'MATCHED' | 'CLAIMED' | 'EXPIRED'
+  screeningTypeId?: string
+  state?: string
+  groupBy?: 'state' | 'screening_type' | 'status'
+}) => {
+  return useQuery(adminWaitlist(params))
+}
+
+export const useAdminStoreProducts = (params: {
+  page?: number
+  pageSize?: number
+  search?: string
+}) => {
+  return useQuery(adminStoreProducts(params))
+}
+
 // --- Admin Management Mutations ---
 
 // Update center status mutation
@@ -183,6 +257,9 @@ export const useUpdateCampaignStatus = () => {
     },
   })
 }
+
+// Alias for backward compatibility
+export const useUpdateAdminCampaignStatus = useUpdateCampaignStatus
 
 // Create store product mutation
 export const useCreateStoreProduct = () => {

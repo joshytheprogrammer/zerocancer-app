@@ -63,7 +63,7 @@ adminApp.post(
       }
 
       // Compare password
-      const valid = await comparePassword(password, admin.passwordHash);
+      const valid = await comparePassword(password!, admin.passwordHash!);
       if (!valid) {
         return c.json<TErrorResponse>(
           { ok: false, error: "Invalid credentials" },
@@ -162,7 +162,7 @@ adminApp.post(
       }/admin/reset-password?token=${token}`;
 
       await sendEmail({
-        to: email,
+        to: email!,
         subject: "Reset your Zerocancer Admin password",
         html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
       });
@@ -207,7 +207,7 @@ adminApp.post(
       }
 
       // Hash password
-      const passwordHash = await hashPassword(password);
+      const passwordHash = await hashPassword(password!);
 
       // Update admin password
       await db.admins.update({
@@ -259,13 +259,13 @@ adminApp.post(
       }
 
       // Hash password
-      const passwordHash = await hashPassword(password);
+      const passwordHash = await hashPassword(password!);
 
       // Create admin
       const admin = await db.admins.create({
         data: {
-          fullName,
-          email,
+          fullName: fullName!,
+          email: email!,
           passwordHash,
         },
       });
