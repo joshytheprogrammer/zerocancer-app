@@ -197,15 +197,34 @@ async function main() {
   });
 
   console.log("🔐 Creating admin...");
-  await prisma.admins.upsert({
-    where: { email: "ttaiwo4910@gmail.com" },
-    update: {},
-    create: {
-      id: faker.string.uuid(),
+  const adminData = [
+    {
+      fullName: "Tobi Taiwo",
       email: "ttaiwo4910@gmail.com",
-      passwordHash: await bcrypt.hash("fake.password", 10),
+      password: "fake.password",
     },
-  });
+    {
+      fullName: "Ralph",
+      email: "janedoe@example.com",
+      password: "janes.password",
+    },
+    // Add more admins here as needed
+  ];
+
+  await Promise.all(
+    adminData.map(async (admin) =>
+      prisma.admins.upsert({
+        where: { email: admin.email },
+        update: {},
+        create: {
+          id: faker.string.uuid(),
+          fullName: admin.fullName,
+          email: admin.email,
+          passwordHash: await bcrypt.hash(admin.password, 10),
+        },
+      })
+    )
+  );
 
   console.log("💰 Seeding general donation campaign...");
   await prisma.donationCampaign.upsert({
@@ -287,22 +306,22 @@ async function main() {
     }
   }
 
-  console.log("🎯 Creating donation allocations...");
-  // comment out if giving errors
-  const waitlists = await prisma.waitlist.findMany({
-    where: { status: "PENDING" },
-  });
-  await Promise.all(
-    waitlists.slice(0, 5).map(async (w) => {
-      await prisma.donationAllocation.create({
-        data: {
-          waitlistId: w.id,
-          patientId: w.patientId,
-          campaignId: "general-donor-pool",
-        },
-      });
-    })
-  );
+  // console.log("🎯 Creating donation allocations...");
+  // // comment out if giving errors
+  // const waitlists = await prisma.waitlist.findMany({
+  //   where: { status: "PENDING" },
+  // });
+  // await Promise.all(
+  //   waitlists.slice(0, 5).map(async (w) => {
+  //     await prisma.donationAllocation.create({
+  //       data: {
+  //         waitlistId: w.id,
+  //         patientId: w.patientId,
+  //         campaignId: "general-donor-pool",
+  //       },
+  //     });
+  //   })
+  // );
 
   console.log("🏥 Creating service centers...");
   const centerLocations = [
