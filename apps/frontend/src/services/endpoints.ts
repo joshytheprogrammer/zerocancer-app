@@ -332,3 +332,26 @@ export const getGeographicReport = () => '/api/v1/analytics/geographic'
 export const getCenterPerformance = (params?: { centerId?: string }) =>
   `/api/v1/analytics/centers${params ? buildQuery(params) : ''}`
 export const getCampaignAnalytics = () => '/api/v1/analytics/campaigns'
+
+// PAYOUTS
+export const getAllCenterBalances = () => '/api/v1/payouts/center-balances'
+export const getCenterBalance = (centerId: string) =>
+  `/api/v1/payouts/center/${centerId}/balance`
+export const createManualPayout = () => '/api/v1/payouts/manual'
+export const processPayout = (payoutId: string) =>
+  `/api/v1/payouts/${payoutId}/process`
+export const retryPayout = (payoutId: string) =>
+  `/api/v1/payouts/${payoutId}/retry`
+export const getPayouts = (params?: Record<string, unknown>) =>
+  `/api/v1/payouts${buildQuery(params || {})}`
+export const getCenterPayouts = (
+  centerId: string,
+  params?: Record<string, unknown>,
+) => `/api/v1/payouts/center/${centerId}${buildQuery(params || {})}`
+export const getCenterTransactions = (
+  centerId: string,
+  params?: Record<string, unknown>,
+) =>
+  `/api/v1/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
+export const getBanks = () => '/api/v1/payouts/banks'
+export const verifyAccount = () => '/api/v1/payouts/verify-account'

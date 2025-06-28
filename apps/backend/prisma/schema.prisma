@@ -117,13 +117,16 @@ model ServiceCenter {
   // approvedStaff CenterStaff[]
   bankAccount   String?
   bankName      String?
+  bankCode      String?
+  accountName   String?
   status        ServiceCenterStatus @default(INACTIVE)
 
   staff         CenterStaff[]
   appointments  Appointment[]
   services      ScreeningType[]
-
   invitations   CenterStaffInvite[]
+  paystackRecipient PaystackRecipient?
+  payouts       Payout[]
 }
 
 enum ServiceCenterStatus {
@@ -310,12 +313,127 @@ model Transaction {
   donation            DonationCampaign? @relation("DonationTransactions", fields: [relatedDonationId], references: [id], onDelete: SetNull)
   appointments Appointment[] @relation("TransactionAppointments")
   receipt             Receipt?
+  payoutItem          PayoutItem?
 }
 
 enum TransactionStatus {
   PENDING
   COMPLETED
   FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+  RETRY_PENDING
+}
+
+enum PayoutType {
+  MANUAL
+  AUTOMATED
+  RETRY
+}
+
+model PaystackRecipient {
+  id                    String    @id @default(uuid())
+  centerId              String    @unique
+  center                ServiceCenter @relation(fields: [centerId], references: [id])
+  
+  // Paystack details
+  recipientCode         String    @unique
+  reference             String    @unique
+  
+  // Bank details snapshot
+  bankName              String
+  bankCode              String
+  accountNumber         String
+  accountName           String
+  
+  // Status
+  isActive              Boolean   @default(true)
+  
+  // Timestamps
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relations
+  payouts               Payout[]
+  
+  @@map("paystack_recipients")
+}
+
+model Payout {
+  id                    String        @id @default(uuid())
+  batchReference        String        // For grouping monthly payouts
+  payoutNumber          String        @unique
+  
+  // Center details
+  centerId              String
+  center                ServiceCenter @relation(fields: [centerId], references: [id])
+  recipientId           String?
+  recipient             PaystackRecipient? @relation(fields: [recipientId], references: [id])
+  
+  // Financial details
+  amount                Float
+  currency              String        @default("NGN")
+  paystackFee           Float         @default(10.00) // ₦10 flat fee
+  netAmount             Float         // amount - paystackFee
+  
+  // Paystack details
+  transferReference     String?       @unique
+  paystackTransferId    String?       @unique
+  
+  // Status tracking
+  status                PayoutStatus  @default(PENDING)
+  type                  PayoutType    @default(MANUAL)
+  
+  // Processing details
+  initiatedBy           String?       // Admin ID for manual payouts
+  processedAt           DateTime?
+  completedAt           DateTime?
+  
+  // Failure handling
+  failureReason         String?
+  retryCount            Int           @default(0)
+  maxRetries            Int           @default(3)
+  
+  // Period covered
+  periodStart           DateTime
+  periodEnd             DateTime
+  
+  // Metadata
+  reason                String
+  internalNotes         String?
+  
+  // Timestamps
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  
+  // Relations
+  payoutItems           PayoutItem[]
+  
+  @@map("payouts")
+}
+
+model PayoutItem {
+  id                    String        @id @default(uuid())
+  payoutId              String
+  payout                Payout        @relation(fields: [payoutId], references: [id])
+  
+  // Transaction reference
+  transactionId         String        @unique
+  transaction           Transaction   @relation(fields: [transactionId], references: [id])
+  
+  // Item details
+  amount                Float
+  description           String
+  serviceDate           DateTime
+  appointmentId         String?
+  
+  @@map("payout_items")
 }
 
 model PasswordResetToken {
