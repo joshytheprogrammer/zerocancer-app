@@ -12,12 +12,12 @@ import {
 } from "@zerocancer/shared";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { z } from "zod";
+import { CryptoUtils } from "../lib/crypto.utils";
 import { getDB } from "../lib/db";
 import { THonoAppVariables } from "../lib/types";
 import { waitlistMatcherAlg } from "../lib/utils";
-import { CryptoUtils } from "../lib/crypto.utils";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { z } from "zod";
 
 export const waitlistApp = new Hono<{
   Variables: THonoAppVariables;
@@ -498,10 +498,9 @@ waitlistApp.post(
   async (c) => {
     try {
       const { signature, timestamp, force } = c.req.valid("json");
-      const { WAITLIST_WEBHOOK_SECRET } = env<{ WAITLIST_WEBHOOK_SECRET?: string }>(
-        c,
-        "node"
-      );
+      const { WAITLIST_WEBHOOK_SECRET } = env<{
+        WAITLIST_WEBHOOK_SECRET?: string;
+      }>(c, "node");
 
       // Verify webhook signature if secret is configured
       if (WAITLIST_WEBHOOK_SECRET && signature && timestamp) {
@@ -560,13 +559,16 @@ waitlistApp.post(
       });
     } catch (error) {
       console.error("Waitlist matching error:", error);
-      return c.json({
-        ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to execute waitlist matching",
-      }, 500);
+      return c.json(
+        {
+          ok: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to execute waitlist matching",
+        },
+        500
+      );
     }
   }
 );
@@ -592,31 +594,16 @@ waitlistApp.get("/matching-status", async (c) => {
   }
 });
 
-// POST /api/waitlist/manual-trigger - Manual trigger for admins (with basic auth)
-waitlistApp.post("/manual-trigger", async (c) => {
+// POST /api/waitlist/manual-trigger - Manual trigger for admins (with auth middleware)
+waitlistApp.post("/manual-trigger", authMiddleware(["admin"]), async (c) => {
   try {
-    // Get Authorization header
-    const authHeader = c.req.header("Authorization");
-    const { ADMIN_API_KEY } = env<{ ADMIN_API_KEY?: string }>(c, "node");
+    const payload = c.get("jwtPayload");
+    console.log(
+      `Manual waitlist matching triggered by admin: ${payload?.email} (${payload?.id})`
+    );
 
-    // Simple API key check for manual triggers
-    if (ADMIN_API_KEY) {
-      if (!authHeader || authHeader !== `Bearer ${ADMIN_API_KEY}`) {
-        return c.json(
-          {
-            ok: false,
-            error: "Unauthorized",
-          },
-          401
-        );
-      }
-    }
-
-    console.log("Manual waitlist matching triggered by admin...");
     const startTime = Date.now();
-
     await waitlistMatcherAlg();
-
     const endTime = Date.now();
     const duration = endTime - startTime;
 
@@ -628,18 +615,71 @@ waitlistApp.post("/manual-trigger", async (c) => {
       data: {
         executionTime: duration,
         timestamp: new Date().toISOString(),
-        triggeredBy: "admin",
+        triggeredBy: {
+          adminId: payload?.id || "unknown",
+          adminEmail: payload?.email || "unknown",
+        },
       },
     });
   } catch (error) {
     console.error("Manual waitlist matching error:", error);
+    return c.json(
+      {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to execute manual waitlist matching",
+      },
+      500
+    );
+  }
+});
+
+// GET /api/waitlist/matching-stats - Get matching statistics for admin dashboard
+waitlistApp.get("/matching-stats", authMiddleware(["admin"]), async (c) => {
+  try {
+    const [pendingCount, matchedCount, totalCampaigns, activeCampaigns] =
+      await Promise.all([
+        db.waitlist.count({ where: { status: "PENDING" } }),
+        db.waitlist.count({ where: { status: "MATCHED" } }),
+        db.donationCampaign.count(),
+        db.donationCampaign.count({ where: { status: "ACTIVE" } }),
+      ]);
+
+    // Get recent matching activity (last 24 hours)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const recentMatches = await db.waitlist.count({
+      where: {
+        status: "MATCHED",
+        claimedAt: { gte: yesterday },
+      },
+    });
+
     return c.json({
-      ok: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to execute manual waitlist matching",
-    }, 500);
+      ok: true,
+      data: {
+        pending: pendingCount,
+        matched: matchedCount,
+        recentMatches,
+        campaigns: {
+          total: totalCampaigns,
+          active: activeCampaigns,
+        },
+        lastUpdated: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Get matching stats error:", error);
+    return c.json(
+      {
+        ok: false,
+        error: "Failed to fetch matching statistics",
+      },
+      500
+    );
   }
 });
 

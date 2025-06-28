@@ -333,6 +333,12 @@ export const getCenterPerformance = (params?: { centerId?: string }) =>
   `/api/v1/analytics/centers${params ? buildQuery(params) : ''}`
 export const getCampaignAnalytics = () => '/api/v1/analytics/campaigns'
 
+// WAITLIST ADMIN ENDPOINTS
+export const triggerWaitlistMatching = () => `/api/v1/waitlist/manual-trigger`
+export const getWaitlistMatchingStats = () => `/api/v1/waitlist/matching-stats`
+export const getWaitlistMatchingStatus = () =>
+  `/api/v1/waitlist/matching-status`
+
 // PAYOUTS
 export const getAllCenterBalances = () => '/api/v1/payouts/center-balances'
 export const getCenterBalance = (centerId: string) =>
