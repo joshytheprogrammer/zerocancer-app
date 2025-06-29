@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useDonorCampaign, useDeleteCampaign, useUpdateCampaign, useFundCampaign } from '@/services/providers/donor.provider'
+import { useDonorCampaign, useDeleteCampaign, useFundCampaign } from '@/services/providers/donor.provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,8 +34,6 @@ import {
   ArrowLeft, 
   Users, 
   DollarSign, 
-  Calendar, 
-  MapPin, 
   Target,
   TrendingUp,
   AlertTriangle,

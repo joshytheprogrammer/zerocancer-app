@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   useAdminCampaigns, 
   useUpdateAdminCampaignStatus 
@@ -88,7 +87,7 @@ function AdminCampaigns() {
     isLoading, 
     error,
     refetch 
-  } = useQuery(useAdminCampaigns(queryParams))
+  } = useAdminCampaigns(queryParams)
 
   // Status update mutation
   const updateStatusMutation = useUpdateAdminCampaignStatus()

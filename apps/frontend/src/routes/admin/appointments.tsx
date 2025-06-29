@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useAdminAppointments } from '@/services/providers/admin.provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -67,7 +66,7 @@ function AdminAppointments() {
     isLoading, 
     error,
     refetch 
-  } = useQuery(useAdminAppointments(queryParams))
+  } = useAdminAppointments(queryParams)
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
