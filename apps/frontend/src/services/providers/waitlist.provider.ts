@@ -1,5 +1,10 @@
-import { QueryKeys } from '@/services/keys'
-import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query'
+import { MutationKeys, QueryKeys } from '@/services/keys'
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { getAllWaitlistsSchema } from '@zerocancer/shared/schemas/waitlist.schema'
 import type { z } from 'zod'
 import * as waitlistService from '../waitlist.service'
@@ -41,3 +46,57 @@ export const allWaitlistsInfinite = (params: {
 //     queryKey: [QueryKeys.patientWaitlists, params],
 //     queryFn: () => waitlistService.getPatientWaitlists(params),
 //   })
+
+// --- Admin Waitlist Query Providers ---
+
+/**
+ * Query hook for waitlist matching statistics
+ */
+export const waitlistMatchingStats = () =>
+  queryOptions({
+    queryKey: [QueryKeys.waitlistMatchingStats],
+    queryFn: waitlistService.getWaitlistMatchingStats,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+  })
+
+/**
+ * Query hook for waitlist service status
+ */
+export const waitlistMatchingStatus = () =>
+  queryOptions({
+    queryKey: [QueryKeys.waitlistMatchingStatus],
+    queryFn: waitlistService.getWaitlistMatchingStatus,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // Check every minute
+  })
+
+// --- Admin Waitlist Mutation Providers ---
+
+/**
+ * Mutation hook for triggering waitlist matching
+ */
+export const useTriggerWaitlistMatching = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: [MutationKeys.triggerWaitlistMatching],
+    mutationFn: waitlistService.triggerWaitlistMatching,
+    onSuccess: () => {
+      // Invalidate related queries to refresh data
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.waitlistMatchingStats],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.dashboardMetrics],
+      })
+      // Also invalidate any waitlist-related queries
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey.some(
+            (key) => typeof key === 'string' && key.includes('waitlist'),
+          ),
+      })
+    },
+  })
+}

@@ -64,6 +64,15 @@ export const comparePassword = async (
 /**
  * Matches patients on the waitlist to available donation campaigns.
  * Should be called periodically (e.g., every hour by a scheduler).
+ * 
+ * Can be triggered via webhook endpoints:
+ * - POST /api/v1/waitlist/trigger-matching (with optional signature verification)
+ * - POST /api/v1/waitlist/manual-trigger (with admin API key)
+ * - GET /api/v1/waitlist/matching-status (health check)
+ *
+ * Environment variables for webhook security:
+ * - WAITLIST_WEBHOOK_SECRET: Secret for signature verification (optional)
+ * - ADMIN_API_KEY: API key for manual admin triggers (optional)
  *
  * - For each screening type, get all PENDING waitlist entries (FCFS order).
  * - For each, try to match to an ACTIVE campaign for that screening type.

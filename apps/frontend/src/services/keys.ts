@@ -55,6 +55,9 @@ export enum QueryKeys {
 
   // Payouts
   payouts = 'payouts',
+  // Waitlist admin keys
+  waitlistMatchingStats = 'waitlist-matching-stats',
+  waitlistMatchingStatus = 'waitlist-matching-status',
 }
 
 export enum MutationKeys {
@@ -115,6 +118,8 @@ export enum MutationKeys {
   processPayout = 'processPayout',
   retryPayout = 'retryPayout',
   verifyAccount = 'verifyAccount',
+
+  triggerWaitlistMatching = 'trigger-waitlist-matching',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

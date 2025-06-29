@@ -11,8 +11,12 @@ import {
   joinWaitlistSchema,
 } from "@zerocancer/shared";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { z } from "zod";
+import { CryptoUtils } from "../lib/crypto.utils";
 import { getDB } from "../lib/db";
 import { THonoAppVariables } from "../lib/types";
+import { waitlistMatcherAlg } from "../lib/utils";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 export const waitlistApp = new Hono<{
@@ -475,5 +479,171 @@ waitlistApp.get(
     }
   }
 );
+
+// ========================================
+// WAITLIST MATCHING WEBHOOKS
+// ========================================
+
+// Webhook schema for triggering waitlist matching
+const triggerMatchingSchema = z.object({
+  signature: z.string().optional(),
+  timestamp: z.string().optional(),
+  force: z.boolean().optional().default(false),
+});
+
+// POST /api/waitlist/trigger-matching - Trigger waitlist matching algorithm (for cron jobs)
+waitlistApp.post("/trigger-matching", async (c) => {
+  try {
+    // Optional: Add API key authentication for cron job (same pattern as payouts)
+    const apiKey = c.req.header("x-api-key");
+    const { CRON_API_KEY } = env<{ CRON_API_KEY?: string }>(c, "node");
+
+    if (CRON_API_KEY && apiKey !== CRON_API_KEY) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    console.log("Triggering waitlist matching algorithm...");
+    const startTime = Date.now();
+
+    // Run the matching algorithm
+    await waitlistMatcherAlg();
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    console.log(`Waitlist matching completed in ${duration}ms`);
+
+    return c.json({
+      ok: true,
+      message: "Waitlist matching algorithm executed successfully",
+      data: {
+        executionTime: duration,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Waitlist matching error:", error);
+    return c.json(
+      {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to execute waitlist matching",
+      },
+      500
+    );
+  }
+});
+
+// GET /api/waitlist/matching-status - Get basic status/health check
+waitlistApp.get("/matching-status", async (c) => {
+  try {
+    // Simple health check - could be extended to show last run time, stats, etc.
+    return c.json({
+      ok: true,
+      status: "healthy",
+      message: "Waitlist matching service is operational",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    return c.json(
+      {
+        ok: false,
+        error: "Service unavailable",
+      },
+      500
+    );
+  }
+});
+
+// POST /api/waitlist/manual-trigger - Manual trigger for admins (with auth middleware)
+waitlistApp.post("/manual-trigger", authMiddleware(["admin"]), async (c) => {
+  try {
+    const payload = c.get("jwtPayload");
+    console.log(
+      `Manual waitlist matching triggered by admin: ${payload?.email} (${payload?.id})`
+    );
+
+    const startTime = Date.now();
+    await waitlistMatcherAlg();
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    console.log(`Manual waitlist matching completed in ${duration}ms`);
+
+    return c.json({
+      ok: true,
+      message: "Manual waitlist matching executed successfully",
+      data: {
+        executionTime: duration,
+        timestamp: new Date().toISOString(),
+        triggeredBy: {
+          adminId: payload?.id || "unknown",
+          adminEmail: payload?.email || "unknown",
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Manual waitlist matching error:", error);
+    return c.json(
+      {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to execute manual waitlist matching",
+      },
+      500
+    );
+  }
+});
+
+// GET /api/waitlist/matching-stats - Get matching statistics for admin dashboard
+waitlistApp.get("/matching-stats", authMiddleware(["admin"]), async (c) => {
+  try {
+    const [pendingCount, matchedCount, totalCampaigns, activeCampaigns] =
+      await Promise.all([
+        db.waitlist.count({ where: { status: "PENDING" } }),
+        db.waitlist.count({ where: { status: "MATCHED" } }),
+        db.donationCampaign.count(),
+        db.donationCampaign.count({ where: { status: "ACTIVE" } }),
+      ]);
+
+    // Get recent matching activity (last 24 hours)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const recentMatches = await db.waitlist.count({
+      where: {
+        status: "MATCHED",
+        claimedAt: { gte: yesterday },
+      },
+    });
+
+    return c.json({
+      ok: true,
+      data: {
+        pending: pendingCount,
+        matched: matchedCount,
+        recentMatches,
+        campaigns: {
+          total: totalCampaigns,
+          active: activeCampaigns,
+        },
+        lastUpdated: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Get matching stats error:", error);
+    return c.json(
+      {
+        ok: false,
+        error: "Failed to fetch matching statistics",
+      },
+      500
+    );
+  }
+});
 
 export default waitlistApp;
