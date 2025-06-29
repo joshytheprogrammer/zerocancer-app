@@ -21,6 +21,8 @@ export default function Navbar() {
         return '/donor'
       case 'center':
         return '/center'
+      case 'admin':
+        return '/admin'
       default:
         return null
     }

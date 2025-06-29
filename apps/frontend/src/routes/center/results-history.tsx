@@ -72,8 +72,8 @@ function CenterResultsHistory() {
   // Simulate results from completed appointments
   // In real implementation, this would be actual ScreeningResult data
   const simulatedResults = appointments
-    .filter(apt => apt.status === 'completed')
-    .map((apt, index) => ({
+    .filter((apt: any) => apt.status === 'completed')
+    .map((apt: any, index: number) => ({
       id: `result_${apt.id}`,
       appointmentId: apt.id,
       patient: apt.patient,
@@ -89,7 +89,7 @@ function CenterResultsHistory() {
     }))
   
   // Filter results based on search and filters
-  const filteredResults = simulatedResults.filter((result) => {
+  const filteredResults = simulatedResults.filter((result: any) => {
     const matchesSearch = !searchTerm || 
       result.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       result.screeningType?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,8 +115,8 @@ function CenterResultsHistory() {
   
   // Calculate stats
   const totalResults = simulatedResults.length
-  const pendingReview = simulatedResults.filter(r => r.status === 'pending_review').length
-  const uploadedToday = simulatedResults.filter(r => {
+  const pendingReview = simulatedResults.filter((r: any) => r.status === 'pending_review').length
+  const uploadedToday = simulatedResults.filter((r: any) => {
     const uploadDate = new Date(r.uploadedAt)
     const today = new Date()
     return uploadDate.toDateString() === today.toDateString()
@@ -246,7 +246,7 @@ function CenterResultsHistory() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{new Set(simulatedResults.map(r => r.patient?.id)).size}</div>
+            <div className="text-2xl font-bold">{new Set(simulatedResults.map((r: any) => r.patient?.id)).size}</div>
             <p className="text-xs text-muted-foreground">
               Unique patients
             </p>
@@ -369,7 +369,7 @@ function CenterResultsHistory() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredResults.map((result) => {
+                  {filteredResults.map((result: any) => {
                     const { label, variant, icon: StatusIcon } = getStatusDisplay(result.status)
                     
                     return (

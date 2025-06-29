@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -33,25 +33,27 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import { 
   Upload, 
   FileText, 
   Calendar,
-  AlertTriangle,
   CheckCircle,
   Search,
-  Filter,
-  Clock
+  Clock,
+  X,
+  File,
+  Loader2
 } from 'lucide-react'
-import { centerAppointments } from '@/services/providers/center.provider'
+import { centerAppointments, useUploadResults } from '@/services/providers/center.provider'
+import { FileUploadService, type UploadProgress } from '@/services/upload.service'
 import { toast } from 'sonner'
 
-// Schema for upload result form (ready for when backend is implemented)
+// Schema for upload result form
 const uploadResultSchema = z.object({
   appointmentId: z.string().min(1, 'Please select an appointment'),
-  result: z.string().min(10, 'Result details must be at least 10 characters'),
   notes: z.string().optional(),
-  resultFile: z.any().optional(), // For future file upload implementation
+  files: z.array(z.any()).min(1, 'Please select at least one file'),
 })
 
 type UploadResultFormData = z.infer<typeof uploadResultSchema>
@@ -62,16 +64,23 @@ export const Route = createFileRoute('/center/upload-results')({
 
 function CenterUploadResults() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [selectedAppointment, setSelectedAppointment] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState('completed')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  
+  const uploadResultsMutation = useUploadResults()
+  const fileUploadService = FileUploadService.getInstance()
   
   const form = useForm<UploadResultFormData>({
     resolver: zodResolver(uploadResultSchema),
     defaultValues: {
       appointmentId: '',
-      result: '',
       notes: '',
+      files: [],
     },
   })
 
@@ -79,47 +88,133 @@ function CenterUploadResults() {
   const { data: appointmentsData, isLoading } = useQuery(
     centerAppointments({
       page: 1,
-      pageSize: 50, // Show more for result upload selection
+      pageSize: 50,
     })
   )
 
   const appointments = appointmentsData?.data?.appointments || []
   
   // Filter appointments that are completed and don't have results yet
-  const eligibleAppointments = appointments.filter((apt) => {
+  const eligibleAppointments = appointments.filter((apt: any) => {
     const matchesSearch = !searchTerm || 
       apt.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       apt.screeningType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const isCompleted = apt.status === 'completed'
-    const needsResults = !(apt as any).resultUploaded // This field may not exist yet
+    const isCompleted = apt.status === 'COMPLETED'
+    const isInProgress = apt.status === 'IN_PROGRESS'
+    const needsResults = !(apt as any).result?.id
     
-    return matchesSearch && isCompleted && (statusFilter === 'all' || statusFilter === 'completed')
+    return matchesSearch && (isCompleted || isInProgress) && (statusFilter === 'all' || needsResults)
   })
 
-  const selectedAppointmentData = appointments.find(apt => apt.id === selectedAppointment)
+  const selectedAppointmentData = appointments.find((apt: any) => apt.id === selectedAppointment)
 
-  const onSubmit = (values: UploadResultFormData) => {
-    // This will be implemented when backend endpoint is ready
-    toast.error('Result upload feature is currently under development. Backend endpoint pending implementation.')
-    console.log('Upload result data:', values)
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
     
-    // Future implementation:
-    // uploadResultMutation.mutate(values, {
-    //   onSuccess: () => {
-    //     toast.success('Result uploaded successfully')
-    //     form.reset()
-    //     setSelectedAppointment('')
-    //   },
-    //   onError: (error) => {
-    //     toast.error('Failed to upload result')
-    //   }
-    // })
+    // Validate file types
+    const allowedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
+    const invalidFiles = files.filter(file => {
+      const extension = file.name.split('.').pop()?.toLowerCase()
+      return !allowedTypes.includes(extension || '')
+    })
+    
+    if (invalidFiles.length > 0) {
+      toast.error(`Invalid file types: ${invalidFiles.map(f => f.name).join(', ')}. Allowed: PDF, Images, DOC, DOCX`)
+      return
+    }
+    
+    // Validate file sizes (max 10MB each)
+    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024)
+    if (oversizedFiles.length > 0) {
+      toast.error(`Files too large: ${oversizedFiles.map(f => f.name).join(', ')}. Max size: 10MB`)
+      return
+    }
+    
+    setSelectedFiles(prev => [...prev, ...files])
+    form.setValue('files', [...selectedFiles, ...files])
+  }, [selectedFiles, form])
+
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index)
+    setSelectedFiles(newFiles)
+    form.setValue('files', newFiles)
+  }
+
+  const onSubmit = async (values: UploadResultFormData) => {
+    if (selectedFiles.length === 0) {
+      toast.error('Please select at least one file')
+      return
+    }
+    
+    setIsUploading(true)
+    
+    try {
+      // Upload files to Cloudinary first
+      const uploadResults = await fileUploadService.uploadFiles(
+        selectedFiles,
+        {
+          folder: `screening-results/${selectedAppointment}`,
+          maxFileSize: 10,
+          allowedTypes: ['pdf', 'image', 'application']
+        },
+        (progresses) => {
+          setUploadProgress(progresses)
+        }
+      )
+      
+      // Check if all uploads succeeded
+      const failedUploads = uploadResults.filter(result => result.status === 'error')
+      if (failedUploads.length > 0) {
+        toast.error(`Failed to upload: ${failedUploads.map(f => f.fileName).join(', ')}`)
+        setIsUploading(false)
+        return
+      }
+      
+      // Prepare file data for backend
+      const fileData = uploadResults.map(result => ({
+        fileName: result.fileName,
+        originalName: result.fileName,
+        filePath: result.filePath || result.fileName,
+        fileType: selectedFiles.find(f => f.name === result.fileName)?.type || 'application/octet-stream',
+        fileSize: selectedFiles.find(f => f.name === result.fileName)?.size || 0,
+        url: result.url!,
+        cloudinaryId: result.url!.split('/').pop()?.split('.')[0] || '',
+      }))
+      
+      // Submit to backend
+      await uploadResultsMutation.mutateAsync({
+        appointmentId: selectedAppointment,
+        files: fileData,
+        notes: values.notes || undefined,
+      })
+      
+      toast.success('Results uploaded successfully!')
+      
+      // Reset form and state
+      form.reset()
+      setSelectedAppointment('')
+      setSelectedFiles([])
+      setUploadProgress([])
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['centerAppointments'] })
+      
+    } catch (error: any) {
+      console.error('Upload error:', error)
+      toast.error(error.response?.data?.error || 'Failed to upload results')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleSelectAppointment = (appointmentId: string) => {
     setSelectedAppointment(appointmentId)
     form.setValue('appointmentId', appointmentId)
+    // Clear files when switching appointments
+    setSelectedFiles([])
+    setUploadProgress([])
+    form.setValue('files', [])
   }
 
   const formatDate = (dateString: string) => {
@@ -146,23 +241,6 @@ function CenterUploadResults() {
           Upload screening results for completed appointments.
         </p>
       </div>
-
-      {/* Development Notice */}
-      <Card className="border-amber-200 bg-amber-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-800">
-            <AlertTriangle className="h-5 w-5" />
-            Feature In Development
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-amber-700">
-            The result upload functionality is currently under development. 
-            The backend endpoint for uploading screening results has not been implemented yet. 
-            This interface shows the intended workflow once the feature is complete.
-          </p>
-        </CardContent>
-      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Appointment Selection */}
@@ -196,7 +274,7 @@ function CenterUploadResults() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="completed">Completed (Need Results)</SelectItem>
+                    <SelectItem value="completed">Need Results Upload</SelectItem>
                     <SelectItem value="all">All Appointments</SelectItem>
                   </SelectContent>
                 </Select>
@@ -216,11 +294,11 @@ function CenterUploadResults() {
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No appointments found</p>
                   <p className="text-xs">
-                    {searchTerm ? 'Try adjusting your search' : 'No completed appointments need results'}
+                    {searchTerm ? 'Try adjusting your search' : 'No appointments need results upload'}
                   </p>
                 </div>
               ) : (
-                eligibleAppointments.map((appointment) => (
+                eligibleAppointments.map((appointment: any) => (
                   <div
                     key={appointment.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -271,7 +349,7 @@ function CenterUploadResults() {
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Select an appointment to upload results</p>
-                <p className="text-sm">Choose from completed appointments on the left</p>
+                <p className="text-sm">Choose from appointments on the left</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -282,7 +360,7 @@ function CenterUploadResults() {
                     <p><span className="font-medium">Patient:</span> {selectedAppointmentData?.patient?.fullName}</p>
                     <p><span className="font-medium">Screening:</span> {selectedAppointmentData?.screeningType?.name}</p>
                     <p><span className="font-medium">Date:</span> {formatDate((selectedAppointmentData as any)?.date || (selectedAppointmentData as any)?.appointmentDate)}</p>
-                    <p><span className="font-medium">ID:</span> <span className="font-mono">{selectedAppointment}</span></p>
+                    <p><span className="font-medium">ID:</span> <span className="font-mono text-xs">{selectedAppointment}</span></p>
                   </div>
                 </div>
 
@@ -291,76 +369,128 @@ function CenterUploadResults() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="result"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Result Details *</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Enter detailed screening results, findings, and recommendations..."
-                              className="min-h-24"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Provide comprehensive results and any clinical findings
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
                       name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Additional Notes</FormLabel>
+                          <FormLabel>Result Notes</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Any additional observations or follow-up recommendations..."
+                              placeholder="Enter any additional notes about the results..."
                               className="min-h-20"
                               {...field}
                             />
                           </FormControl>
                           <FormDescription>
-                            Optional notes for patient or referring physician
+                            Optional notes about the screening results
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Future File Upload */}
+                    {/* File Upload */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Result Files</label>
+                      <label className="text-sm font-medium">Result Files *</label>
                       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          File upload will be available when backend is implemented
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Upload PDF reports, images, or lab results
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          Support for PDF, images, and lab reports
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          id="file-upload"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                        >
+                          Select Files
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          PDF, Images, DOC files • Max 10MB each
                         </p>
                       </div>
                     </div>
 
+                    {/* Selected Files */}
+                    {selectedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Selected Files ({selectedFiles.length})</label>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {selectedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                              <div className="flex items-center gap-2">
+                                <File className="h-4 w-4" />
+                                <span className="text-sm truncate">{file.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ({(file.size / 1024 / 1024).toFixed(1)}MB)
+                                </span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile(index)}
+                                disabled={isUploading}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Upload Progress */}
+                    {uploadProgress.length > 0 && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Upload Progress</label>
+                        {uploadProgress.map((progress) => (
+                          <div key={progress.id} className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span>{progress.fileName}</span>
+                              <span>{progress.progress}%</span>
+                            </div>
+                            <Progress value={progress.progress} className="h-2" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="flex gap-2 pt-4">
                       <Button
                         type="submit"
-                        disabled={true} // Disabled until backend is ready
+                        disabled={isUploading || selectedFiles.length === 0 || uploadResultsMutation.isPending}
                         className="flex-1"
                       >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Result
+                        {isUploading || uploadResultsMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Results
+                          </>
+                        )}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => {
                           setSelectedAppointment('')
+                          setSelectedFiles([])
+                          setUploadProgress([])
                           form.reset()
                         }}
+                        disabled={isUploading}
                       >
                         Clear
                       </Button>
@@ -386,20 +516,20 @@ function CenterUploadResults() {
             <div>
               <h4 className="font-medium mb-2">For Center Staff:</h4>
               <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Only completed appointments can have results uploaded</li>
-                <li>• Ensure all screening procedures are finished before uploading</li>
-                <li>• Include comprehensive findings and recommendations</li>
+                <li>• Upload results for completed or in-progress appointments</li>
+                <li>• Ensure all screening procedures are finished</li>
+                <li>• Include all relevant test results and reports</li>
                 <li>• Double-check patient identity before submitting</li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-medium mb-2">Result Requirements:</h4>
+              <h4 className="font-medium mb-2">File Requirements:</h4>
               <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Detailed description of screening results</li>
-                <li>• Clear indication of normal/abnormal findings</li>
-                <li>• Follow-up recommendations if applicable</li>
-                <li>• Professional language and terminology</li>
+                <li>• Supported: PDF, JPG, PNG, DOC, DOCX</li>
+                <li>• Maximum file size: 10MB per file</li>
+                <li>• Multiple files can be uploaded per appointment</li>
+                <li>• Files are securely stored and encrypted</li>
               </ul>
             </div>
           </div>
@@ -407,7 +537,7 @@ function CenterUploadResults() {
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>Note:</strong> Once uploaded, results will be automatically made available to patients 
-              and can be accessed through their patient portal. Ensure accuracy before submission.
+              through their patient portal. Ensure accuracy before submission.
             </p>
           </div>
         </CardContent>

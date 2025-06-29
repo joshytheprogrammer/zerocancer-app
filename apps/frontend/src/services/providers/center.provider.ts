@@ -160,3 +160,25 @@ export const useCompleteAppointment = () =>
       completionNotes?: string
     }) => centerService.completeAppointment(appointmentId, { completionNotes }),
   })
+
+export const useUploadResults = () =>
+  useMutation({
+    mutationKey: [MutationKeys.uploadResult],
+    mutationFn: ({
+      appointmentId,
+      files,
+      notes,
+    }: {
+      appointmentId: string
+      files: Array<{
+        fileName: string
+        originalName: string
+        filePath: string
+        fileType: string
+        fileSize: number
+        url: string
+        cloudinaryId: string
+      }>
+      notes?: string
+    }) => centerService.uploadResults(appointmentId, { files, notes }),
+  })

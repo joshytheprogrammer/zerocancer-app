@@ -54,8 +54,8 @@ function CreateCampaign() {
   const form = useForm<CreateCampaignForm>({
     resolver: zodResolver(createCampaignSchema) as any,
     defaultValues: {
-      title: '',
-      description: '',
+      title: 'Cancer Screening For People In IDP Camps',
+      description: 'This campaign is to help people in IDP camps get cancer screening',
       targetAmount: 10000,
       maxPerPatient: 2500,
       initialFunding: 10000,
@@ -67,7 +67,16 @@ function CreateCampaign() {
 
   const onSubmit = async (data: CreateCampaignForm) => {
     try {
-      const result = await createCampaignMutation.mutateAsync(data)
+      // Ensure all numeric fields are actually numbers
+      const submitData = {
+        ...data,
+        targetAmount: Number(data.targetAmount) || 0,
+        maxPerPatient: Number(data.maxPerPatient) || 0,
+        initialFunding: Number(data.initialFunding) || 0,
+        expiryMonths: Number(data.expiryMonths) || 1,
+      }
+      
+      const result = await createCampaignMutation.mutateAsync(submitData)
       
       if (result.data.payment?.authorizationUrl) {
         toast.success('Campaign created! Redirecting to payment...')
@@ -103,9 +112,9 @@ function CreateCampaign() {
     }
   }
 
-  const watchedTargetAmount = form.watch('targetAmount')
-  const watchedMaxPerPatient = form.watch('maxPerPatient')
-  const estimatedPatients = Math.floor(watchedTargetAmount / watchedMaxPerPatient)
+  const watchedTargetAmount = form.watch('targetAmount') || 0
+  const watchedMaxPerPatient = form.watch('maxPerPatient') || 1
+  const estimatedPatients = watchedMaxPerPatient > 0 ? Math.floor(watchedTargetAmount / watchedMaxPerPatient) : 0
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -190,12 +199,14 @@ function CreateCampaign() {
                           <FormLabel>Target Amount (₦)</FormLabel>
                           <FormControl>
                             <Input 
-                              type="number"
-                              min="1000"
-                              step="1000"
+                              type="text"
                               placeholder="10000"
                               {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^\d]/g, '')
+                                field.onChange(value ? Number(value) : '')
+                              }}
+                              value={field.value || ''}
                             />
                           </FormControl>
                           <FormDescription>
@@ -214,12 +225,14 @@ function CreateCampaign() {
                           <FormLabel>Max Per Patient (₦)</FormLabel>
                           <FormControl>
                             <Input 
-                              type="number"
-                              min="100"
-                              step="100"
+                              type="text"
                               placeholder="2500"
                               {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^\d]/g, '')
+                                field.onChange(value ? Number(value) : '')
+                              }}
+                              value={field.value || ''}
                             />
                           </FormControl>
                           <FormDescription>
@@ -238,12 +251,14 @@ function CreateCampaign() {
                           <FormLabel>Duration (Months)</FormLabel>
                           <FormControl>
                             <Input 
-                              type="number"
-                              min="1"
-                              max="12"
+                              type="text"
                               placeholder="6"
                               {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^\d]/g, '')
+                                field.onChange(value ? Number(value) : '')
+                              }}
+                              value={field.value || ''}
                             />
                           </FormControl>
                           <FormDescription>
@@ -263,12 +278,14 @@ function CreateCampaign() {
                         <FormLabel>Initial Funding Amount (₦)</FormLabel>
                         <FormControl>
                           <Input 
-                            type="number"
-                            min="100"
-                            step="1000"
+                            type="text"
                             placeholder="10000"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '')
+                              field.onChange(value ? Number(value) : '')
+                            }}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormDescription>
@@ -393,7 +410,7 @@ function CreateCampaign() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Target Amount:</span>
                 </div>
-                <p className="text-lg font-semibold">₦{watchedTargetAmount.toLocaleString()}</p>
+                <p className="text-lg font-semibold">₦{(watchedTargetAmount || 0).toLocaleString()}</p>
               </div>
 
               <div className="space-y-2">
@@ -401,7 +418,7 @@ function CreateCampaign() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Estimated Patients:</span>
                 </div>
-                <p className="text-lg font-semibold">{estimatedPatients} patients</p>
+                <p className="text-lg font-semibold">{estimatedPatients || 0} patients</p>
               </div>
 
               <div className="space-y-2">

@@ -161,7 +161,7 @@ function DonorCampaigns() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : '₦${campaigns.reduce((sum, c) => sum + c.initialAmount, 0).toLocaleString()}'}
+              {isLoading ? '...' : `₦${campaigns.reduce((sum, c) => sum + c.initialAmount, 0).toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">
               ₦{campaigns.reduce((sum, c) => sum + c.usedAmount, 0).toLocaleString()} used
@@ -191,7 +191,7 @@ function DonorCampaigns() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : '₦${campaigns.reduce((sum, c) => sum + c.availableAmount, 0).toLocaleString()}'}
+              {isLoading ? '...' : `₦${campaigns.reduce((sum, c) => sum + c.availableAmount, 0).toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">
               Ready for allocation

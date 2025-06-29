@@ -154,9 +154,11 @@ function AdminCampaigns() {
   const total = campaignsData?.data?.total || 0
 
   // Calculate summary stats
-  const totalFunding = campaigns.reduce((sum, c) => sum + c.initialAmount, 0)
-  const totalAvailable = campaigns.reduce((sum, c) => sum + c.availableAmount, 0)
-  const totalAllocations = campaigns.reduce((sum, c) => sum + c.allocations.length, 0)
+  const totalDonated = campaigns.reduce((sum, c) => sum + c.initialAmount, 0)
+  const availableFunds = campaigns.reduce((sum, c) => sum + c.availableAmount, 0)
+  const totalPatientsHelped = campaigns.reduce((sum, c) => {
+    return sum + (c.allocations?.filter(a => a.claimedAt).length || 0)
+  }, 0)
   const activeCampaigns = campaigns.filter(c => c.status === 'ACTIVE').length
 
   return (
@@ -177,6 +179,7 @@ function AdminCampaigns() {
             <div className="ml-4">
               <p className="text-sm font-medium text-muted-foreground">Total Campaigns</p>
               <p className="text-2xl font-bold">{total}</p>
+              <p className="text-xs text-muted-foreground">{activeCampaigns} active</p>
             </div>
           </CardContent>
         </Card>
@@ -184,17 +187,9 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <TrendingUp className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Active Campaigns</p>
-              <p className="text-2xl font-bold">{activeCampaigns}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <DollarSign className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Funding</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalFunding)}</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Donated</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalDonated)}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(totalDonated - availableFunds)} used</p>
             </div>
           </CardContent>
         </Card>
@@ -202,8 +197,19 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <Users className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Allocations</p>
-              <p className="text-2xl font-bold">{totalAllocations}</p>
+              <p className="text-sm font-medium text-muted-foreground">Patients Helped</p>
+              <p className="text-2xl font-bold">{totalPatientsHelped}</p>
+              <p className="text-xs text-muted-foreground">Across all campaigns</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center p-6">
+            <DollarSign className="h-8 w-8 text-blue-600" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-muted-foreground">Available Funds</p>
+              <p className="text-2xl font-bold">{formatCurrency(availableFunds)}</p>
+              <p className="text-xs text-muted-foreground">Ready for allocation</p>
             </div>
           </CardContent>
         </Card>
