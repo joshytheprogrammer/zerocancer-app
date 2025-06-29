@@ -52,6 +52,9 @@ export enum QueryKeys {
   geographicReport = 'geographicReport',
   centerPerformance = 'centerPerformance',
   campaignAnalytics = 'campaignAnalytics',
+
+  // Payouts
+  payouts = 'payouts',
 }
 
 export enum MutationKeys {
@@ -106,6 +109,12 @@ export enum MutationKeys {
   // V1 Receipt System
   createReceiptV1 = 'createReceiptV1',
   resendReceiptV1 = 'resendReceiptV1',
+
+  // Payouts
+  createManualPayout = 'createManualPayout',
+  processPayout = 'processPayout',
+  retryPayout = 'retryPayout',
+  verifyAccount = 'verifyAccount',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
