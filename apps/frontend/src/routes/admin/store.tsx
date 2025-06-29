@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   useAdminStoreProducts,
   useCreateStoreProduct,
@@ -86,7 +85,7 @@ function AdminStore() {
     isLoading, 
     error,
     refetch 
-  } = useQuery(useAdminStoreProducts(queryParams))
+  } = useAdminStoreProducts(queryParams)
 
   // Mutations
   const createProductMutation = useCreateStoreProduct()

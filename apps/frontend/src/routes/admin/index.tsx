@@ -22,19 +22,19 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useAdminUsers, useAdminCenters, useAdminCampaigns, useAdminAppointments, useAdminTransactions, useAdminStoreProducts } from '@/services/providers/admin.provider'
+import { adminUsers, adminCenters, adminCampaigns, adminAppointments, adminTransactions, adminStoreProducts } from '@/services/providers/admin.provider'
 
 export const Route = createFileRoute('/admin/')({
   component: AdminDashboard,
 })
 
 function AdminDashboard() {
-  const { data: users } = useQuery(useAdminUsers({ profileType: undefined }))
-  const { data: centers } = useQuery(useAdminCenters({ search: '' }))
-  const { data: campaigns } = useQuery(useAdminCampaigns({ search: '' }))
-  const { data: appointments } = useQuery(useAdminAppointments({}))
-  const { data: transactions } = useQuery(useAdminTransactions({}))
-  const { data: storeProducts } = useQuery(useAdminStoreProducts({ search: '' }))
+  const { data: users } = useQuery(adminUsers({ profileType: undefined }))
+  const { data: centers } = useQuery(adminCenters({ search: '' }))
+  const { data: campaigns } = useQuery(adminCampaigns({ search: '' }))
+  const { data: appointments } = useQuery(adminAppointments({}))
+  const { data: transactions } = useQuery(adminTransactions({}))
+  const { data: storeProducts } = useQuery(adminStoreProducts({ search: '' }))
 
   // Calculate key metrics
   const totalUsers = users?.data?.users?.length || 0

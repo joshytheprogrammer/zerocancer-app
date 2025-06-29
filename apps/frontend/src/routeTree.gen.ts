@@ -39,8 +39,11 @@ import { Route as AdminTransactionsRouteImport } from './routes/admin/transactio
 import { Route as AdminStoreRouteImport } from './routes/admin/store'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminResultsRouteImport } from './routes/admin/results'
+import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminReceiptsRouteImport } from './routes/admin/receipts'
 import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCentersRouteImport } from './routes/admin/centers'
 import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
@@ -206,6 +209,11 @@ const AdminResultsRoute = AdminResultsRouteImport.update({
   path: '/results',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReceiptsRoute = AdminReceiptsRouteImport.update({
   id: '/receipts',
   path: '/receipts',
@@ -214,6 +222,16 @@ const AdminReceiptsRoute = AdminReceiptsRouteImport.update({
 const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminForgotPasswordRoute = AdminForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCentersRoute = AdminCentersRouteImport.update({
@@ -322,8 +340,11 @@ export interface FileRoutesByFullPath {
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
@@ -367,8 +388,11 @@ export interface FileRoutesByTo {
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
@@ -416,8 +440,11 @@ export interface FileRoutesById {
   '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/centers': typeof AdminCentersRoute
+  '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/receipts': typeof AdminReceiptsRoute
+  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/results': typeof AdminResultsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/store': typeof AdminStoreRoute
@@ -469,8 +496,11 @@ export interface FileRouteTypes {
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/forgot-password'
+    | '/admin/login'
     | '/admin/notifications'
     | '/admin/receipts'
+    | '/admin/reset-password'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
@@ -514,8 +544,11 @@ export interface FileRouteTypes {
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/forgot-password'
+    | '/admin/login'
     | '/admin/notifications'
     | '/admin/receipts'
+    | '/admin/reset-password'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
@@ -562,8 +595,11 @@ export interface FileRouteTypes {
     | '/admin/appointments'
     | '/admin/campaigns'
     | '/admin/centers'
+    | '/admin/forgot-password'
+    | '/admin/login'
     | '/admin/notifications'
     | '/admin/receipts'
+    | '/admin/reset-password'
     | '/admin/results'
     | '/admin/roles'
     | '/admin/store'
@@ -816,6 +852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminResultsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/reset-password': {
+      id: '/admin/reset-password'
+      path: '/reset-password'
+      fullPath: '/admin/reset-password'
+      preLoaderRoute: typeof AdminResetPasswordRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/receipts': {
       id: '/admin/receipts'
       path: '/receipts'
@@ -828,6 +871,20 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/admin/notifications'
       preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/forgot-password': {
+      id: '/admin/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/admin/forgot-password'
+      preLoaderRoute: typeof AdminForgotPasswordRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/centers': {
@@ -1015,8 +1072,11 @@ interface AdminRouteChildren {
   AdminAppointmentsRoute: typeof AdminAppointmentsRoute
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminCentersRoute: typeof AdminCentersRoute
+  AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminReceiptsRoute: typeof AdminReceiptsRoute
+  AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminResultsRoute: typeof AdminResultsRoute
   AdminRolesRoute: typeof AdminRolesRoute
   AdminStoreRoute: typeof AdminStoreRoute
@@ -1030,8 +1090,11 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAppointmentsRoute: AdminAppointmentsRoute,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminCentersRoute: AdminCentersRoute,
+  AdminForgotPasswordRoute: AdminForgotPasswordRoute,
+  AdminLoginRoute: AdminLoginRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminReceiptsRoute: AdminReceiptsRoute,
+  AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminResultsRoute: AdminResultsRoute,
   AdminRolesRoute: AdminRolesRoute,
   AdminStoreRoute: AdminStoreRoute,

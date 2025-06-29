@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   useAdminCenters,
   useAdminUsers,
@@ -44,20 +43,20 @@ function AdminAnalytics() {
   const dateFrom = format(subDays(new Date(), parseInt(timeframe)), 'yyyy-MM-dd')
   const dateTo = format(new Date(), 'yyyy-MM-dd')
 
-  // Fetch aggregated data from all admin endpoints
-  const { data: centersData } = useQuery(useAdminCenters({ pageSize: 1000 }))
-  const { data: usersData } = useQuery(useAdminUsers({ pageSize: 1000 }))
-  const { data: campaignsData } = useQuery(useAdminCampaigns({ pageSize: 1000 }))
-  const { data: appointmentsData } = useQuery(useAdminAppointments({ 
-    pageSize: 1000,
+  // Fetch aggregated data from all admin endpoints (max pageSize is 100)
+  const { data: centersData } = useAdminCenters({ pageSize: 100 })
+  const { data: usersData } = useAdminUsers({ pageSize: 100 })
+  const { data: campaignsData } = useAdminCampaigns({ pageSize: 100 })
+  const { data: appointmentsData } = useAdminAppointments({ 
+    pageSize: 100,
     dateFrom,
     dateTo 
-  }))
-  const { data: transactionsData } = useQuery(useAdminTransactions({ 
-    pageSize: 1000,
+  })
+  const { data: transactionsData } = useAdminTransactions({ 
+    pageSize: 100,
     dateFrom,
     dateTo 
-  }))
+  })
   
   // Future: Waitlist analytics could be added here
   // const { data: waitlistByState } = useQuery(useAdminWaitlist({ groupBy: 'state' }))

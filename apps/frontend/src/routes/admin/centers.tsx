@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   useAdminCenters, 
   useUpdateCenterStatus 
@@ -78,7 +77,7 @@ function AdminCenters() {
     isLoading, 
     error,
     refetch 
-  } = useQuery(useAdminCenters(queryParams))
+  } = useAdminCenters(queryParams)
 
   // Status update mutation
   const updateStatusMutation = useUpdateCenterStatus()

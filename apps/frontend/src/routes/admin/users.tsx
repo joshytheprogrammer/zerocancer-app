@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useAdminUsers } from '@/services/providers/admin.provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,14 +55,12 @@ function AdminUsers() {
     data: usersData,
     isLoading,
     error,
-  } = useQuery(
-    useAdminUsers({
-      page,
-      pageSize,
-      search: search.trim() || undefined,
-      profileType: profileType === 'ALL' ? undefined : profileType,
-    }),
-  )
+  } = useAdminUsers({
+    page,
+    pageSize,
+    search: search.trim() || undefined,
+    profileType: profileType === 'ALL' ? undefined : profileType,
+  })
 
   const users = usersData?.data?.users || []
   const totalPages = usersData?.data?.totalPages || 1

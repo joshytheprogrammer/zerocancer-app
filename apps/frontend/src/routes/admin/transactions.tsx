@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useAdminTransactions } from '@/services/providers/admin.provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,7 +70,7 @@ function AdminTransactions() {
     isLoading, 
     error,
     refetch 
-  } = useQuery(useAdminTransactions(queryParams))
+  } = useAdminTransactions(queryParams)
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
