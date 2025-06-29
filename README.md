@@ -1,284 +1,212 @@
-Welcome to your new TanStack app!
+# ZeroCancer Platform
 
-# Running the Project
+ZeroCancer is a comprehensive platform that connects cancer screening donations with patients in need. The platform facilitates seamless matching between donors, cancer centers, and patients requiring screening services.
 
-This monorepo uses pnpm workspaces. All commands should be run from the root directory unless otherwise specified.
+## 🎯 What ZeroCancer Does
 
-## 1. Install dependencies for all packages
+**For Donors & Campaigns:**
+
+- Create donation campaigns for specific cancer screening types
+- Contribute to general funding pools for cancer screenings
+- Track donation impact and see how funds are used
+
+**For Patients:**
+
+- Join waitlists for cancer screening services
+- Get automatically matched with available funding
+- Receive notifications when screening appointments are available
+
+**For Cancer Centers:**
+
+- Register to provide screening services
+- Receive automatic monthly payouts for completed screenings
+- Track earnings and transaction history
+
+**For Administrators:**
+
+- Oversee the entire platform operation
+- Manually trigger matching algorithms when needed
+- Monitor system health and manage campaigns
+
+## 🏗️ System Architecture
+
+- **Frontend**: React + TypeScript + TanStack Router + Vite
+- **Backend**: Hono.js + Prisma + SQLite/PostgreSQL
+- **Payments**: Paystack integration for automated payouts
+- **Authentication**: JWT-based auth with role-based access control
+- **Automation**: Webhook-driven cron jobs for matching and payouts
+
+## 🚀 Quick Setup
+
+### Prerequisites
+
+- Node.js (v18+)
+- pnpm package manager
+
+### 1. Clone and Install
 
 ```bash
+git clone <repo-url>
+cd zerocancer
 pnpm install
 ```
 
-## 2. Start the frontend (Vite + React)
+### 2. Environment Setup
 
-```bash
-cd apps/frontend
-pnpm dev
+Create environment files for both frontend and backend:
+
+**Backend (`apps/backend/.env`):**
+
+```env
+# Database
+DATABASE_URL="file:./dev.db"
+
+# Authentication
+JWT_SECRET="your-jwt-secret-key-here"
+
+# Paystack (for payouts)
+PAYSTACK_SECRET_KEY="your-paystack-secret-key"
+
+# Webhook security (for cron jobs)
+CRON_API_KEY="your-cron-api-key-here"
+
+# Frontend url
+FRONTEND_URL="http://localhost:3000"
+
+# Optional: Email service
+SMTP_HOST="your-smtp-host"
+SMTP_PORT=587
+SMTP_USER="your-email"
+SMTP_PASS="your-password"
 ```
 
-- The frontend will be available at http://localhost:5173 (or the port Vite chooses).
+### 3. Database Setup
 
-## 3. Start the backend (Hono.js + Prisma)
+```bash
+cd apps/backend
+pnpm prisma:generate
+pnpm --filter ./apps/backend db:push
+```
+
+### 4. Start Development Servers
+
+**Terminal 1 (Backend):**
 
 ```bash
 cd apps/backend
 pnpm dev
 ```
 
-- The backend will be available at http://localhost:3000 (or your configured port).
-
-## 4. Shared Types/Utils
-
-- Shared code lives in `packages/shared` and is imported using the `@shared` alias in both frontend and backend.
-
-## 5. Notes
-
-- Only the root `node_modules` is needed; do not run `pnpm install` in subfolders.
-- You can run scripts for all packages from the root using `pnpm -r <script>` (e.g., `pnpm -r build`).
-
----
-
-# ZeroCancer Monorepo
-
-A fullstack monorepo using Vite + React + TanStack Router (frontend), Hono.js + Prisma (backend), and shared TypeScript types and Zod schemas.
-
----
-
-## 🛠️ Getting Started
-
-1. **Install dependencies for all packages:**
-   ```bash
-   pnpm install
-   ```
-2. **Run the frontend:**
-   ```bash
-   cd frontend
-   pnpm dev
-   ```
-3. **Run the backend:**
-   ```bash
-   cd backend
-   pnpm dev
-   ```
-
-# Building For Production
-
-To build this application for production:
+**Terminal 2 (Frontend):**
 
 ```bash
-# Clone and enter the project directory
-# git clone <repo-url>
-cd zero-cancer/zerocancer
+cd apps/frontend
+pnpm dev
 ```
 
-### 2. Install dependencies (root only)
+**Or Start up both**
 
 ```bash
-pnpm install
+pnpm dev
 ```
 
-### 3. Environment setup
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:3000
 
-- Copy `.env.example` to `.env` in `apps/backend` and `apps/frontend` if needed, and fill in required values (e.g., database URL for backend).
+## 🔧 Production Deployment
 
-### 4. Database setup (backend)
+### Build for Production
 
 ```bash
-pnpm --filter ./apps/backend prisma:generate
-pnpm --filter ./apps/backend db:push
+# Build all packages
+pnpm build
+
+# Or build individually
+pnpm --filter ./apps/backend build
+pnpm --filter ./apps/frontend build
 ```
 
-### 5. Start the development servers (auto builds shared code!)
+### Environment Variables (Production)
+
+Ensure all environment variables are set in your production environment, especially:
+
+- `DATABASE_URL` (PostgreSQL recommended for production)
+- `PAYSTACK_SECRET_KEY` (live keys)
+- `JWT_SECRET` (strong, random key)
+- `CRON_API_KEY` (for automated webhooks)
+
+## 🤖 Automated Operations
+
+ZeroCancer includes two automated webhook endpoints for cron jobs:
+
+### 1. Monthly Payouts
+
+Automatically processes monthly payments to cancer centers:
 
 ```bash
-pnpx shadcn@latest add button
+# Run on 1st of each month at 2 AM
+# Crontab: 0 2 1 * *
+curl -X POST https://your-domain.com/api/v1/payouts/monthly-batch \
+  -H "x-api-key: $CRON_API_KEY"
 ```
 
-## Routing
+### 2. Waitlist Matching
 
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
+Matches patients with available funding every 18 hours:
 
 ```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
+# Run every 18 hours
+# Crontab: 0 */18 * * *
+curl -X POST https://your-domain.com/api/v1/waitlist/trigger-matching \
+  -H "x-api-key: $CRON_API_KEY"
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+📖 **Full webhook documentation**: `apps/backend/WAITLIST_WEBHOOK.md`
 
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+## 📁 Project Structure
 
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
+```
+zerocancer/
+├── apps/
+│   ├── backend/          # Hono.js API server
+│   │   ├── src/api/      # API endpoints
+│   │   ├── src/lib/      # Business logic & services
+│   │   ├── src/middleware/ # Auth & validation
+│   │   └── prisma/       # Database schema & migrations
+│   └── frontend/         # React SPA
+│       ├── src/components/ # Reusable UI components
+│       ├── src/routes/   # TanStack Router pages
+│       ├── src/services/ # API calls & state management
+│       └── src/hooks/    # Custom React hooks
+├── packages/
+│   └── shared/           # Shared TypeScript types & schemas
+└── scripts/              # Build & deployment scripts
 ```
 
-You can also add TanStack Query Devtools to the root route (optional).
+## 🔑 Key Features
 
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+- **Automated Matching**: Algorithm matches patients with available funding
+- **Real-time Notifications**: Patients and centers get instant updates
+- **Financial Tracking**: Complete audit trail for all transactions
+- **Role-based Access**: Admin, center staff, and patient permissions
+- **Campaign Management**: Targeted and general donation campaigns
+- **Mobile Responsive**: Works on all devices
+- **Type Safety**: Full TypeScript coverage with shared schemas
 
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
+## 📚 Development Resources
 
-Now you can use `useQuery` to fetch your data.
+- **API Documentation**: Explore endpoints at `/api/docs` (when running backend)
+- **Database Schema**: Check `apps/backend/prisma/schema.prisma`
+- **Shared Types**: All types in `packages/shared/types/`
+- **Component Library**: shadcn/ui components in `apps/frontend/src/components/ui/`
 
-```tsx
-import { useQuery } from "@tanstack/react-query";
+## 🚨 Important Notes
 
-import "./App.css";
+1. **Database**: Uses SQLite for development, PostgreSQL recommended for production
+2. **Payments**: Requires valid Paystack account and API keys
+3. **Webhooks**: Set up cron jobs for automated operations
+4. **Security**: Change all default secrets before deploying to production
 
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
+## 📞 Support
 
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Zustand
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+For questions about setup, deployment, or contributing to ZeroCancer, please check the documentation in each app's README, open an issue or contact [@T4910](https://github.com/T4910) / [@RalphFred](https://github.com/RalphFred).
