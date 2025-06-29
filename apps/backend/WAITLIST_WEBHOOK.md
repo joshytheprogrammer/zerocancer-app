@@ -1,26 +1,81 @@
-# Waitlist Matching Webhook Documentation
+# Cron Job Webhook Documentation
 
-The waitlist matching algorithm can be triggered via webhook endpoints for automated or manual execution.
+This document covers the two webhooks designed to be triggered by automated cron jobs:
 
-## Webhook Endpoints
+1. **Monthly Center Payout Webhook** - Processes monthly payments to cancer centers
+2. **Waitlist Matching Webhook** - Runs the patient matching algorithm every 18 hours
 
-### 1. Automated Trigger with Signature Verification
+## 1. Monthly Center Payout Webhook
+
+**Endpoint:** `POST /api/v1/payouts/monthly-batch`
+
+**Purpose:** Automatically processes monthly payouts to all cancer centers based on their completed screenings.
+
+**Schedule:** Run once per month (recommended: 1st day of each month)
+
+**Authentication:** API Key (x-api-key header)
+
+### Request Format:
+
+**Headers:**
 
 ```
-POST /api/v1/waitlist/trigger-matching
+x-api-key: your_cron_api_key_here
+Content-Type: application/json
 ```
 
-**Request Body:**
+**Body:** Empty (no body required)
+
+### Response:
 
 ```json
 {
-  "signature": "sha256=...", // Optional: HMAC signature for verification
-  "timestamp": "2025-06-28T12:00:00.000Z", // Optional: Request timestamp
-  "force": false // Optional: Force execution even if conditions aren't met
+  "ok": true,
+  "message": "Monthly payouts processed successfully",
+  "data": {
+    "centersProcessed": 15,
+    "totalAmount": 50000,
+    "payoutsCreated": 12,
+    "executionTime": 2345,
+    "timestamp": "2025-06-29T12:00:00.000Z"
+  }
 }
 ```
 
-**Response:**
+### Cron Job Example:
+
+```bash
+#!/bin/bash
+# Monthly payout script - Run on 1st of each month at 2 AM
+# Crontab: 0 2 1 * * /path/to/monthly-payout.sh
+
+curl -X POST https://your-domain.com/api/v1/payouts/monthly-batch \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $CRON_API_KEY"
+```
+
+## 2. Waitlist Matching Webhook
+
+**Endpoint:** `POST /api/v1/waitlist/trigger-matching`
+
+**Purpose:** Triggers the waitlist matching algorithm to connect patients with available funding.
+
+**Schedule:** Run every 18 hours
+
+**Authentication:** API Key (x-api-key header)
+
+### Request Format:
+
+**Headers:**
+
+```
+x-api-key: your_cron_api_key_here
+Content-Type: application/json
+```
+
+**Body:** Empty (no body required)
+
+### Response:
 
 ```json
 {
@@ -28,187 +83,92 @@ POST /api/v1/waitlist/trigger-matching
   "message": "Waitlist matching algorithm executed successfully",
   "data": {
     "executionTime": 1234,
-    "timestamp": "2025-06-28T12:00:00.000Z"
+    "timestamp": "2025-06-29T12:00:00.000Z"
   }
 }
 ```
 
-### 2. Manual Admin Trigger
+### Cron Job Example:
 
-```
-POST /api/v1/waitlist/manual-trigger
-Authorization: Bearer YOUR_ADMIN_API_KEY
-```
+```bash
+#!/bin/bash
+# Waitlist matching script - Run every 18 hours
+# Crontab: 0 */18 * * * /path/to/waitlist-matching.sh
 
-**Response:**
-
-```json
-{
-  "ok": true,
-  "message": "Manual waitlist matching executed successfully",
-  "data": {
-    "executionTime": 1234,
-    "timestamp": "2025-06-28T12:00:00.000Z",
-    "triggeredBy": "admin"
-  }
-}
-```
-
-### 3. Health Check
-
-```
-GET /api/v1/waitlist/matching-status
-```
-
-**Response:**
-
-```json
-{
-  "ok": true,
-  "status": "healthy",
-  "message": "Waitlist matching service is operational",
-  "timestamp": "2025-06-28T12:00:00.000Z"
-}
+curl -X POST https://your-domain.com/api/v1/waitlist/trigger-matching \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $CRON_API_KEY"
 ```
 
 ## Environment Variables
 
-### Required for Production
-
-- `WAITLIST_WEBHOOK_SECRET`: Secret key for webhook signature verification (recommended)
-- `ADMIN_API_KEY`: API key for manual admin triggers (recommended)
-
-### Example .env
+Both webhooks use the same environment variables:
 
 ```env
-WAITLIST_WEBHOOK_SECRET=your_webhook_secret_key_here
-ADMIN_API_KEY=your_admin_api_key_here
+# For both webhook authentication (API key)
+CRON_API_KEY=your_cron_api_key_here
+
+# Database and other required vars
+DATABASE_URL=your_database_connection_string
+PAYSTACK_SECRET_KEY=your_paystack_secret_key
 ```
 
-## Webhook Signature Verification
+## Security
 
-For secure automated triggers, the webhook verifies HMAC-SHA256 signatures:
+Both webhooks now use the same simple authentication method:
 
-1. Calculate signature: `HMAC-SHA256(request_body, webhook_secret)`
-2. Send as: `sha256=calculated_signature`
-3. Include current timestamp in request body
-4. Request must be within 5 minutes of timestamp
+### API Key Authentication:
 
-**Example in Node.js:**
-
-```javascript
-const crypto = require("crypto");
-
-const payload = JSON.stringify({
-  timestamp: new Date().toISOString(),
-  force: false,
-});
-
-const signature = crypto
-  .createHmac("sha256", process.env.WAITLIST_WEBHOOK_SECRET)
-  .update(payload)
-  .digest("hex");
-
-const response = await fetch("/api/v1/waitlist/trigger-matching", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    ...JSON.parse(payload),
-    signature: `sha256=${signature}`,
-  }),
-});
-```
-
-## Cron Job Examples
-
-### Using cURL (Linux/Unix)
-
-```bash
-# Add to crontab (runs every hour)
-0 * * * * curl -X POST https://your-domain.com/api/v1/waitlist/manual-trigger \
-  -H "Authorization: Bearer YOUR_ADMIN_API_KEY" \
-  -H "Content-Type: application/json"
-```
-
-### Using Node.js Script
-
-```javascript
-// scheduler.js
-const cron = require("node-cron");
-
-// Run every hour
-cron.schedule("0 * * * *", async () => {
-  try {
-    const response = await fetch(
-      "https://your-domain.com/api/v1/waitlist/manual-trigger",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.ADMIN_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const result = await response.json();
-    console.log("Waitlist matching result:", result);
-  } catch (error) {
-    console.error("Waitlist matching failed:", error);
-  }
-});
-```
-
-### Using GitHub Actions
-
-```yaml
-# .github/workflows/waitlist-matching.yml
-name: Waitlist Matching
-on:
-  schedule:
-    - cron: "0 * * * *" # Every hour
-
-jobs:
-  trigger-matching:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Waitlist Matching
-        run: |
-          curl -X POST ${{ secrets.API_BASE_URL }}/api/v1/waitlist/manual-trigger \
-            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            -H "Content-Type: application/json"
-```
-
-## Algorithm Behavior
-
-The waitlist matching algorithm:
-
-1. **Processes up to 10 patients per screening type** (FCFS order)
-2. **Skips patients with 3+ unclaimed allocations** (prevents over-allocation)
-3. **Skips patients already matched for the same screening type**
-4. **Prioritizes campaigns by:**
-   - Most specific (fewest screening types supported)
-   - Highest available amount
-   - Earliest created date
-5. **Falls back to general donor pool** if no specific campaign matches
-6. **Creates notifications** for matched patients
-7. **Updates campaign balances** and waitlist statuses atomically
+- Uses simple API key authentication via `x-api-key` header
+- Optional security (if `CRON_API_KEY` environment variable is not set, no authentication required)
+- Same key works for both endpoints
 
 ## Monitoring
 
-Monitor the webhook execution by:
+### Health Checks
 
-1. **Checking logs** for execution time and success/failure
-2. **Using the health check endpoint** for uptime monitoring
-3. **Tracking response times** and error rates
-4. **Monitoring database** for successful matches and notifications
+- **Waitlist Status**: `GET /api/v1/waitlist/matching-status` (public)
+- **Payout Status**: Check application logs and database records
 
-## Security Best Practices
+### What to Monitor
 
-1. **Use HTTPS** for all webhook calls
-2. **Implement signature verification** for automated triggers
-3. **Rotate API keys** regularly
-4. **Monitor for replay attacks** (timestamp validation)
-5. **Rate limit** webhook endpoints if needed
-6. **Log all webhook calls** for audit purposes
+1. **HTTP Status Codes**: Ensure webhooks return 200 OK
+2. **Response Times**: Monitor execution times in response data
+3. **Error Logs**: Check application logs for failures
+4. **Database Changes**: Verify payouts and matches are created
+5. **Notification Delivery**: Ensure patients and centers receive notifications
+
+## Error Handling
+
+### Common Error Responses:
+
+- `400` - Invalid request body or missing required fields
+- `401` - Invalid signature or timestamp too old (>5 minutes)
+- `500` - Internal server error during processing
+
+### Retry Logic:
+
+```bash
+# Simple retry logic in bash
+for i in {1..3}; do
+  if curl -X POST [webhook_url] [options]; then
+    echo "Success on attempt $i"
+    break
+  else
+    echo "Failed attempt $i, retrying..."
+    sleep 60  # Wait 1 minute before retry
+  fi
+done
+```
+
+## Quick Setup Checklist
+
+1. **Set environment variables** in your server
+2. **Test webhooks manually** first to ensure they work
+3. **Set up cron jobs** with proper timing:
+   - Monthly payouts: `0 2 1 * *` (1st of month at 2 AM)
+   - Waitlist matching: `0 */18 * * *` (every 18 hours)
+4. **Monitor logs** after first runs to ensure success
+5. **Set up alerting** for webhook failures
+
+That's it! These two webhooks will automate the core financial and matching operations of your platform.
