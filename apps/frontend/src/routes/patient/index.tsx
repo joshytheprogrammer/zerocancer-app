@@ -119,12 +119,12 @@ function PatientDashboard() {
             View Appointments
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-16 text-lg">
+        {/* <Button asChild variant="outline" className="h-16 text-lg">
           <Link to="/patient/results">
             <FileText className="mr-2 h-5 w-5" />
             View Results
           </Link>
-        </Button>
+        </Button> */}
         <Button asChild variant="outline" className="h-16 text-lg">
           <Link to="/patient/notifications">
             <AlertCircle className="mr-2 h-5 w-5" />

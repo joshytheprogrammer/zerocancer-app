@@ -204,9 +204,9 @@ async function main() {
       password: "fake.password",
     },
     {
-      fullName: "Ralph",
-      email: "janedoe@example.com",
-      password: "janes.password",
+      fullName: "Kwaghuter Raphael",
+      email: "raphaelgbaorun@gmail.com",
+      password: "he_wanted_one",
     },
     // Add more admins here as needed
   ];
@@ -233,9 +233,9 @@ async function main() {
     create: {
       id: "general-donor-pool",
       donorId: "general-public",
-      availableAmount: 10000,
+      availableAmount: 0,
       reservedAmount: 0,
-      initialAmount: 10000,
+      initialAmount: 0,
       status: "ACTIVE",
     },
   });
@@ -292,19 +292,19 @@ async function main() {
     )
   );
 
-  console.log("📝 Creating waitlists...");
-  for (const patient of testPatients) {
-    const screenings = faker.helpers.arrayElements(screeningTypes, 2);
-    for (const screening of screenings) {
-      await prisma.waitlist.create({
-        data: {
-          screeningTypeId: screening.id,
-          patientId: patient.id,
-          status: "PENDING",
-        },
-      });
-    }
-  }
+  // console.log("📝 Creating waitlists...");
+  // for (const patient of testPatients) {
+  //   const screenings = faker.helpers.arrayElements(screeningTypes, 2);
+  //   for (const screening of screenings) {
+  //     await prisma.waitlist.create({
+  //       data: {
+  //         screeningTypeId: screening.id,
+  //         patientId: patient.id,
+  //         status: "PENDING",
+  //       },
+  //     });
+  //   }
+  // }
 
   // console.log("🎯 Creating donation allocations...");
   // // comment out if giving errors
@@ -327,11 +327,11 @@ async function main() {
   const centerLocations = [
     { state: "Lagos", lga: "Ikeja" },
     { state: "Lagos", lga: "Surulere" },
-    { state: "Ogun", lga: "Abeokuta" },
-    { state: "Abuja", lga: "Gwarinpa" },
-    { state: "Kano", lga: "Nassarawa" },
+    { state: "Ogun", lga: "Abeokuta South" },
+    { state: "FCT", lga: "Gwagwalada" },
+    { state: "Kano", lga: "Nasarawa" },
     { state: "Enugu", lga: "Nsukka" },
-    { state: "Sokoto", lga: "Wamakko" },
+    { state: "Sokoto", lga: "Wamako" },
   ];
 
   await Promise.allSettled(

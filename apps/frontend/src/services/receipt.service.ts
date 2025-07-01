@@ -2,12 +2,10 @@ import request from '@/lib/request'
 import * as endpoints from '@/services/endpoints'
 import {
   CreateReceiptRequestSchema,
-  ReceiptListQuerySchema,
   ResendReceiptRequestSchema,
 } from '@zerocancer/shared/schemas/receipt.schema'
 import type {
   TCreateReceiptResponse,
-  TReceiptListResponse,
   TReceiptResponse,
   TResendReceiptResponse,
 } from '@zerocancer/shared/types'
@@ -106,11 +104,11 @@ export const resendReceipt = async (
  * // Use through the provider:
  * const { data: receipts } = useReceiptsQuery({ page: 1, limit: 20, type: 'APPOINTMENT' });
  */
-export const listReceipts = async (
-  params: Partial<z.infer<typeof ReceiptListQuerySchema>> = {},
-): Promise<TReceiptListResponse> => {
-  return await request.get(endpoints.listReceiptsV1(params))
-}
+// export const listReceipts = async (
+//   params: Partial<z.infer<typeof ReceiptListQuerySchema>> = {},
+// ): Promise<TReceiptListResponse> => {
+//   return await request.get(endpoints.listReceiptsV1(params))
+// }
 
 /**
  * Utility functions for working with receipts

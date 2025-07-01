@@ -23,16 +23,14 @@ import { Route as CenterIndexRouteImport } from './routes/center/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as StaffLoginRouteImport } from './routes/staff/login'
-import { Route as PatientResultsRouteImport } from './routes/patient/results'
 import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
-import { Route as DonorReceiptsRouteImport } from './routes/donor/receipts'
+import { Route as PatientResultsRouteImport } from './routes/patient/_results'
 import { Route as DonationPaymentStatusRouteImport } from './routes/donation/payment-status'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as CenterVerifyCodeRouteImport } from './routes/center/verify-code'
 import { Route as CenterUploadResultsRouteImport } from './routes/center/upload-results'
 import { Route as CenterStaffRouteImport } from './routes/center/staff'
-import { Route as CenterResultsHistoryRouteImport } from './routes/center/results-history'
 import { Route as CenterReceiptHistoryRouteImport } from './routes/center/receipt-history'
 import { Route as CenterAppointmentsRouteImport } from './routes/center/appointments'
 import { Route as AdminWaitlistRouteImport } from './routes/admin/waitlist'
@@ -133,11 +131,6 @@ const StaffLoginRoute = StaffLoginRouteImport.update({
   path: '/staff/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PatientResultsRoute = PatientResultsRouteImport.update({
-  id: '/results',
-  path: '/results',
-  getParentRoute: () => PatientRoute,
-} as any)
 const PatientNotificationsRoute = PatientNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -148,10 +141,9 @@ const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => PatientRoute,
 } as any)
-const DonorReceiptsRoute = DonorReceiptsRouteImport.update({
-  id: '/receipts',
-  path: '/receipts',
-  getParentRoute: () => DonorRoute,
+const PatientResultsRoute = PatientResultsRouteImport.update({
+  id: '/_results',
+  getParentRoute: () => PatientRoute,
 } as any)
 const DonationPaymentStatusRoute = DonationPaymentStatusRouteImport.update({
   id: '/donation/payment-status',
@@ -176,11 +168,6 @@ const CenterUploadResultsRoute = CenterUploadResultsRouteImport.update({
 const CenterStaffRoute = CenterStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
-  getParentRoute: () => CenterRoute,
-} as any)
-const CenterResultsHistoryRoute = CenterResultsHistoryRouteImport.update({
-  id: '/results-history',
-  path: '/results-history',
   getParentRoute: () => CenterRoute,
 } as any)
 const CenterReceiptHistoryRoute = CenterReceiptHistoryRouteImport.update({
@@ -357,7 +344,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/center': typeof CenterRouteWithChildren
   '/donor': typeof DonorRouteWithChildren
-  '/patient': typeof PatientRouteWithChildren
+  '/patient': typeof PatientResultsRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
   '/staff-create-password': typeof authStaffCreatePasswordRoute
@@ -379,16 +366,13 @@ export interface FileRoutesByFullPath {
   '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
-  '/center/results-history': typeof CenterResultsHistoryRoute
   '/center/staff': typeof CenterStaffRoute
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/donation/payment-status': typeof DonationPaymentStatusRoute
-  '/donor/receipts': typeof DonorReceiptsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
-  '/patient/results': typeof PatientResultsRoute
   '/staff/login': typeof StaffLoginRoute
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
@@ -431,21 +415,18 @@ export interface FileRoutesByTo {
   '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
-  '/center/results-history': typeof CenterResultsHistoryRoute
   '/center/staff': typeof CenterStaffRoute
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/donation/payment-status': typeof DonationPaymentStatusRoute
-  '/donor/receipts': typeof DonorReceiptsRoute
+  '/patient': typeof PatientIndexRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
-  '/patient/results': typeof PatientResultsRoute
   '/staff/login': typeof StaffLoginRoute
   '/admin': typeof AdminIndexRoute
   '/center': typeof CenterIndexRoute
   '/donor': typeof DonorIndexRoute
-  '/patient': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
   '/donor/campaigns/$campaignId': typeof DonorCampaignsCampaignIdRouteWithChildren
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
@@ -487,16 +468,14 @@ export interface FileRoutesById {
   '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
-  '/center/results-history': typeof CenterResultsHistoryRoute
   '/center/staff': typeof CenterStaffRoute
   '/center/upload-results': typeof CenterUploadResultsRoute
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/donation/payment-status': typeof DonationPaymentStatusRoute
-  '/donor/receipts': typeof DonorReceiptsRoute
+  '/patient/_results': typeof PatientResultsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
-  '/patient/results': typeof PatientResultsRoute
   '/staff/login': typeof StaffLoginRoute
   '/(public)/': typeof publicIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -547,16 +526,13 @@ export interface FileRouteTypes {
     | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
-    | '/center/results-history'
     | '/center/staff'
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
     | '/donation/payment-status'
-    | '/donor/receipts'
     | '/patient/appointments'
     | '/patient/notifications'
-    | '/patient/results'
     | '/staff/login'
     | '/admin/'
     | '/center/'
@@ -599,21 +575,18 @@ export interface FileRouteTypes {
     | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
-    | '/center/results-history'
     | '/center/staff'
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
     | '/donation/payment-status'
-    | '/donor/receipts'
+    | '/patient'
     | '/patient/appointments'
     | '/patient/notifications'
-    | '/patient/results'
     | '/staff/login'
     | '/admin'
     | '/center'
     | '/donor'
-    | '/patient'
     | '/sign-up'
     | '/donor/campaigns/$campaignId'
     | '/donor/campaigns/create'
@@ -654,16 +627,14 @@ export interface FileRouteTypes {
     | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
-    | '/center/results-history'
     | '/center/staff'
     | '/center/upload-results'
     | '/center/verify-code'
     | '/demo/tanstack-query'
     | '/donation/payment-status'
-    | '/donor/receipts'
+    | '/patient/_results'
     | '/patient/appointments'
     | '/patient/notifications'
-    | '/patient/results'
     | '/staff/login'
     | '/(public)/'
     | '/admin/'
@@ -791,13 +762,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/patient/results': {
-      id: '/patient/results'
-      path: '/results'
-      fullPath: '/patient/results'
-      preLoaderRoute: typeof PatientResultsRouteImport
-      parentRoute: typeof PatientRoute
-    }
     '/patient/notifications': {
       id: '/patient/notifications'
       path: '/notifications'
@@ -812,12 +776,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientAppointmentsRouteImport
       parentRoute: typeof PatientRoute
     }
-    '/donor/receipts': {
-      id: '/donor/receipts'
-      path: '/receipts'
-      fullPath: '/donor/receipts'
-      preLoaderRoute: typeof DonorReceiptsRouteImport
-      parentRoute: typeof DonorRoute
+    '/patient/_results': {
+      id: '/patient/_results'
+      path: ''
+      fullPath: '/patient'
+      preLoaderRoute: typeof PatientResultsRouteImport
+      parentRoute: typeof PatientRoute
     }
     '/donation/payment-status': {
       id: '/donation/payment-status'
@@ -852,13 +816,6 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/center/staff'
       preLoaderRoute: typeof CenterStaffRouteImport
-      parentRoute: typeof CenterRoute
-    }
-    '/center/results-history': {
-      id: '/center/results-history'
-      path: '/results-history'
-      fullPath: '/center/results-history'
-      preLoaderRoute: typeof CenterResultsHistoryRouteImport
       parentRoute: typeof CenterRoute
     }
     '/center/receipt-history': {
@@ -1189,7 +1146,6 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface CenterRouteChildren {
   CenterAppointmentsRoute: typeof CenterAppointmentsRoute
   CenterReceiptHistoryRoute: typeof CenterReceiptHistoryRoute
-  CenterResultsHistoryRoute: typeof CenterResultsHistoryRoute
   CenterStaffRoute: typeof CenterStaffRoute
   CenterUploadResultsRoute: typeof CenterUploadResultsRoute
   CenterVerifyCodeRoute: typeof CenterVerifyCodeRoute
@@ -1199,7 +1155,6 @@ interface CenterRouteChildren {
 const CenterRouteChildren: CenterRouteChildren = {
   CenterAppointmentsRoute: CenterAppointmentsRoute,
   CenterReceiptHistoryRoute: CenterReceiptHistoryRoute,
-  CenterResultsHistoryRoute: CenterResultsHistoryRoute,
   CenterStaffRoute: CenterStaffRoute,
   CenterUploadResultsRoute: CenterUploadResultsRoute,
   CenterVerifyCodeRoute: CenterVerifyCodeRoute,
@@ -1225,7 +1180,6 @@ const DonorCampaignsCampaignIdRouteWithChildren =
   )
 
 interface DonorRouteChildren {
-  DonorReceiptsRoute: typeof DonorReceiptsRoute
   DonorIndexRoute: typeof DonorIndexRoute
   DonorCampaignsCampaignIdRoute: typeof DonorCampaignsCampaignIdRouteWithChildren
   DonorCampaignsCreateRoute: typeof DonorCampaignsCreateRoute
@@ -1234,7 +1188,6 @@ interface DonorRouteChildren {
 }
 
 const DonorRouteChildren: DonorRouteChildren = {
-  DonorReceiptsRoute: DonorReceiptsRoute,
   DonorIndexRoute: DonorIndexRoute,
   DonorCampaignsCampaignIdRoute: DonorCampaignsCampaignIdRouteWithChildren,
   DonorCampaignsCreateRoute: DonorCampaignsCreateRoute,
@@ -1245,18 +1198,18 @@ const DonorRouteChildren: DonorRouteChildren = {
 const DonorRouteWithChildren = DonorRoute._addFileChildren(DonorRouteChildren)
 
 interface PatientRouteChildren {
+  PatientResultsRoute: typeof PatientResultsRoute
   PatientAppointmentsRoute: typeof PatientAppointmentsRoute
   PatientNotificationsRoute: typeof PatientNotificationsRoute
-  PatientResultsRoute: typeof PatientResultsRoute
   PatientIndexRoute: typeof PatientIndexRoute
   PatientBookPayRoute: typeof PatientBookPayRoute
   PatientBookIndexRoute: typeof PatientBookIndexRoute
 }
 
 const PatientRouteChildren: PatientRouteChildren = {
+  PatientResultsRoute: PatientResultsRoute,
   PatientAppointmentsRoute: PatientAppointmentsRoute,
   PatientNotificationsRoute: PatientNotificationsRoute,
-  PatientResultsRoute: PatientResultsRoute,
   PatientIndexRoute: PatientIndexRoute,
   PatientBookPayRoute: PatientBookPayRoute,
   PatientBookIndexRoute: PatientBookIndexRoute,

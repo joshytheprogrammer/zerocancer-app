@@ -15,6 +15,8 @@ export const allWaitlists = (params: z.infer<typeof getAllWaitlistsSchema>) =>
   queryOptions({
     queryKey: [QueryKeys.allWaitlists, params],
     queryFn: () => waitlistService.getAllWaitlists(params),
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // Check every minute
   })
 
 // Get all waitlists with infinite loading (paginated, sortable)
@@ -100,6 +102,6 @@ export const useTriggerWaitlistMatching = () => {
     },
     onError: (error) => {
       console.log(error)
-    }
+    },
   })
 }

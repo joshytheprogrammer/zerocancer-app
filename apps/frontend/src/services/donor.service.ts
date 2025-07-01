@@ -15,7 +15,7 @@ import type {
   TFundCampaignResponse,
   TGetCampaignResponse,
   TGetCampaignsResponse,
-  TGetDonorReceiptsResponse,
+  // TGetDonorReceiptsResponse,
   TPaymentVerificationResponse,
   TUpdateCampaignResponse,
 } from '@zerocancer/shared/types'
@@ -84,13 +84,13 @@ export const deleteCampaign = async (
 }
 
 // Get donor receipts (paginated)
-export const getDonorReceipts = async (params: {
-  page?: number
-  size?: number
-}): Promise<TGetDonorReceiptsResponse> => {
-  const res = await request.get(endpoints.getDonorReceipts(params.page, params.size))
-  return res as TGetDonorReceiptsResponse
-}
+// export const getDonorReceipts = async (params: {
+//   page?: number
+//   size?: number
+// }): Promise<TGetDonorReceiptsResponse> => {
+//   const res = await request.get(endpoints.getDonorReceipts(params.page, params.size))
+//   return res as TGetDonorReceiptsResponse
+// }
 
 // ========================================
 // PAYMENT VERIFICATION

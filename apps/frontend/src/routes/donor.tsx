@@ -1,11 +1,5 @@
-import { Outlet, createFileRoute, Link, redirect } from '@tanstack/react-router'
-import {
-  Home,
-  Briefcase,
-  FileText,
-  Upload,
-  LogOut,
-} from 'lucide-react'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
+import { Briefcase, FileText, Home, LogOut, Upload } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
@@ -23,8 +17,8 @@ export const Route = createFileRoute('/donor')({
 
     // If authenticated but wrong role, redirect to correct dashboard
     if (!isAuthorized) {
-    if (profile === 'PATIENT') return redirect({ to: '/patient' })
-    if (profile === 'CENTER') return redirect({ to: '/center' })
+      if (profile === 'PATIENT') return redirect({ to: '/patient' })
+      if (profile === 'CENTER') return redirect({ to: '/center' })
     }
 
     return null
@@ -39,7 +33,7 @@ function DonorLayout() {
       {/* Fixed Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-60 lg:w-72 hidden md:block border-r bg-muted/40">
         <div className="flex h-full flex-col gap-2">
-          <div className="flex h-14 items-center border-b px-4 lg:h-[70px] lg:px-6">  
+          <div className="flex h-14 items-center border-b px-4 lg:h-[70px] lg:px-6">
             <Link to="/donor" className="flex items-center gap-2 font-semibold">
               <img src={logo} alt="ZeroCancer" className="h-12" />
             </Link>
@@ -63,22 +57,6 @@ function DonorLayout() {
                 <Briefcase className="h-4 w-4" />
                 My Campaigns
               </Link>
-              <Link
-                to="/donor/campaigns/create"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <Upload className="h-4 w-4" />
-                Create Campaign
-              </Link>
-              {/* <Link
-                to="/donor/receipts"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                activeProps={{ className: 'bg-muted text-primary' }}
-              >
-                <FileText className="h-4 w-4" />
-                Receipts
-              </Link> */}
               {/* Add code below */}
               <div className="border-t p-2 lg:p-4">
                 <button
@@ -96,7 +74,7 @@ function DonorLayout() {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content Area */}
       <div className="md:ml-60 lg:ml-72">
         <main className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen">

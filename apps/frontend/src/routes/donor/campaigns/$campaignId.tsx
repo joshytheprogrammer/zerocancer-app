@@ -1,14 +1,10 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useDonorCampaign, useDeleteCampaign, useFundCampaign } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -23,25 +19,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
-  ArrowLeft, 
-  Users, 
-  DollarSign, 
-  Target,
-  TrendingUp,
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
+import {
+  useDeleteCampaign,
+  useDonorCampaign,
+  useFundCampaign,
+} from '@/services/providers/donor.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import {
   AlertTriangle,
-  MoreHorizontal,
-  Edit,
-  Trash2,
+  ArrowLeft,
   CheckCircle,
   Clock,
   Activity,
+  DollarSign,
+  Edit,
+  MoreHorizontal,
   PieChart,
-  Plus
+  Plus,
+  Target,
+  Trash2,
+  TrendingUp,
+  Users,
 } from 'lucide-react'
-import { format } from 'date-fns'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/donor/campaigns/$campaignId')({
   component: CampaignDetails,
@@ -53,20 +62,20 @@ function CampaignDetails() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [fundDialogOpen, setFundDialogOpen] = useState(false)
   const [fundAmount, setFundAmount] = useState('')
-  
+
   // Fetch campaign details
-  const { 
-    data: campaignData, 
-    isLoading, 
-    error 
+  const {
+    data: campaignData,
+    isLoading,
+    error,
   } = useQuery(useDonorCampaign(campaignId))
-  
+
   // Delete campaign mutation
   const deleteCampaignMutation = useDeleteCampaign()
-  
+
   // Fund campaign mutation
   const fundCampaignMutation = useFundCampaign()
-  
+
   const campaign = campaignData?.data
 
   const handleDelete = async () => {
@@ -74,7 +83,7 @@ function CampaignDetails() {
       await deleteCampaignMutation.mutateAsync({
         campaignId,
         action: 'recycle_to_general',
-        reason: 'Deleted by donor from campaign details'
+        reason: 'Deleted by donor from campaign details',
       })
       toast.success('Campaign deleted successfully')
       navigate({ to: '/donor/campaigns' })
@@ -93,7 +102,7 @@ function CampaignDetails() {
     try {
       await fundCampaignMutation.mutateAsync({
         campaignId,
-        amount
+        amount,
       })
       toast.success('Campaign funded successfully')
       setFundDialogOpen(false)
@@ -182,7 +191,7 @@ function CampaignDetails() {
             <p className="text-muted-foreground">Campaign Details & Impact</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {getStatusBadge(campaign.status)}
           {campaign.status === 'ACTIVE' && (
@@ -201,7 +210,7 @@ function CampaignDetails() {
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Campaign
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setDeleteDialogOpen(true)}
                   className="text-red-600"
                 >
@@ -222,7 +231,9 @@ function CampaignDetails() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦{campaign.initialAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              ₦{campaign.initialAmount.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
               Initial donation amount
             </p>
@@ -235,9 +246,12 @@ function CampaignDetails() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦{campaign.usedAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              ₦{campaign.usedAmount.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}% of total
+              {getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}%
+              of total
             </p>
           </CardContent>
         </Card>
@@ -248,7 +262,9 @@ function CampaignDetails() {
             <PieChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦{campaign.availableAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              ₦{campaign.availableAmount.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
               Ready for allocation
             </p>
@@ -257,14 +273,14 @@ function CampaignDetails() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Patients Helped</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Patients Helped
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{campaign.patientsHelped}</div>
-            <p className="text-xs text-muted-foreground">
-              Lives impacted
-            </p>
+            <p className="text-xs text-muted-foreground">Lives impacted</p>
           </CardContent>
         </Card>
       </div>
@@ -287,12 +303,25 @@ function CampaignDetails() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Funds Utilized</span>
-                  <span>{getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}%</span>
+                  <span>
+                    {getUsagePercentage(
+                      campaign.usedAmount,
+                      campaign.initialAmount,
+                    )}
+                    %
+                  </span>
                 </div>
-                <Progress value={getUsagePercentage(campaign.usedAmount, campaign.initialAmount)} />
+                <Progress
+                  value={getUsagePercentage(
+                    campaign.usedAmount,
+                    campaign.initialAmount,
+                  )}
+                />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>₦{campaign.usedAmount.toLocaleString()} used</span>
-                  <span>₦{campaign.availableAmount.toLocaleString()} remaining</span>
+                  <span>
+                    ₦{campaign.availableAmount.toLocaleString()} remaining
+                  </span>
                 </div>
               </div>
 
@@ -302,21 +331,31 @@ function CampaignDetails() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium">Successful Allocations</span>
+                    <span className="text-sm font-medium">
+                      Successful Allocations
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold">{campaign.patientsHelped}</p>
-                  <p className="text-xs text-muted-foreground">Patients screened</p>
+                  <p className="text-2xl font-bold">
+                    {campaign.patientsHelped}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Patients screened
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium">Pending Allocations</span>
+                    <span className="text-sm font-medium">
+                      Pending Allocations
+                    </span>
                   </div>
                   <p className="text-2xl font-bold">
                     {Math.floor(campaign.availableAmount / 2500)}
                   </p>
-                  <p className="text-xs text-muted-foreground">Estimated capacity</p>
+                  <p className="text-xs text-muted-foreground">
+                    Estimated capacity
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -335,14 +374,18 @@ function CampaignDetails() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium mb-1">Description</h4>
-                <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {campaign.description}
+                </p>
               </div>
 
               <Separator />
 
               <div>
                 <h4 className="text-sm font-medium mb-1">Purpose</h4>
-                <p className="text-sm text-muted-foreground">{campaign.purpose}</p>
+                <p className="text-sm text-muted-foreground">
+                  {campaign.purpose}
+                </p>
               </div>
 
               <Separator />
@@ -354,7 +397,7 @@ function CampaignDetails() {
                     {format(new Date(campaign.createdAt), 'MMM dd, yyyy')}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Expires:</span>
                   <span className="text-sm text-muted-foreground">
@@ -396,7 +439,9 @@ function CampaignDetails() {
 
               <div>
                 <h4 className="text-sm font-medium mb-1">Target Gender</h4>
-                <Badge variant="outline">{campaign.targetGender || 'All'}</Badge>
+                <Badge variant="outline">
+                  {campaign.targetGender || 'All'}
+                </Badge>
               </div>
 
               {campaign.targetStates && campaign.targetStates.length > 0 && (
@@ -404,7 +449,9 @@ function CampaignDetails() {
                   <h4 className="text-sm font-medium mb-1">Target States</h4>
                   <div className="flex flex-wrap gap-1">
                     {campaign.targetStates.map((state, index) => (
-                      <Badge key={index} variant="outline">{state}</Badge>
+                      <Badge key={index} variant="outline">
+                        {state}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -433,14 +480,7 @@ function CampaignDetails() {
                 </Link>
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/donor/receipts">
-                  View Transaction History
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/donor/campaigns">
-                  Back to All Campaigns
-                </Link>
+                <Link to="/donor/campaigns">Back to All Campaigns</Link>
               </Button>
             </CardContent>
           </Card>
@@ -480,11 +520,13 @@ function CampaignDetails() {
             <Button variant="outline" onClick={() => setFundDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleFundCampaign}
               disabled={fundCampaignMutation.isPending || !fundAmount}
             >
-              {fundCampaignMutation.isPending ? 'Processing...' : 'Fund Campaign'}
+              {fundCampaignMutation.isPending
+                ? 'Processing...'
+                : 'Fund Campaign'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -499,24 +541,30 @@ function CampaignDetails() {
               Delete Campaign
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{campaign.title}"? This action cannot be undone.
-              Any unused funds will be moved to the general donation pool.
+              Are you sure you want to delete "{campaign.title}"? This action
+              cannot be undone. Any unused funds will be moved to the general
+              donation pool.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDelete}
               disabled={deleteCampaignMutation.isPending}
             >
-              {deleteCampaignMutation.isPending ? 'Deleting...' : 'Delete Campaign'}
+              {deleteCampaignMutation.isPending
+                ? 'Deleting...'
+                : 'Delete Campaign'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   )
-} 
+}
