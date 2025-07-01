@@ -268,13 +268,13 @@ export const getPatientReceipt = (id: string) => `/api/patient/receipts/${id}`
 
 // V1 Receipt System Endpoints
 export const getReceiptV1 = (transactionId: string) =>
-  `/api/v1/receipts/${transactionId}`
+  `/api/receipts/${transactionId}`
 export const downloadReceiptPDF = (transactionId: string) =>
-  `/api/v1/receipts/${transactionId}/pdf`
+  `/api/receipts/${transactionId}/pdf`
 export const createReceiptV1 = (transactionId: string) =>
-  `/api/v1/receipts/${transactionId}`
+  `/api/receipts/${transactionId}`
 export const resendReceipt = (transactionId: string) =>
-  `/api/v1/receipts/${transactionId}/resend`
+  `/api/receipts/${transactionId}/resend`
 export const listReceiptsV1 = (params: {
   page?: number
   limit?: number
@@ -282,7 +282,7 @@ export const listReceiptsV1 = (params: {
   userId?: string
   startDate?: string
   endDate?: string
-}) => `/api/v1/receipts${buildQuery(params)}`
+}) => `/api/receipts${buildQuery(params)}`
 
 // Screening types
 export const getScreeningTypes = (params: {
@@ -322,42 +322,40 @@ export const createCenterStaffPassword = () =>
 export const centerStaffLogin = () => '/api/center/staff/login'
 
 // Analytics endpoints
-export const getDashboardMetrics = () => '/api/v1/analytics/dashboard'
+export const getDashboardMetrics = () => '/api/analytics/dashboard'
 export const getTimeBasedReport = (params: {
   period?: 'daily' | 'weekly' | 'monthly' | 'yearly'
   from?: string
   to?: string
-}) => `/api/v1/analytics/reports/time${buildQuery(params)}`
-export const getGeographicReport = () => '/api/v1/analytics/geographic'
+}) => `/api/analytics/reports/time${buildQuery(params)}`
+export const getGeographicReport = () => '/api/analytics/geographic'
 export const getCenterPerformance = (params?: { centerId?: string }) =>
-  `/api/v1/analytics/centers${params ? buildQuery(params) : ''}`
-export const getCampaignAnalytics = () => '/api/v1/analytics/campaigns'
+  `/api/analytics/centers${params ? buildQuery(params) : ''}`
+export const getCampaignAnalytics = () => '/api/analytics/campaigns'
 
 // WAITLIST ADMIN ENDPOINTS
-export const triggerWaitlistMatching = () => `/api/v1/waitlist/manual-trigger`
-export const getWaitlistMatchingStats = () => `/api/v1/waitlist/matching-stats`
-export const getWaitlistMatchingStatus = () =>
-  `/api/v1/waitlist/matching-status`
+export const triggerWaitlistMatching = () => `/api/waitlist/manual-trigger`
+export const getWaitlistMatchingStats = () => `/api/waitlist/matching-stats`
+export const getWaitlistMatchingStatus = () => `/api/waitlist/matching-status`
 
 // PAYOUTS
-export const getAllCenterBalances = () => '/api/v1/payouts/center-balances'
+export const getAllCenterBalances = () => '/api/payouts/center-balances'
 export const getCenterBalance = (centerId: string) =>
-  `/api/v1/payouts/center/${centerId}/balance`
-export const createManualPayout = () => '/api/v1/payouts/manual'
+  `/api/payouts/center/${centerId}/balance`
+export const createManualPayout = () => '/api/payouts/manual'
 export const processPayout = (payoutId: string) =>
-  `/api/v1/payouts/${payoutId}/process`
+  `/api/payouts/${payoutId}/process`
 export const retryPayout = (payoutId: string) =>
-  `/api/v1/payouts/${payoutId}/retry`
+  `/api/payouts/${payoutId}/retry`
 export const getPayouts = (params?: Record<string, unknown>) =>
-  `/api/v1/payouts${buildQuery(params || {})}`
+  `/api/payouts${buildQuery(params || {})}`
 export const getCenterPayouts = (
   centerId: string,
   params?: Record<string, unknown>,
-) => `/api/v1/payouts/center/${centerId}${buildQuery(params || {})}`
+) => `/api/payouts/center/${centerId}${buildQuery(params || {})}`
 export const getCenterTransactions = (
   centerId: string,
   params?: Record<string, unknown>,
-) =>
-  `/api/v1/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
-export const getBanks = () => '/api/v1/payouts/banks'
-export const verifyAccount = () => '/api/v1/payouts/verify-account'
+) => `/api/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
+export const getBanks = () => '/api/payouts/banks'
+export const verifyAccount = () => '/api/payouts/verify-account'
