@@ -31,6 +31,18 @@ export default function LoginPage() {
             <LoginForm />
           </div>
         </div>
+
+        <div className="text-center text-sm text-muted-foreground">
+          <p>
+            For Center staff:{' '}
+            <Link
+              to="/staff/login"
+              className="text-primary font-semibold hover:underline"
+            >
+              Use Staff Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
