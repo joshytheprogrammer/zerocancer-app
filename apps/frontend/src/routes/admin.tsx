@@ -11,6 +11,7 @@ import {
   Ticket,
   Store,
   LogOut,
+  Clock,
 } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
@@ -102,6 +103,14 @@ function AdminLayout() {
               >
                 <HeartHandshake className="h-4 w-4" />
                 Campaigns
+              </Link>
+              <Link
+                to="/admin/waitlist"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                activeProps={{ className: 'bg-muted text-primary' }}
+              >
+                <Clock className="h-4 w-4" />
+                Waitlist
               </Link>
               <Link
                 to="/admin/appointments"

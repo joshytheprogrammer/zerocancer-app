@@ -98,5 +98,8 @@ export const useTriggerWaitlistMatching = () => {
           ),
       })
     },
+    onError: (error) => {
+      console.log(error)
+    }
   })
 }

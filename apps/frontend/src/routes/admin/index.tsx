@@ -220,6 +220,12 @@ function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/admin/waitlist">
+                <Clock className="h-4 w-4 mr-2" />
+                Waitlist Management
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" asChild>
               <Link to="/admin/store">
                 <Store className="h-4 w-4 mr-2" />
                 Store Management

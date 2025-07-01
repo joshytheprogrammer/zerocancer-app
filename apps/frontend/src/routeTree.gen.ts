@@ -34,6 +34,7 @@ import { Route as CenterStaffRouteImport } from './routes/center/staff'
 import { Route as CenterResultsHistoryRouteImport } from './routes/center/results-history'
 import { Route as CenterReceiptHistoryRouteImport } from './routes/center/receipt-history'
 import { Route as CenterAppointmentsRouteImport } from './routes/center/appointments'
+import { Route as AdminWaitlistRouteImport } from './routes/admin/waitlist'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTransactionsRouteImport } from './routes/admin/transactions'
 import { Route as AdminStoreRouteImport } from './routes/admin/store'
@@ -183,6 +184,11 @@ const CenterAppointmentsRoute = CenterAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
   getParentRoute: () => CenterRoute,
+} as any)
+const AdminWaitlistRoute = AdminWaitlistRouteImport.update({
+  id: '/waitlist',
+  path: '/waitlist',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
   '/center/results-history': typeof CenterResultsHistoryRoute
@@ -398,6 +405,7 @@ export interface FileRoutesByTo {
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
   '/center/results-history': typeof CenterResultsHistoryRoute
@@ -450,6 +458,7 @@ export interface FileRoutesById {
   '/admin/store': typeof AdminStoreRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/waitlist': typeof AdminWaitlistRoute
   '/center/appointments': typeof CenterAppointmentsRoute
   '/center/receipt-history': typeof CenterReceiptHistoryRoute
   '/center/results-history': typeof CenterResultsHistoryRoute
@@ -506,6 +515,7 @@ export interface FileRouteTypes {
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
     | '/center/results-history'
@@ -554,6 +564,7 @@ export interface FileRouteTypes {
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
     | '/center/results-history'
@@ -605,6 +616,7 @@ export interface FileRouteTypes {
     | '/admin/store'
     | '/admin/transactions'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/center/appointments'
     | '/center/receipt-history'
     | '/center/results-history'
@@ -816,6 +828,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/center/appointments'
       preLoaderRoute: typeof CenterAppointmentsRouteImport
       parentRoute: typeof CenterRoute
+    }
+    '/admin/waitlist': {
+      id: '/admin/waitlist'
+      path: '/waitlist'
+      fullPath: '/admin/waitlist'
+      preLoaderRoute: typeof AdminWaitlistRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/users': {
       id: '/admin/users'
@@ -1082,6 +1101,7 @@ interface AdminRouteChildren {
   AdminStoreRoute: typeof AdminStoreRoute
   AdminTransactionsRoute: typeof AdminTransactionsRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminWaitlistRoute: typeof AdminWaitlistRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -1100,6 +1120,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminStoreRoute: AdminStoreRoute,
   AdminTransactionsRoute: AdminTransactionsRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminWaitlistRoute: AdminWaitlistRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
