@@ -158,14 +158,14 @@ export const useDonorCampaign = (campaignId: string) =>
   })
 
 // Get donor receipts (paginated)
-export const useDonorReceipts = (params: {
-  page?: number
-  size?: number
-}) =>
-  queryOptions({
-    queryKey: [QueryKeys.donorReceipts, params],
-    queryFn: () => donorService.getDonorReceipts(params),
-  })
+// export const useDonorReceipts = (params: {
+//   page?: number
+//   size?: number
+// }) =>
+//   queryOptions({
+//     queryKey: [QueryKeys.donorReceipts, params],
+//     queryFn: () => donorService.getDonorReceipts(params),
+//   })
 
 // ========================================
 // PAYMENT VERIFICATION

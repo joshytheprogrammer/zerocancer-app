@@ -15,7 +15,7 @@ import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { Loader2, FileText, Download, Calendar, MapPin, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/patient/results')({
+export const Route = createFileRoute('/patient/_results')({
   component: PatientResults,
 })
 

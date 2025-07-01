@@ -1,9 +1,8 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Bell, Briefcase, FileText, Home, LogOut, BookOpen } from 'lucide-react'
+import { Bell, BookOpen, Briefcase, FileText, Home, LogOut } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
-import { isAuthMiddleware } from '@/services/providers/auth.provider'
-import { useLogout } from '@/services/providers/auth.provider'
+import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
 import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/patient')({
@@ -18,8 +17,8 @@ export const Route = createFileRoute('/patient')({
 
     // If authenticated but wrong role, redirect to correct dashboard
     if (!isAuthorized) {
-    if (profile === 'DONOR') return redirect({ to: '/donor' })
-    if (profile === 'CENTER') return redirect({ to: '/center' })
+      if (profile === 'DONOR') return redirect({ to: '/donor' })
+      if (profile === 'CENTER') return redirect({ to: '/center' })
     }
 
     return null
@@ -27,9 +26,8 @@ export const Route = createFileRoute('/patient')({
 })
 
 function PatientLayout() {
-
-  const { mutate: logout } = useLogout();
-  const navigate = useNavigate();
+  const { mutate: logout } = useLogout()
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen w-full">
@@ -80,14 +78,14 @@ function PatientLayout() {
                 <Briefcase className="h-4 w-4" />
                 Appointments
               </Link>
-              <Link
+              {/* <Link
                 to="/patient/results"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
               >
                 <FileText className="h-4 w-4" />
                 Results
-              </Link>
+              </Link> */}
               <div className="border-t p-2 lg:p-4">
                 <button
                   onClick={() => {
@@ -104,7 +102,7 @@ function PatientLayout() {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content Area */}
       <div className="md:ml-60 lg:ml-72">
         <main className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen">

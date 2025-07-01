@@ -9,6 +9,7 @@ function AdminReceipts() {
     <div>
       <h1 className="text-2xl font-bold">Receipts</h1>
       <p>Here you can view and resend official receipts.</p>
+      <p>FROM Emmanuel - Kill this page</p>
     </div>
   )
-} 
+}

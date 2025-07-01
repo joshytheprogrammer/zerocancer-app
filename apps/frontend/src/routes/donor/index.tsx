@@ -1,23 +1,30 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useDonorCampaigns } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { 
-  CircleDollarSign, 
-  Gift, 
-  Users, 
-  Receipt, 
-  TrendingUp, 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useDonorCampaigns } from '@/services/providers/donor.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+  Activity,
+  ArrowRight,
+  Calendar,
+  CircleDollarSign,
+  Gift,
   Heart,
   Plus,
-  ArrowRight,
+  Receipt,
   Target,
-  Calendar,
-  Activity
+  TrendingUp,
+  Users,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/donor/')({
@@ -28,26 +35,31 @@ export const Route = createFileRoute('/donor/')({
 
 function DonorDashboard() {
   const donor = { name: 'Acme Foundation' }
-  
+
   // Fetch recent campaigns
-  const { 
-    data: campaignsData, 
-    isLoading: campaignsLoading 
-  } = useQuery(useDonorCampaigns({ 
-    page: 1, 
-    pageSize: 5 
-  }))
-  
+  const { data: campaignsData, isLoading: campaignsLoading } = useQuery(
+    useDonorCampaigns({
+      page: 1,
+      pageSize: 5,
+    }),
+  )
+
   const campaigns = campaignsData?.data?.campaigns || []
-  const activeCampaigns = campaigns.filter(c => c.status === 'ACTIVE')
-  const completedCampaigns = campaigns.filter(c => c.status === 'COMPLETED')
-  
+  const activeCampaigns = campaigns.filter((c) => c.status === 'ACTIVE')
+  const completedCampaigns = campaigns.filter((c) => c.status === 'COMPLETED')
+
   // Calculate stats from real data
   const totalDonated = campaigns.reduce((sum, c) => sum + c.initialAmount, 0)
-  const totalPatientsHelped = campaigns.reduce((sum, c) => sum + c.patientsHelped, 0)
-  const totalAvailable = campaigns.reduce((sum, c) => sum + c.availableAmount, 0)
+  const totalPatientsHelped = campaigns.reduce(
+    (sum, c) => sum + c.patientsHelped,
+    0,
+  )
+  const totalAvailable = campaigns.reduce(
+    (sum, c) => sum + c.availableAmount,
+    0,
+  )
   const totalUsed = campaigns.reduce((sum, c) => sum + c.usedAmount, 0)
-  
+
   const activeCampaign = activeCampaigns[0] // Most recent active campaign
 
   const getStatusColor = (status: string) => {
@@ -68,7 +80,7 @@ function DonorDashboard() {
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
-            {/* Hero Section */}
+      {/* Hero Section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 p-8 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_2px,transparent_2px)] bg-[length:30px_30px] opacity-30"></div>
         <div className="relative">
@@ -77,24 +89,33 @@ function DonorDashboard() {
               <Heart className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Welcome back, {donor.name}!</h1>
+              <h1 className="text-3xl font-bold">
+                Welcome back, {donor.name}!
+              </h1>
               <p className="text-blue-100 mt-1">
-                Your generosity is changing lives and providing hope to those in need.
+                Your generosity is changing lives and providing hope to those in
+                need.
               </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="text-center">
-              <div className="text-3xl font-bold">{campaignsLoading ? '...' : totalPatientsHelped}</div>
+              <div className="text-3xl font-bold">
+                {campaignsLoading ? '...' : totalPatientsHelped}
+              </div>
               <div className="text-blue-100">Lives Impacted</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">{campaignsLoading ? '...' : `₦${totalDonated.toLocaleString()}`}</div>
+              <div className="text-3xl font-bold">
+                {campaignsLoading ? '...' : `₦${totalDonated.toLocaleString()}`}
+              </div>
               <div className="text-blue-100">Total Contributed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">{campaignsLoading ? '...' : activeCampaigns.length}</div>
+              <div className="text-3xl font-bold">
+                {campaignsLoading ? '...' : activeCampaigns.length}
+              </div>
               <div className="text-blue-100">Active Campaigns</div>
             </div>
           </div>
@@ -103,8 +124,15 @@ function DonorDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Button asChild size="lg" className="h-20 text-lg bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
-          <Link to="/donor/campaigns/create" className="flex items-center gap-3">
+        <Button
+          asChild
+          size="lg"
+          className="h-20 text-lg bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+        >
+          <Link
+            to="/donor/campaigns/create"
+            className="flex items-center gap-3"
+          >
             <Plus className="h-6 w-6" />
             <div className="text-left">
               <div className="font-semibold">Create Campaign</div>
@@ -112,23 +140,20 @@ function DonorDashboard() {
             </div>
           </Link>
         </Button>
-        
-        <Button asChild variant="outline" size="lg" className="h-20 text-lg border-2 hover:bg-blue-50">
+
+        <Button
+          asChild
+          variant="outline"
+          size="lg"
+          className="h-20 text-lg border-2 hover:bg-blue-50"
+        >
           <Link to="/donor/campaigns" className="flex items-center gap-3">
             <Activity className="h-6 w-6 text-blue-600" />
             <div className="text-left">
               <div className="font-semibold">Manage Campaigns</div>
-              <div className="text-sm text-muted-foreground">View all campaigns</div>
-            </div>
-          </Link>
-        </Button>
-        
-        <Button asChild variant="outline" size="lg" className="h-20 text-lg border-2 hover:bg-purple-50">
-          <Link to="/donor/receipts" className="flex items-center gap-3">
-            <Receipt className="h-6 w-6 text-purple-600" />
-            <div className="text-left">
-              <div className="font-semibold">View Receipts</div>
-              <div className="text-sm text-muted-foreground">Download records</div>
+              <div className="text-sm text-muted-foreground">
+                View all campaigns
+              </div>
             </div>
           </Link>
         </Button>
@@ -141,14 +166,18 @@ function DonorDashboard() {
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="relative overflow-hidden border-l-4 border-l-green-500">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Total Donated</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total Donated
+                </CardTitle>
                 <div className="p-2 bg-green-100 rounded-full">
                   <CircleDollarSign className="h-5 w-5 text-green-600" />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-gray-900 mb-1">
-                  {campaignsLoading ? '...' : `₦${totalDonated.toLocaleString()}`}
+                  {campaignsLoading
+                    ? '...'
+                    : `₦${totalDonated.toLocaleString()}`}
                 </div>
                 <p className="text-sm text-gray-500 mb-3">
                   Across {campaigns.length} campaigns
@@ -162,22 +191,28 @@ function DonorDashboard() {
 
             <Card className="relative overflow-hidden border-l-4 border-l-blue-500">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Available Funds</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Available Funds
+                </CardTitle>
                 <div className="p-2 bg-blue-100 rounded-full">
                   <Target className="h-5 w-5 text-blue-600" />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-gray-900 mb-1">
-                  {campaignsLoading ? '...' : `₦${totalAvailable.toLocaleString()}`}
+                  {campaignsLoading
+                    ? '...'
+                    : `₦${totalAvailable.toLocaleString()}`}
                 </div>
                 <p className="text-sm text-gray-500 mb-3">
                   Ready for allocation
                 </p>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
-                    style={{ width: `${totalDonated > 0 ? (totalAvailable / totalDonated) * 100 : 0}%` }}
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{
+                      width: `${totalDonated > 0 ? (totalAvailable / totalDonated) * 100 : 0}%`,
+                    }}
                   ></div>
                 </div>
               </CardContent>
@@ -185,7 +220,9 @@ function DonorDashboard() {
 
             <Card className="relative overflow-hidden border-l-4 border-l-purple-500">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Patients Helped</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Patients Helped
+                </CardTitle>
                 <div className="p-2 bg-purple-100 rounded-full">
                   <Users className="h-5 w-5 text-purple-600" />
                 </div>
@@ -199,14 +236,18 @@ function DonorDashboard() {
                 </p>
                 <div className="flex items-center gap-2 text-purple-600">
                   <Heart className="h-4 w-4" />
-                  <span className="text-sm font-medium">Making a difference</span>
+                  <span className="text-sm font-medium">
+                    Making a difference
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="relative overflow-hidden border-l-4 border-l-orange-500">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Campaign Status</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Campaign Status
+                </CardTitle>
                 <div className="p-2 bg-orange-100 rounded-full">
                   <Gift className="h-5 w-5 text-orange-600" />
                 </div>
@@ -219,10 +260,16 @@ function DonorDashboard() {
                   Active • {completedCampaigns.length} completed
                 </p>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-200"
+                  >
                     {activeCampaigns.length} Active
                   </Badge>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     {completedCampaigns.length} Done
                   </Badge>
                 </div>
@@ -236,10 +283,15 @@ function DonorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl">Recent Campaigns</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Track your campaign performance and impact</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Track your campaign performance and impact
+                  </p>
                 </div>
                 <Button asChild variant="outline">
-                  <Link to="/donor/campaigns" className="flex items-center gap-2">
+                  <Link
+                    to="/donor/campaigns"
+                    className="flex items-center gap-2"
+                  >
                     View All
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -255,7 +307,9 @@ function DonorDashboard() {
                     <TableHead className="font-semibold">Progress</TableHead>
                     <TableHead className="font-semibold">Patients</TableHead>
                     <TableHead className="font-semibold">Status</TableHead>
-                    <TableHead className="text-right font-semibold">Action</TableHead>
+                    <TableHead className="text-right font-semibold">
+                      Action
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -264,7 +318,9 @@ function DonorDashboard() {
                       <TableCell colSpan={6} className="text-center py-12">
                         <div className="flex flex-col items-center gap-3">
                           <div className="animate-spin h-8 w-8 border-3 border-primary border-t-transparent rounded-full"></div>
-                          <p className="text-gray-500">Loading your campaigns...</p>
+                          <p className="text-gray-500">
+                            Loading your campaigns...
+                          </p>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -272,26 +328,40 @@ function DonorDashboard() {
                     campaigns.map((campaign) => {
                       const progress = getCampaignProgress(campaign)
                       return (
-                        <TableRow key={campaign.id} className="hover:bg-gray-50/50 transition-colors">
+                        <TableRow
+                          key={campaign.id}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
                           <TableCell>
                             <div>
-                              <div className="font-medium text-gray-900">{campaign.title}</div>
-                              <div className="text-sm text-gray-500">{campaign.purpose || 'General screening'}</div>
+                              <div className="font-medium text-gray-900">
+                                {campaign.title}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {campaign.purpose || 'General screening'}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium">₦{campaign.initialAmount.toLocaleString()}</div>
+                              <div className="font-medium">
+                                ₦{campaign.initialAmount.toLocaleString()}
+                              </div>
                               <div className="text-sm text-gray-500">
-                                ₦{campaign.availableAmount.toLocaleString()} available
+                                ₦{campaign.availableAmount.toLocaleString()}{' '}
+                                available
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Utilization</span>
-                                <span className="font-medium">{progress.toFixed(0)}%</span>
+                                <span className="text-gray-600">
+                                  Utilization
+                                </span>
+                                <span className="font-medium">
+                                  {progress.toFixed(0)}%
+                                </span>
                               </div>
                               <Progress value={progress} className="h-2" />
                             </div>
@@ -299,21 +369,34 @@ function DonorDashboard() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">{campaign.patientsHelped}</span>
+                              <span className="font-medium">
+                                {campaign.patientsHelped}
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={`${getStatusColor(campaign.status)} font-medium`}
                             >
-                              {campaign.status === 'ACTIVE' ? 'Active' : 
-                               campaign.status === 'COMPLETED' ? 'Completed' : 'Deleted'}
+                              {campaign.status === 'ACTIVE'
+                                ? 'Active'
+                                : campaign.status === 'COMPLETED'
+                                  ? 'Completed'
+                                  : 'Deleted'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="sm" asChild className="hover:bg-blue-50">
-                              <Link to="/donor/campaigns/$campaignId" params={{ campaignId: campaign.id }}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="hover:bg-blue-50"
+                            >
+                              <Link
+                                to="/donor/campaigns/$campaignId"
+                                params={{ campaignId: campaign.id }}
+                              >
                                 View Details
                               </Link>
                             </Button>
@@ -329,10 +412,20 @@ function DonorDashboard() {
                             <Gift className="h-8 w-8 text-gray-400" />
                           </div>
                           <div>
-                            <p className="text-lg font-medium text-gray-900 mb-1">No campaigns yet</p>
-                            <p className="text-gray-500 mb-4">Start your first campaign to help patients in need</p>
-                            <Button asChild className="bg-gradient-to-r from-blue-600 to-blue-700">
-                              <Link to="/donor/campaigns/create" className="flex items-center gap-2">
+                            <p className="text-lg font-medium text-gray-900 mb-1">
+                              No campaigns yet
+                            </p>
+                            <p className="text-gray-500 mb-4">
+                              Start your first campaign to help patients in need
+                            </p>
+                            <Button
+                              asChild
+                              className="bg-gradient-to-r from-blue-600 to-blue-700"
+                            >
+                              <Link
+                                to="/donor/campaigns/create"
+                                className="flex items-center gap-2"
+                              >
                                 <Plus className="h-4 w-4" />
                                 Create Your First Campaign
                               </Link>
@@ -371,36 +464,41 @@ function DonorDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
                     <div>
-                      <span className="text-sm text-gray-600">Lives Impacted</span>
-                      <div className="font-bold text-2xl text-blue-900">{totalPatientsHelped}</div>
+                      <span className="text-sm text-gray-600">
+                        Lives Impacted
+                      </span>
+                      <div className="font-bold text-2xl text-blue-900">
+                        {totalPatientsHelped}
+                      </div>
                     </div>
                     <Heart className="h-8 w-8 text-red-500" />
                   </div>
-                  
+
                   <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
                     <div>
-                      <span className="text-sm text-gray-600">Funds Deployed</span>
-                      <div className="font-bold text-lg text-blue-900">₦{totalUsed.toLocaleString()}</div>
+                      <span className="text-sm text-gray-600">
+                        Funds Deployed
+                      </span>
+                      <div className="font-bold text-lg text-blue-900">
+                        ₦{totalUsed.toLocaleString()}
+                      </div>
                     </div>
                     <CircleDollarSign className="h-8 w-8 text-green-500" />
                   </div>
-                  
+
                   <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
                     <div>
-                      <span className="text-sm text-gray-600">Available Now</span>
-                      <div className="font-bold text-lg text-blue-900">₦{totalAvailable.toLocaleString()}</div>
+                      <span className="text-sm text-gray-600">
+                        Available Now
+                      </span>
+                      <div className="font-bold text-lg text-blue-900">
+                        ₦{totalAvailable.toLocaleString()}
+                      </div>
                     </div>
                     <Target className="h-8 w-8 text-purple-500" />
                   </div>
                 </div>
               )}
-              
-              <Button asChild className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
-                <Link to="/donor/receipts" className="flex items-center justify-center gap-2">
-                  <Receipt className="h-4 w-4" />
-                  View All Receipts
-                </Link>
-              </Button>
             </CardContent>
           </Card>
 
@@ -422,42 +520,64 @@ function DonorDashboard() {
               ) : activeCampaign ? (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold text-lg text-gray-900 mb-2">{activeCampaign.title}</h3>
+                    <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                      {activeCampaign.title}
+                    </h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">Amount:</span>
-                        <div className="font-semibold">₦{activeCampaign.initialAmount.toLocaleString()}</div>
+                        <div className="font-semibold">
+                          ₦{activeCampaign.initialAmount.toLocaleString()}
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Patients:</span>
-                        <div className="font-semibold">{activeCampaign.patientsHelped}</div>
+                        <div className="font-semibold">
+                          {activeCampaign.patientsHelped}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">{getCampaignProgress(activeCampaign).toFixed(0)}%</span>
+                      <span className="font-medium">
+                        {getCampaignProgress(activeCampaign).toFixed(0)}%
+                      </span>
                     </div>
-                    <Progress value={getCampaignProgress(activeCampaign)} className="h-3" />
+                    <Progress
+                      value={getCampaignProgress(activeCampaign)}
+                      className="h-3"
+                    />
                   </div>
-                  
+
                   <div className="pt-2">
                     <span className="text-sm text-gray-500">Available:</span>
-                    <div className="font-semibold text-green-600">₦{activeCampaign.availableAmount.toLocaleString()}</div>
+                    <div className="font-semibold text-green-600">
+                      ₦{activeCampaign.availableAmount.toLocaleString()}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <Gift className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">No active campaigns</p>
-                  <p className="text-gray-400 text-xs">Create one to start helping patients</p>
+                  <p className="text-gray-400 text-xs">
+                    Create one to start helping patients
+                  </p>
                 </div>
               )}
-              
-              <Button asChild variant="outline" className="w-full mt-4 border-green-200 hover:bg-green-50">
-                <Link to="/donor/campaigns" className="flex items-center justify-center gap-2">
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full mt-4 border-green-200 hover:bg-green-50"
+              >
+                <Link
+                  to="/donor/campaigns"
+                  className="flex items-center justify-center gap-2"
+                >
                   <Activity className="h-4 w-4" />
                   Manage All Campaigns
                 </Link>
