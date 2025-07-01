@@ -71,14 +71,14 @@ function DonorLayout() {
                 <Upload className="h-4 w-4" />
                 Create Campaign
               </Link>
-              <Link
+              {/* <Link
                 to="/donor/receipts"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
               >
                 <FileText className="h-4 w-4" />
                 Receipts
-              </Link>
+              </Link> */}
               {/* Add code below */}
               <div className="border-t p-2 lg:p-4">
                 <button

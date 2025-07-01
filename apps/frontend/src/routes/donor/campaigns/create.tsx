@@ -299,52 +299,87 @@ function CreateCampaign() {
                   <FormField
                     control={form.control}
                     name="screeningTypeIds"
-                    render={() => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Screening Types</FormLabel>
-                          <FormDescription>
-                            Select the types of cancer screening your campaign will fund.
-                          </FormDescription>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {screeningTypes.map((item) => (
-                            <FormField
-                              key={item.id}
-                              control={form.control}
-                              name="screeningTypeIds"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={item.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== item.id
+                    render={() => {
+                      const selectedIds = form.watch('screeningTypeIds') || []
+                      const allSelected = selectedIds.length === screeningTypes.length && screeningTypes.length > 0
+                      const someSelected = selectedIds.length > 0 && selectedIds.length < screeningTypes.length
+                      
+                      const handleSelectAll = () => {
+                        const allIds = screeningTypes.map(type => type.id)
+                        form.setValue('screeningTypeIds', allSelected ? [] : allIds)
+                      }
+                      
+                      return (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel className="text-base">Screening Types</FormLabel>
+                            <FormDescription>
+                              Select the types of cancer screening your campaign will fund.
+                            </FormDescription>
+                          </div>
+                          
+                          {/* Select All Controls */}
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border mb-4">
+                            <div className="flex items-center space-x-3">
+                                                             <Checkbox
+                                 checked={allSelected}
+                                 onCheckedChange={handleSelectAll}
+                               />
+                              <span className="font-medium text-sm">
+                                {allSelected ? 'Deselect All' : 'Select All'}
+                              </span>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {selectedIds.length} of {screeningTypes.length} selected
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {screeningTypes.map((item) => (
+                              <FormField
+                                key={item.id}
+                                control={form.control}
+                                name="screeningTypeIds"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={item.id}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(item.id)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, item.id])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== item.id
+                                                  )
                                                 )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                      {item.name}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal cursor-pointer">
+                                        {item.name}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          
+                          {selectedIds.length === 0 && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              💡 Tip: Select "Select All" to fund all available screening types
+                            </p>
+                          )}
+                          
+                          <FormMessage />
+                        </FormItem>
+                      )
+                    }}
                   />
 
                   <FormField

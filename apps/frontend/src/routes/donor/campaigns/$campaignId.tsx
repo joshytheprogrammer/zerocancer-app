@@ -8,14 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+
 import {
   Dialog,
   DialogContent,
@@ -42,7 +35,6 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  Heart,
   Activity,
   PieChart,
   Plus
@@ -172,36 +164,7 @@ function CampaignDetails() {
     )
   }
 
-  // Mock allocation data (in real implementation, this would come from API)
-  const mockAllocations = [
-    {
-      id: 'alloc_1',
-      patientName: 'Sarah M.',
-      amount: 2500,
-      screeningType: 'Cervical Cancer Screening',
-      center: 'Lagos Medical Center',
-      date: '2024-03-15',
-      status: 'Completed'
-    },
-    {
-      id: 'alloc_2',
-      patientName: 'Grace O.',
-      amount: 1500,
-      screeningType: 'Cervical Cancer Screening',
-      center: 'Abuja Health Clinic',
-      date: '2024-03-10',
-      status: 'Completed'
-    },
-    {
-      id: 'alloc_3',
-      patientName: 'Mary A.',
-      amount: 2000,
-      screeningType: 'Cervical Cancer Screening',
-      center: 'Port Harcourt Medical',
-      date: '2024-03-05',
-      status: 'Pending'
-    }
-  ]
+
 
   return (
     <div className="space-y-6">
@@ -359,50 +322,7 @@ function CampaignDetails() {
             </CardContent>
           </Card>
 
-          {/* Patient Allocations */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5" />
-                Patient Allocations
-              </CardTitle>
-              <CardDescription>
-                Recent patients helped through this campaign
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Screening</TableHead>
-                    <TableHead>Center</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockAllocations.map((allocation) => (
-                    <TableRow key={allocation.id}>
-                      <TableCell className="font-medium">
-                        {allocation.patientName}
-                      </TableCell>
-                      <TableCell>{allocation.screeningType}</TableCell>
-                      <TableCell>{allocation.center}</TableCell>
-                      <TableCell>₦{allocation.amount.toLocaleString()}</TableCell>
-                      <TableCell>{format(new Date(allocation.date), 'MMM dd, yyyy')}</TableCell>
-                      <TableCell>
-                        <Badge variant={allocation.status === 'Completed' ? 'default' : 'secondary'}>
-                          {allocation.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          {/* Patient allocations will be available when API endpoint is implemented */}
         </div>
 
         {/* Sidebar */}
