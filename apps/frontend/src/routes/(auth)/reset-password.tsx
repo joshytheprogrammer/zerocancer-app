@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import PasswordInput from '@/components/ui/password-input'
+import { useNavigate } from '@tanstack/react-router'
 
 const resetPasswordSearchSchema = z.object({
   token: z.string().catch(''),
@@ -20,6 +22,7 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const resetPassword = useResetPassword()
+  const navigate = useNavigate()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +41,12 @@ function ResetPasswordPage() {
     resetPassword.mutate(
       { token, password },
       {
-        onSuccess: () => toast.success('Password reset successful!'),
+        onSuccess: () => {
+          toast.success('Password reset successful! You will be redirected to the login page now')
+          setTimeout(() => {
+            navigate({ to: '/login', replace: true })
+          }, 1500)
+        },
         onError: () => toast.error('Failed to reset password.'),
       }
     )
@@ -49,19 +57,15 @@ function ResetPasswordPage() {
       <div className="w-xl mx-auto mt-16 p-6 bg-white rounded shadow ">
       <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          type="password"
+        <PasswordInput
           placeholder="Enter new password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
+          onChange={setPassword}
         />
-        <Input
-          type="password"
+        <PasswordInput
           placeholder="Confirm new password"
           value={confirm}
-          onChange={e => setConfirm(e.target.value)}
-          required
+          onChange={setConfirm}
         />
         <Button type="submit" disabled={resetPassword.isPending} className="w-full">
           {resetPassword.isPending ? 'Resetting...' : 'Reset Password'}

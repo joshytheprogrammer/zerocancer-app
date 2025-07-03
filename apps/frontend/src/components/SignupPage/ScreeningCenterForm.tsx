@@ -30,6 +30,7 @@ import statesData from '@zerocancer/shared/constants/states.json'
 import { centerSchema } from '@zerocancer/shared/schemas/register.schema'
 import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
 
 type FormData = z.infer<typeof centerSchema>
 
@@ -45,6 +46,7 @@ export default function ScreeningCenterForm({
   const [localGovernments, setLocalGovernments] = useState<
     Array<{ name: string; id: number }>
   >([])
+  const navigate = useNavigate()
 
   // Fetch available screening types from the backend
   const { data: screeningTypesResponse, isLoading: isLoadingScreeningTypes } = useQuery(
@@ -86,7 +88,11 @@ export default function ScreeningCenterForm({
     mutation.mutate(values, {
       onSuccess: (data) => {
         console.log('Registration successful:', data)
-        // onSubmitSuccess(values)
+        onSubmitSuccess(values)
+        toast.success('Registration successful! Redirecting to login...')
+        setTimeout(() => {
+          navigate({ to: '/login', replace: true })
+        }, 1500)
       },
       onError: (error) => {
         console.error('Registration failed:', error)
@@ -101,7 +107,6 @@ export default function ScreeningCenterForm({
         )
       },
     })
-    // onSubmitSuccess(values)
   }
 
   // Get screening types for the services selection
