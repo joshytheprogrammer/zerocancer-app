@@ -49,7 +49,6 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin/campaigns'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin/appointments'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
-import { Route as authStaffCreatePasswordRouteImport } from './routes/(auth)/staff-create-password'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
@@ -58,6 +57,7 @@ import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
 import { Route as DonorCampaignsPaymentStatusRouteImport } from './routes/donor/campaigns/payment-status'
 import { Route as DonorCampaignsCreateRouteImport } from './routes/donor/campaigns/create'
 import { Route as DonorCampaignsCampaignIdRouteImport } from './routes/donor/campaigns/$campaignId'
+import { Route as authStaffCreateNewPasswordRouteImport } from './routes/(auth)/staff/create-new-password'
 import { Route as authSignUpLayoutRouteRouteImport } from './routes/(auth)/sign-up/_layout/route'
 import { Route as authSignUpLayoutIndexRouteImport } from './routes/(auth)/sign-up/_layout/index'
 import { Route as DonorCampaignsCampaignIdPaymentStatusRouteImport } from './routes/donor/campaigns/$campaignId/payment-status'
@@ -260,11 +260,6 @@ const authVerifyEmailRoute = authVerifyEmailRouteImport.update({
   path: '/verify-email',
   getParentRoute: () => authRouteRoute,
 } as any)
-const authStaffCreatePasswordRoute = authStaffCreatePasswordRouteImport.update({
-  id: '/staff-create-password',
-  path: '/staff-create-password',
-  getParentRoute: () => authRouteRoute,
-} as any)
 const authResetPasswordRoute = authResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -307,6 +302,12 @@ const DonorCampaignsCampaignIdRoute =
     path: '/campaigns/$campaignId',
     getParentRoute: () => DonorRoute,
   } as any)
+const authStaffCreateNewPasswordRoute =
+  authStaffCreateNewPasswordRouteImport.update({
+    id: '/staff/create-new-password',
+    path: '/staff/create-new-password',
+    getParentRoute: () => authRouteRoute,
+  } as any)
 const authSignUpLayoutRouteRoute = authSignUpLayoutRouteRouteImport.update({
   id: '/_layout',
   getParentRoute: () => authSignUpRoute,
@@ -347,7 +348,6 @@ export interface FileRoutesByFullPath {
   '/patient': typeof PatientResultsRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
-  '/staff-create-password': typeof authStaffCreatePasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -379,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/donor/': typeof DonorIndexRoute
   '/patient/': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutRouteRouteWithChildren
+  '/staff/create-new-password': typeof authStaffCreateNewPasswordRoute
   '/donor/campaigns/$campaignId': typeof DonorCampaignsCampaignIdRouteWithChildren
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
@@ -396,7 +397,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
-  '/staff-create-password': typeof authStaffCreatePasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -428,6 +428,7 @@ export interface FileRoutesByTo {
   '/center': typeof CenterIndexRoute
   '/donor': typeof DonorIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
+  '/staff/create-new-password': typeof authStaffCreateNewPasswordRoute
   '/donor/campaigns/$campaignId': typeof DonorCampaignsCampaignIdRouteWithChildren
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
@@ -449,7 +450,6 @@ export interface FileRoutesById {
   '/patient': typeof PatientRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
-  '/(auth)/staff-create-password': typeof authStaffCreatePasswordRoute
   '/(auth)/verify-email': typeof authVerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
@@ -484,6 +484,7 @@ export interface FileRoutesById {
   '/patient/': typeof PatientIndexRoute
   '/(auth)/sign-up': typeof authSignUpRouteWithChildren
   '/(auth)/sign-up/_layout': typeof authSignUpLayoutRouteRouteWithChildren
+  '/(auth)/staff/create-new-password': typeof authStaffCreateNewPasswordRoute
   '/donor/campaigns/$campaignId': typeof DonorCampaignsCampaignIdRouteWithChildren
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
@@ -507,7 +508,6 @@ export interface FileRouteTypes {
     | '/patient'
     | '/login'
     | '/reset-password'
-    | '/staff-create-password'
     | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -539,6 +539,7 @@ export interface FileRouteTypes {
     | '/donor/'
     | '/patient/'
     | '/sign-up'
+    | '/staff/create-new-password'
     | '/donor/campaigns/$campaignId'
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
@@ -556,7 +557,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/reset-password'
-    | '/staff-create-password'
     | '/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -588,6 +588,7 @@ export interface FileRouteTypes {
     | '/center'
     | '/donor'
     | '/sign-up'
+    | '/staff/create-new-password'
     | '/donor/campaigns/$campaignId'
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
@@ -608,7 +609,6 @@ export interface FileRouteTypes {
     | '/patient'
     | '/(auth)/login'
     | '/(auth)/reset-password'
-    | '/(auth)/staff-create-password'
     | '/(auth)/verify-email'
     | '/admin/analytics'
     | '/admin/appointments'
@@ -643,6 +643,7 @@ export interface FileRouteTypes {
     | '/patient/'
     | '/(auth)/sign-up'
     | '/(auth)/sign-up/_layout'
+    | '/(auth)/staff/create-new-password'
     | '/donor/campaigns/$campaignId'
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
@@ -944,13 +945,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authVerifyEmailRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/(auth)/staff-create-password': {
-      id: '/(auth)/staff-create-password'
-      path: '/staff-create-password'
-      fullPath: '/staff-create-password'
-      preLoaderRoute: typeof authStaffCreatePasswordRouteImport
-      parentRoute: typeof authRouteRoute
-    }
     '/(auth)/reset-password': {
       id: '/(auth)/reset-password'
       path: '/reset-password'
@@ -1006,6 +1000,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/donor/campaigns/$campaignId'
       preLoaderRoute: typeof DonorCampaignsCampaignIdRouteImport
       parentRoute: typeof DonorRoute
+    }
+    '/(auth)/staff/create-new-password': {
+      id: '/(auth)/staff/create-new-password'
+      path: '/staff/create-new-password'
+      fullPath: '/staff/create-new-password'
+      preLoaderRoute: typeof authStaffCreateNewPasswordRouteImport
+      parentRoute: typeof authRouteRoute
     }
     '/(auth)/sign-up/_layout': {
       id: '/(auth)/sign-up/_layout'
@@ -1086,17 +1087,17 @@ const authSignUpRouteWithChildren = authSignUpRoute._addFileChildren(
 interface authRouteRouteChildren {
   authLoginRoute: typeof authLoginRoute
   authResetPasswordRoute: typeof authResetPasswordRoute
-  authStaffCreatePasswordRoute: typeof authStaffCreatePasswordRoute
   authVerifyEmailRoute: typeof authVerifyEmailRoute
   authSignUpRoute: typeof authSignUpRouteWithChildren
+  authStaffCreateNewPasswordRoute: typeof authStaffCreateNewPasswordRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
   authLoginRoute: authLoginRoute,
   authResetPasswordRoute: authResetPasswordRoute,
-  authStaffCreatePasswordRoute: authStaffCreatePasswordRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
   authSignUpRoute: authSignUpRouteWithChildren,
+  authStaffCreateNewPasswordRoute: authStaffCreateNewPasswordRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(

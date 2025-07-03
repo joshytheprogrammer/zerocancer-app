@@ -32,7 +32,7 @@ type SearchParams = {
   token: string
 }
 
-export const Route = createFileRoute('/(auth)/staff-create-password')({
+export const Route = createFileRoute('/(auth)/staff/create-new-password')({
   component: CreateStaffPassword,
   validateSearch: (search): SearchParams => ({
     token: String(search.token || ''),

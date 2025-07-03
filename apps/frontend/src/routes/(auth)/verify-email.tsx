@@ -4,6 +4,7 @@ import type { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useNavigate } from '@tanstack/react-router'
 
 const verifyEmailSearchSchema = z.object({
   token: z.string().catch(''),
@@ -18,12 +19,16 @@ function RouteComponent() {
   // Assume the token is passed as a query param: /verify-email?token=...
   const { token } = Route.useSearch()
   const verifyEmail = useVerifyEmail()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (token) {
       verifyEmail.mutate(token, {
         onSuccess: () => {
-          toast.success('Your email has been verified!')
+          toast.success('Your email has been verified! You will be redirected to the login page now')
+          setTimeout(() => {
+            navigate({ to: '/login', replace: true })
+          }, 1500)
         },
         onError: (error: unknown) => {
           const err = error as AxiosError<any>
