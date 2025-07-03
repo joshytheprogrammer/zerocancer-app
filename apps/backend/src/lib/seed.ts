@@ -400,10 +400,28 @@ async function main() {
 
   console.log("\u2705 Seeding complete!");
   console.log("\n\u{1F9EA} Test Accounts:");
+
+  console.log("\u{1F464} Admins:");
+  adminData.forEach((admin) =>
+    console.log(`  ${admin.email} / ${admin.password}`)
+  );
+
+  console.log("\u{1F3E5} Centers (Admin Login):");
+  centerLocations.forEach((loc, i) =>
+    console.log(`  center${i + 1}@zerocancer.org / centerpass`)
+  );
+
+  console.log("\u{1F468}\u200D\u2695\uFE0F} Center Staff:");
+  centerLocations.forEach((loc, i) => {
+    console.log(`  staff${i + 1}a@zerocancer.africa / staffpass (admin)`);
+    console.log(`  staff${i + 1}b@zerocancer.africa / staffpass (nurse)`);
+  });
+
   console.log("\u{1F4E4} Donors:");
   testDonors.forEach((u, i) =>
     console.log(`  ${u.email} / ${TEST_PASSWORDS[i]}`)
   );
+
   console.log("\u{1F4E5} Patients:");
   testPatients.forEach((u, i) =>
     console.log(`  ${u.email} / ${TEST_PASSWORDS[i]}`)
