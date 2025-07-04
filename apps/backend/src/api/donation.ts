@@ -297,8 +297,7 @@ donationApp.post(
   }),
   async (c) => {
     const db = getDB();
-    const payload = c.req.valid("json");
-    console.log("Received Paystack webhook!!!:", payload);
+    console.log("Received Paystack webhook request");
 
     // Verify webhook signature
     const signature = c.req.header("x-paystack-signature");
@@ -320,6 +319,9 @@ donationApp.post(
     if (hash !== signature) {
       return c.json({ error: "Invalid signature" }, 401);
     }
+
+    const payload = c.req.valid("json");
+    console.log("Received Valid Paystack webhook!!!:", payload);
 
     try {
       if (payload.event === "charge.success") {
