@@ -26,6 +26,7 @@ enum CampaignStatus {
 }
 
 enum AppointmentStatus {
+  PENDING
   SCHEDULED
   IN_PROGRESS
   COMPLETED
@@ -123,10 +124,14 @@ model ServiceCenter {
 
   staff         CenterStaff[]
   appointments  Appointment[]
+
+  // This is to be replaced with a relation to the ScreeningType model
   services      ScreeningType[]
+  
   invitations   CenterStaffInvite[]
   paystackRecipient PaystackRecipient?
   payouts       Payout[]
+  screeningTypes ServiceCenterScreeningType[] @relation("ServiceCenterToScreeningTypes")
 }
 
 enum ServiceCenterStatus {
@@ -135,9 +140,22 @@ enum ServiceCenterStatus {
   SUSPENDED
 }
 
+model ServiceCenterScreeningType {
+  id            String   @id @default(uuid())
+  centerId      String
+  screeningTypeId String
+  amount        Float    @default(10000.0)
+
+
+  center        ServiceCenter @relation("ServiceCenterToScreeningTypes", fields: [centerId], references: [id], onDelete: Restrict)
+  screeningType ScreeningType @relation("ScreeningTypeToServiceCenters", fields: [screeningTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([centerId, screeningTypeId])
+}
+
 model ScreeningType {
   id                      String   @id @default(uuid())
-  name                    String
+  name                    String   @unique
   description             String?
   screeningTypeCategoryId String
   active                  Boolean  @default(true)
@@ -147,6 +165,7 @@ model ScreeningType {
   waitlists               Waitlist[]
   campaigns               DonationCampaign[] @relation("DonationCampaignScreeningTypes")
   centers                 ServiceCenter[]
+  serviceCenters         ServiceCenterScreeningType[] @relation("ScreeningTypeToServiceCenters")
 }
 
 model ScreeningTypeCategory {
@@ -218,7 +237,7 @@ model Appointment {
   createdAt               DateTime @default(now())
   cancellationReason   String?
   cancellationDate     DateTime?
-  checkInCode             String   @unique
+  checkInCode             String?   @unique
   checkInCodeExpiresAt    DateTime?
 
   patient                 User     @relation("UserAppointments", fields: [patientId], references: [id], onDelete: Cascade)

@@ -282,6 +282,12 @@ export type TAppointmentDetails = {
 
 export type TBookSelfPayAppointmentResponse = TDataResponse<{
   appointment: TPatientAppointment;
+  payment: {
+    transactionId: string;
+    reference: string;
+    authorizationUrl: string;
+    accessCode: string;
+  };
 }>;
 export type TJoinWaitlistResponse = TDataResponse<{ waitlist: TWaitlist }>;
 

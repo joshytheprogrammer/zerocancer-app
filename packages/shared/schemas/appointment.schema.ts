@@ -4,6 +4,9 @@ export const getCenterAppointmentsSchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).optional().default(20),
   screeningType: z.string().optional(),
+  status: z
+    .enum(["PENDING", "SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELED"])
+    .optional(),
 });
 
 export const getCenterAppointmentByIdSchema = z.object({

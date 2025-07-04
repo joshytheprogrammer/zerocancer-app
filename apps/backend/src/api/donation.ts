@@ -36,7 +36,7 @@ export const donationApp = new Hono<{
 // ========================================
 
 // Helper function to initialize Paystack payment with context-aware callback URLs
-async function initializePaystackPayment(
+export async function initializePaystackPayment(
   c: any,
   data: {
     email: string;
@@ -45,8 +45,10 @@ async function initializePaystackPayment(
     paymentType:
       | "anonymous_donation"
       | "campaign_creation"
-      | "campaign_funding";
+      | "campaign_funding"
+      | "appointment_booking";
     campaignId?: string; // Required for campaign-related payments
+    patientId?: string; // Optional for appointment payments
     metadata?: any;
   }
 ) {
@@ -71,6 +73,11 @@ async function initializePaystackPayment(
       if (!data.campaignId)
         throw new Error("Campaign ID required for campaign funding");
       callbackUrl = `${FRONTEND_URL}/donor/campaigns/${data.campaignId}/payment-status?ref=${data.reference}&type=fund`;
+      break;
+    case "appointment_booking":
+      if (!data.patientId)
+        throw new Error("Patient ID required for appointment payment");
+      callbackUrl = `${FRONTEND_URL}/patient/appointments/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
       break;
     default:
       throw new Error(`Unknown payment type: ${data.paymentType}`);
@@ -103,6 +110,7 @@ async function initializePaystackPayment(
   }
 
   const result = await response.json();
+  console.log("Paystack payment initialized:", result.data);
   return result.data;
 }
 
@@ -1245,6 +1253,20 @@ donationApp.post(
               },
             });
           }
+        } else if (paymentType === "appointment_booking" && metadata) {
+          const appointmentId = metadata.appointmentId;
+
+          await db.appointment.update({
+            where: { id: appointmentId },
+            data: {
+              status: "SCHEDULED",
+              checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
+              checkInCodeExpiresAt: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ),
+              // paymentReference: reference,
+            },
+          });
         }
 
         return c.json({ message: "Webhook processed successfully" });

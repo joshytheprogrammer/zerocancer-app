@@ -19,6 +19,7 @@ import type {
   TUploadResultsResponse,
   TVerifyCheckInCodeResponse,
 } from "@zerocancer/shared/types";
+import { stat } from "fs";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
@@ -42,13 +43,19 @@ centerAppointmentApp.get(
   }),
   async (c) => {
     const db = getDB();
-    const { page = 1, pageSize = 20, screeningType } = c.req.valid("query");
+    const {
+      page = 1,
+      pageSize = 20,
+      screeningType,
+      status,
+    } = c.req.valid("query");
     const where: any = {};
     if (screeningType) where.screeningTypeId = screeningType;
     // Optionally, filter by centerId from JWT
     const payload = c.get("jwtPayload");
     const centerId = payload?.id!; // Use centerId or id from JWT
     if (centerId) where.centerId = centerId;
+    if (status) where.status = status; // Use exact match for status
     const [appointments, total] = await Promise.all([
       db.appointment.findMany({
         where,
