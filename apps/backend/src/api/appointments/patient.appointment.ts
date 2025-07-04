@@ -65,8 +65,8 @@ patientAppointmentApp.post(
     const result = await db.serviceCenterScreeningType.findUnique({
       where: {
         centerId_screeningTypeId: {
-          centerId,
-          screeningTypeId,
+          centerId: centerId!,
+          screeningTypeId: screeningTypeId!,
         },
       },
     });
