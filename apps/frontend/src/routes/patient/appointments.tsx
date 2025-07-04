@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -8,9 +8,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { useQuery } from '@tanstack/react-query'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/patient/appointments')({
@@ -20,14 +20,30 @@ export const Route = createFileRoute('/patient/appointments')({
 function AppointmentCard({ appointment }: { appointment: any }) {
   const isPast = new Date(appointment.appointmentDate) < new Date()
   const hasResult = appointment.result?.id
-  
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{appointment.screeningType?.name || 'Unknown Screening'}</CardTitle>
+        <CardTitle>
+          {appointment.screeningType?.name || 'Unknown Screening'}
+        </CardTitle>
         <CardDescription>
           At {appointment.center?.centerName || 'Unknown Center'} on{' '}
-          {new Date(appointment.appointmentDate).toLocaleString()}
+          {/* {new Date(appointment.appointmentDate).toLocaleString()} */}
+          {new Date(appointment.appointmentDate).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+          {appointment.appointmentTime && (
+            <>
+              {' at '}
+              {new Date(appointment.appointmentTime).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -53,12 +69,16 @@ function AppointmentCard({ appointment }: { appointment: any }) {
           </p>
           {appointment.checkInCode && (
             <p className="text-sm">
-              Check-in Code: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{appointment.checkInCode}</span>
+              Check-in Code:{' '}
+              <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                {appointment.checkInCode}
+              </span>
             </p>
           )}
           {appointment.transaction && (
             <p className="text-sm text-muted-foreground">
-              Payment: ${appointment.transaction.amount} ({appointment.transaction.status})
+              Payment: ${appointment.transaction.amount} (
+              {appointment.transaction.status})
             </p>
           )}
         </div>
@@ -66,8 +86,9 @@ function AppointmentCard({ appointment }: { appointment: any }) {
       <CardFooter className="flex justify-end space-x-2">
         {isPast ? (
           hasResult && (
-            <Button asChild>
-              <Link to="/patient/results">View Results</Link>
+            <Button>
+              {/* <Link to="/patient/results">View Results</Link> */}
+              Doesn't work yet
             </Button>
           )
         ) : (
@@ -81,19 +102,21 @@ function AppointmentCard({ appointment }: { appointment: any }) {
 function PatientAppointments() {
   // Fetch all appointments using the proper provider function
   // Using empty object to avoid pagination validation issues
-  const { data: appointmentsData, isLoading, error } = useQuery(
-    usePatientAppointments({})
-  )
+  const {
+    data: appointmentsData,
+    isLoading,
+    error,
+  } = useQuery(usePatientAppointments({}))
 
   const appointments = appointmentsData?.data?.appointments || []
 
   // Separate upcoming and past appointments
   const now = new Date()
   const upcomingAppointments = appointments.filter(
-    (appt: any) => new Date(appt.appointmentDate) >= now
+    (appt: any) => new Date(appt.appointmentDate) >= now,
   )
   const pastAppointments = appointments.filter(
-    (appt: any) => new Date(appt.appointmentDate) < now
+    (appt: any) => new Date(appt.appointmentDate) < now,
   )
 
   if (isLoading) {
@@ -111,8 +134,12 @@ function PatientAppointments() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-red-600">Error loading appointments</h3>
-          <p className="text-muted-foreground">Please try refreshing the page</p>
+          <h3 className="text-lg font-medium text-red-600">
+            Error loading appointments
+          </h3>
+          <p className="text-muted-foreground">
+            Please try refreshing the page
+          </p>
         </div>
       </div>
     )
@@ -127,7 +154,8 @@ function PatientAppointments() {
         </p>
         {appointments.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            Total: {appointments.length} appointment{appointments.length !== 1 ? 's' : ''}
+            Total: {appointments.length} appointment
+            {appointments.length !== 1 ? 's' : ''}
           </p>
         )}
       </div>
@@ -149,7 +177,9 @@ function PatientAppointments() {
               ))
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">You have no upcoming appointments.</p>
+                <p className="text-muted-foreground mb-4">
+                  You have no upcoming appointments.
+                </p>
                 <Button asChild>
                   <Link to="/patient/book">Book New Appointment</Link>
                 </Button>
@@ -165,7 +195,9 @@ function PatientAppointments() {
               ))
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">You have no past appointments.</p>
+                <p className="text-muted-foreground">
+                  You have no past appointments.
+                </p>
               </div>
             )}
           </div>
@@ -173,4 +205,4 @@ function PatientAppointments() {
       </Tabs>
     </div>
   )
-} 
+}

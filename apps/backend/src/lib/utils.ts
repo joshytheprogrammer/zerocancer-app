@@ -8,8 +8,8 @@ export async function getUserWithProfiles({ email }: { email: string }) {
   const user = await db.user.findUnique({
     where: { email: email! },
     include: {
-      donorProfile: { select: { id: true } },
-      patientProfile: { select: { id: true } },
+      donorProfile: { select: { id: true, emailVerified: true } },
+      patientProfile: { select: { id: true, emailVerified: true } },
     },
   });
   //   if (!user)
@@ -39,8 +39,6 @@ export const comparePassword = async (
   return await bcrypt.compare(password, hash);
 };
 
-
-
 /**
  * Rules for waitlistMatcherAlg:
   ZeroCancer Matching Algorithm (Finalized)
@@ -64,7 +62,7 @@ export const comparePassword = async (
 /**
  * Matches patients on the waitlist to available donation campaigns.
  * Should be called periodically (e.g., every hour by a scheduler).
- * 
+ *
  * Can be triggered via webhook endpoints:
  * - POST /api/v1/waitlist/trigger-matching (with optional signature verification)
  * - POST /api/v1/waitlist/manual-trigger (with admin API key)

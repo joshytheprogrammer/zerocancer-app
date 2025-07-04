@@ -25,6 +25,7 @@ import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
+import { initializePaystackPayment } from "../donation";
 
 export const patientAppointmentApp = new Hono<{
   Variables: THonoAppVariables;
@@ -37,7 +38,8 @@ patientAppointmentApp.use(authMiddleware(["patient"]));
 patientAppointmentApp.post(
   "/book",
   zValidator("json", bookSelfPayAppointmentSchema, (result, c) => {
-    if (!result.success) return c.json({ ok: false, error: result.error }, 400);
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
     const db = getDB();
@@ -46,31 +48,52 @@ patientAppointmentApp.post(
       centerId,
       appointmentDate,
       appointmentTime,
-      paymentReference,
+      // paymentReference,
     } = c.req.valid("json");
     const payload = c.get("jwtPayload");
     if (!payload) {
-      return c.json({ ok: false, message: "Unauthorized" }, 401);
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     }
     const userId = payload.id!;
     if (!userId) {
-      return c.json({ ok: false, message: "User ID not found in token" }, 401);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "User ID not found in token" },
+        401
+      );
+    }
+
+    const result = await db.serviceCenterScreeningType.findUnique({
+      where: {
+        centerId_screeningTypeId: {
+          centerId: centerId!,
+          screeningTypeId: screeningTypeId!,
+        },
+      },
+    });
+
+    if (!result) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Screening type not available at this center" },
+        400
+      );
     }
 
     // TODO: Validate input, authenticate user, verify payment with Paystack
-    // For now, assume user is authenticated and payment is valid
-    // You may want to get userId from session/JWT in production
+    const paymentReference = `book-appointment-${
+      payload.id
+    }-${Date.now()}-${crypto.randomBytes(6).toString("hex")}`;
 
     // turn in transaction
     const transaction = await db.transaction.create({
       data: {
         type: "APPOINTMENT",
-        status: "COMPLETED",
-        amount: 30, // TODO: set actual amount
+        status: "PENDING",
+        amount: result?.amount, // TODO: set actual amount
         paymentReference, // store actual paystack payment reference
         paymentChannel: "PAYSTACK",
       },
     });
+
     const appointment = await db.appointment.create({
       data: {
         patientId: userId!,
@@ -79,11 +102,12 @@ patientAppointmentApp.post(
         appointmentDate: new Date(appointmentDate!),
         appointmentTime: new Date(appointmentTime!),
         isDonation: false,
-        status: "SCHEDULED",
+        status: "PENDING", // Set initial status to PENDING
         transactionId: transaction.id!, // Link appointment to transaction
         // create helper function to generate check-in code
-        checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
-        checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        // UPDATE: write checkincode logic in paystack hook when things are recieved
+        // checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
+        // checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
       include: {
         transaction: true,
@@ -92,6 +116,18 @@ patientAppointmentApp.post(
         result: true,
       },
     });
+
+    const paystackResponse = await initializePaystackPayment(c, {
+      email: payload.email!,
+      amount: result.amount * 100, // Use the amount from the screening type
+      reference: paymentReference,
+      paymentType: "appointment_booking",
+      patientId: userId,
+      metadata: {
+        appointmentId: appointment.id,
+      },
+    });
+
     // Strictly shape the appointment object to TPatientAppointment
     const safeAppointment = {
       id: appointment.id!,
@@ -142,7 +178,15 @@ patientAppointmentApp.post(
     };
     return c.json<TBookSelfPayAppointmentResponse>({
       ok: true,
-      data: { appointment: safeAppointment },
+      data: {
+        appointment: safeAppointment,
+        payment: {
+          transactionId: paymentReference,
+          reference: paymentReference,
+          authorizationUrl: paystackResponse.authorization_url,
+          accessCode: paystackResponse.access_code,
+        },
+      },
     });
   }
 );
@@ -153,7 +197,8 @@ patientAppointmentApp.get(
   async (c) => {
     const db = getDB();
     const payload = c.get("jwtPayload");
-    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+    if (!payload)
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
     const allocationId = c.req.param("allocationId");
     const page = parseInt(c.req.query("page") || "1", 10);
@@ -170,8 +215,8 @@ patientAppointmentApp.get(
       allocation.patientId !== userId ||
       allocation.appointmentId
     ) {
-      return c.json(
-        { ok: false, message: "Invalid or already assigned allocation" },
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid or already assigned allocation" },
         400
       );
     }
@@ -228,7 +273,8 @@ patientAppointmentApp.post(
   async (c) => {
     const db = getDB();
     const payload = c.get("jwtPayload");
-    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+    if (!payload)
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
     const { allocationId, centerId, appointmentDate, appointmentTime } =
       c.req.valid("json");
@@ -242,8 +288,8 @@ patientAppointmentApp.post(
       allocation.patientId !== userId ||
       allocation.appointmentId
     ) {
-      return c.json(
-        { ok: false, message: "Invalid or already assigned allocation" },
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid or already assigned allocation" },
         400
       );
     }
@@ -336,7 +382,8 @@ patientAppointmentApp.get(
   async (c) => {
     const db = getDB();
     const payload = c.get("jwtPayload");
-    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+    if (!payload)
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
@@ -612,7 +659,8 @@ patientAppointmentApp.get(
   async (c) => {
     const db = getDB();
     const payload = c.get("jwtPayload");
-    if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+    if (!payload)
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
     const page = parseInt(c.req.query("page") || "1", 10);
     const size = parseInt(c.req.query("size") || "20", 10);
@@ -664,7 +712,8 @@ patientAppointmentApp.get(
 patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
-  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  if (!payload)
+    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
   const userId = payload.id!;
   const id = c.req.param("id");
   const receipt = await db.transaction.findUnique({
@@ -681,7 +730,10 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
     },
   });
   if (!receipt || !receipt.appointments.some((a) => a.patientId === userId)) {
-    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Not found or forbidden" },
+      404
+    );
   }
   const safeReceipt = {
     id: receipt.id!,
@@ -700,7 +752,8 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
 patientAppointmentApp.get("/:id/checkin-code", async (c) => {
   const db = getDB();
   const payload = c.get("jwtPayload");
-  if (!payload) return c.json({ ok: false, message: "Unauthorized" }, 401);
+  if (!payload)
+    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
   const userId = payload.id!;
   const id = c.req.param("id");
   const appointment = await db.appointment.findUnique({
@@ -715,14 +768,20 @@ patientAppointmentApp.get("/:id/checkin-code", async (c) => {
     },
   });
   if (!appointment || appointment.patientId !== userId) {
-    return c.json({ ok: false, message: "Not found or forbidden" }, 404);
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Not found or forbidden" },
+      404
+    );
   }
   // Optionally, check if code is expired
   if (
     appointment.checkInCodeExpiresAt &&
     new Date() > appointment.checkInCodeExpiresAt
   ) {
-    return c.json({ ok: false, message: "Check-in code expired" }, 410);
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Check-in code expired" },
+      410
+    );
   }
   return c.json<TGetCheckInCodeResponse>({
     ok: true,
