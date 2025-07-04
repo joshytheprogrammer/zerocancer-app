@@ -291,15 +291,9 @@ donationApp.post(
 // POST /api/donor/paystack-webhook - Handle Paystack webhook
 donationApp.post(
   "/paystack-webhook",
-  zValidator("json", paystackWebhookSchema, (result, c) => {
-    if (!result.success)
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-  }),
+  // Verify webhook signature
   async (c) => {
-    const db = getDB();
     console.log("Received Paystack webhook request");
-
-    // Verify webhook signature
     const signature = c.req.header("x-paystack-signature");
 
     // Get the raw body
@@ -319,11 +313,18 @@ donationApp.post(
     if (hash !== signature) {
       return c.json({ error: "Invalid signature" }, 401);
     }
-
-    const payload = c.req.valid("json");
-    console.log("Received Valid Paystack webhook!!!:", payload);
+  },
+  zValidator("json", paystackWebhookSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
 
     try {
+      const payload = c.req.valid("json");
+      console.log("Received Valid Paystack webhook!!!:", payload);
+
       if (payload.event === "charge.success") {
         const { data } = payload;
 
@@ -404,7 +405,7 @@ donationApp.post(
       );
     } catch (error) {
       console.error("Webhook processing error:", error);
-      return c.json({ error: "Webhook processing failed" }, 500);
+      return c.json({ error: "Webhook processing failed" }, 200);
     }
   }
 );
