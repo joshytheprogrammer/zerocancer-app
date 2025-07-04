@@ -314,6 +314,8 @@ donationApp.post(
       return c.json({ error: "Invalid signature" }, 401);
     }
 
+    console.log(rawBodyBuffer.toString());
+
     next();
   },
   zValidator("json", paystackWebhookSchema, (result, c) => {
