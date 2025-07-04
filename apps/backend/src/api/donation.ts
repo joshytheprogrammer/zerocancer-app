@@ -317,6 +317,7 @@ donationApp.post(
     next();
   },
   zValidator("json", paystackWebhookSchema, (result, c) => {
+    console.log("Validating Paystack webhook payload:", result);
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
