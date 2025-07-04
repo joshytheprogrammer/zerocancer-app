@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import { z } from 'zod'
 import {
   anonymousDonationSchema,
   createCampaignSchema,
@@ -291,44 +292,37 @@ donationApp.post(
 // POST /api/donor/paystack-webhook - Handle Paystack webhook
 donationApp.post(
   "/paystack-webhook",
-  // Verify webhook signature
-  async (c, next) => {
-    console.log("Received Paystack webhook request");
-    const signature = c.req.header("x-paystack-signature");
-
-    // Get the raw body
-    const rawBody = await c.req.raw.arrayBuffer();
-    const rawBodyBuffer = Buffer.from(rawBody);
-
-    const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
-      c,
-      "node"
-    );
-
-    const hash = crypto
-      .createHmac("sha512", PAYSTACK_SECRET_KEY)
-      .update(rawBodyBuffer)
-      .digest("hex");
-
-    if (hash !== signature) {
-      return c.json({ error: "Invalid signature" }, 401);
-    }
-
-    console.log(rawBodyBuffer.toString());
-
-    next();
-  },
-  zValidator("json", paystackWebhookSchema, (result, c) => {
-    if (!result.success) {
-      console.log("Validating Paystack webhook payload:", result);
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-    }
-  }),
   async (c) => {
     const db = getDB();
-
+    
     try {
-      const payload = c.req.valid("json");
+      console.log("Received Paystack webhook request");
+
+      // Verify webhook signature
+      const signature = c.req.header("x-paystack-signature");
+    
+      // Get the raw body
+      const rawBody = await c.req.raw.arrayBuffer();
+      const rawBodyBuffer = Buffer.from(rawBody);
+    
+      const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
+        c,
+        "node"
+      );
+    
+      const hash = crypto
+        .createHmac("sha512", PAYSTACK_SECRET_KEY)
+        .update(rawBodyBuffer)
+        .digest("hex");
+    
+      if (hash !== signature) {
+        return c.json({ error: "Invalid signature" }, 401);
+      }
+
+      console.log(JSON.parse(rawBodyBuffer.toString()));
+
+      const payload = await JSON.parse(rawBodyBuffer.toString()) as z.infer<typeof paystackWebhookSchema>;
+
       console.log("Received Valid Paystack webhook!!!:", payload);
 
       if (payload.event === "charge.success") {

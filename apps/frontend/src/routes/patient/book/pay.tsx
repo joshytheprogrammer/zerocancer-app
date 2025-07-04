@@ -318,6 +318,11 @@ function PayBookingPage() {
                 )}
               />
 
+
+              {/* 
+              
+              NOT NEEDED
+              
               <FormField
                 control={form.control}
                 name="paymentReference"
@@ -333,7 +338,7 @@ function PayBookingPage() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
             <Button
               type="submit"

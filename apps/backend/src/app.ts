@@ -37,6 +37,7 @@ app.use("*", async (c, next) => {
       // "https://zerocancer.africa",
       // "https://zerocancer-frontend.vercel.app",
       // "http://localhost:3000",
+      "https://cautious-sniffle-p5rppxwrwjwc96wp-3000.app.github.dev"
     ],
     credentials: true,
   });
