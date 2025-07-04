@@ -285,6 +285,124 @@ donationApp.post(
 );
 
 // ========================================
+// WEBHOOK ENDPOINTS
+// ========================================
+
+// POST /api/donor/paystack-webhook - Handle Paystack webhook
+donationApp.post(
+  "/paystack-webhook",
+  zValidator("json", paystackWebhookSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const payload = c.req.valid("json");
+    const signature = c.req.header("x-paystack-signature");
+
+    console.log("Received Paystack webhook!!!:", payload);
+
+    // Verify webhook signature
+    const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
+      c,
+      "node"
+    );
+    const hash = crypto
+      .createHmac("sha512", PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(payload))
+      .digest("hex");
+
+    if (hash !== signature) {
+      return c.json({ error: "Invalid signature" }, 401);
+    }
+
+    try {
+      if (payload.event === "charge.success") {
+        const { data } = payload;
+
+        // Ensure data exists and has required properties
+        if (!data || !data.reference || !data.amount) {
+          return c.json({ error: "Invalid webhook data" }, 400);
+        }
+
+        const { reference, amount, metadata } = data;
+        const paymentType = metadata?.payment_type;
+
+        // Update transaction status
+        await db.transaction.updateMany({
+          where: { paymentReference: reference },
+          data: { status: "COMPLETED" },
+        });
+
+        if (paymentType === "anonymous_donation") {
+          // Add to general donor pool
+          console.log("Adding to general donor pool:", amount / 100);
+          await addToGeneralDonorPool(amount / 100);
+        } else if (paymentType === "campaign_creation" && metadata) {
+          console.log("Creating new campaign:", metadata);
+
+          // Update campaign with initial funding
+          const campaignId = metadata.campaign_id;
+          const initialFunding = metadata.initial_funding;
+
+          if (campaignId && initialFunding) {
+            await db.donationCampaign.update({
+              where: { id: campaignId },
+              data: {
+                availableAmount: { increment: initialFunding },
+              },
+            });
+          }
+
+          // Trigger matching for this campaign
+          // TODO: Call matching algorithm
+        } else if (paymentType === "campaign_funding" && metadata) {
+          console.log("Adding funds to campaign:", metadata.campaign_id);
+
+          // Add funds to existing campaign
+          const campaignId = metadata.campaign_id;
+
+          if (campaignId) {
+            await db.donationCampaign.update({
+              where: { id: campaignId },
+              data: {
+                availableAmount: { increment: amount / 100 },
+              },
+            });
+          }
+        } else if (paymentType === "appointment_booking" && metadata) {
+          console.log("Processing appointment booking:", metadata);
+
+          const appointmentId = metadata.appointmentId;
+
+          await db.appointment.update({
+            where: { id: appointmentId },
+            data: {
+              status: "SCHEDULED",
+              checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
+              checkInCodeExpiresAt: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ),
+              // paymentReference: reference,
+            },
+          });
+        }
+
+        return c.json({ message: "Webhook processed successfully" });
+      }
+
+      return c.json(
+        { message: "Event not handled", event: payload.event },
+        200
+      );
+    } catch (error) {
+      console.error("Webhook processing error:", error);
+      return c.json({ error: "Webhook processing failed" }, 500);
+    }
+  }
+);
+
+// ========================================
 // CAMPAIGN MANAGEMENT ENDPOINTS (DONOR AUTH REQUIRED)
 // ========================================
 
@@ -1173,109 +1291,3 @@ donationApp.get("/verify-payment/:reference", async (c) => {
     );
   }
 });
-
-// ========================================
-// WEBHOOK ENDPOINTS
-// ========================================
-
-// POST /api/donor/paystack-webhook - Handle Paystack webhook
-donationApp.post(
-  "/paystack-webhook",
-  zValidator("json", paystackWebhookSchema, (result, c) => {
-    if (!result.success)
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-  }),
-  async (c) => {
-    const db = getDB();
-    const payload = c.req.valid("json");
-    const signature = c.req.header("x-paystack-signature");
-
-    // Verify webhook signature
-    const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
-      c,
-      "node"
-    );
-    const hash = crypto
-      .createHmac("sha512", PAYSTACK_SECRET_KEY)
-      .update(JSON.stringify(payload))
-      .digest("hex");
-
-    if (hash !== signature) {
-      return c.json({ error: "Invalid signature" }, 401);
-    }
-
-    try {
-      if (payload.event === "charge.success") {
-        const { data } = payload;
-
-        // Ensure data exists and has required properties
-        if (!data || !data.reference || !data.amount) {
-          return c.json({ error: "Invalid webhook data" }, 400);
-        }
-
-        const { reference, amount, metadata } = data;
-        const paymentType = metadata?.payment_type;
-
-        // Update transaction status
-        await db.transaction.updateMany({
-          where: { paymentReference: reference },
-          data: { status: "COMPLETED" },
-        });
-
-        if (paymentType === "anonymous_donation") {
-          // Add to general donor pool
-          await addToGeneralDonorPool(amount / 100);
-        } else if (paymentType === "campaign_creation" && metadata) {
-          // Update campaign with initial funding
-          const campaignId = metadata.campaign_id;
-          const initialFunding = metadata.initial_funding;
-
-          if (campaignId && initialFunding) {
-            await db.donationCampaign.update({
-              where: { id: campaignId },
-              data: {
-                availableAmount: { increment: initialFunding },
-              },
-            });
-          }
-
-          // Trigger matching for this campaign
-          // TODO: Call matching algorithm
-        } else if (paymentType === "campaign_funding" && metadata) {
-          // Add funds to existing campaign
-          const campaignId = metadata.campaign_id;
-
-          if (campaignId) {
-            await db.donationCampaign.update({
-              where: { id: campaignId },
-              data: {
-                availableAmount: { increment: amount / 100 },
-              },
-            });
-          }
-        } else if (paymentType === "appointment_booking" && metadata) {
-          const appointmentId = metadata.appointmentId;
-
-          await db.appointment.update({
-            where: { id: appointmentId },
-            data: {
-              status: "SCHEDULED",
-              checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
-              checkInCodeExpiresAt: new Date(
-                Date.now() + 7 * 24 * 60 * 60 * 1000
-              ),
-              // paymentReference: reference,
-            },
-          });
-        }
-
-        return c.json({ message: "Webhook processed successfully" });
-      }
-
-      return c.json({ message: "Event not handled" });
-    } catch (error) {
-      console.error("Webhook processing error:", error);
-      return c.json({ error: "Webhook processing failed" }, 500);
-    }
-  }
-);
