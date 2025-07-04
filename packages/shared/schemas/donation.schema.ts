@@ -207,13 +207,17 @@ export const verifyPaymentSchema = z.object({
 // Webhook verification schema
 export const paystackWebhookSchema = z.object({
   event: z.string(),
-  data: z.object({
-    reference: z.string(),
-    status: z.string(),
-    amount: z.number(),
-    customer: z.object({
-      email: z.string().email(),
-    }),
-    metadata: z.record(z.any()).optional(),
-  }),
+  data: z
+    .object({
+      reference: z.string(),
+      status: z.string(),
+      amount: z.number(),
+      customer: z
+        .object({
+          email: z.string().email(),
+        })
+        .passthrough(),
+      metadata: z.record(z.any()).optional(),
+    })
+    .passthrough(), // allows extra keys, but requires the specified ones
 });
