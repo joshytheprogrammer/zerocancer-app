@@ -1,4 +1,5 @@
 import PatientForm from '@/components/SignupPage/PatientForm'
+import { useResendVerification } from '@/services/providers/auth.provider'
 import { Link } from '@tanstack/react-router'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -11,7 +12,7 @@ export const Route = createFileRoute('/(auth)/sign-up/_layout/patient')({
 function RouteComponent() {
   const [showVerify, setShowVerify] = useState(false)
   const [email, setEmail] = useState('')
-  const [isResending, setIsResending] = useState(false)
+  const resendVerificationMutation = useResendVerification()
 
   const handleFormSubmit = (data: any) => {
     if (data && data.email) {
@@ -21,16 +22,35 @@ function RouteComponent() {
   }
 
   const handleResend = async () => {
-    setIsResending(true)
-    try {
-      // TODO: Replace with actual resend verification email API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      toast.success('Verification email resent!')
-    } catch (err) {
-      toast.error('Failed to resend email.')
-    } finally {
-      setIsResending(false)
+    if (!email) {
+      toast.error('Email address not found. Please try registering again.')
+      return
     }
+
+    const resendPromise = new Promise((resolve, reject) => {
+      resendVerificationMutation.mutate(
+        {
+          email,
+          profileType: 'PATIENT',
+        },
+        {
+          onSuccess: (data) => {
+            resolve(data)
+          },
+          onError: (error: any) => {
+            reject(error)
+          },
+        }
+      )
+    })
+
+    toast.promise(resendPromise, {
+      loading: 'Resending verification email...',
+      success: 'Verification email resent successfully!',
+      error: (error: any) => {
+        return error.response?.data?.error || 'Failed to resend verification email. Please try again.'
+      },
+    })
   }
 
   if (showVerify) {
@@ -45,9 +65,9 @@ function RouteComponent() {
             <button
               onClick={handleResend}
               className="bg-primary text-white px-4 py-2 rounded-md cursor-pointer"
-              disabled={isResending}
+              disabled={resendVerificationMutation.isPending}
             >
-              {isResending ? 'Resending...' : 'Resend Email'}
+              {resendVerificationMutation.isPending ? 'Resending...' : 'Resend Email'}
             </button>
           </div>
         </div>

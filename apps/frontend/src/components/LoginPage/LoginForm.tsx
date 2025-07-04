@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
-import { useForgotPassword, useLogin } from '@/services/providers/auth.provider'
+import { useForgotPassword, useLogin, useResendVerification } from '@/services/providers/auth.provider'
 import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import { toast } from 'sonner'
 import type { z } from 'zod'
@@ -40,6 +40,7 @@ export default function LoginForm() {
 
   const loginMutation = useLogin()
   const forgotPasswordMutation = useForgotPassword()
+  const resendVerificationMutation = useResendVerification();
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -73,6 +74,22 @@ export default function LoginForm() {
           navigate({ to: `/${userProfile}` })
         },
         onError: (error) => {
+          if (error.response?.data?.err_code === 'email_not_verified') {
+            toast.error(
+              'User not verified. Please check your email for verification code.',
+            )
+            resendVerificationMutation.mutate({
+              email: values.email,
+              profileType: role,
+            }, {
+              onSuccess: () => {
+                toast.success('Verification code resent successfully!')
+              },
+              onError: (error) => {
+                toast.error('Failed to resend verification code. Please try again.')
+              },
+            })
+          }
           toast.error(
             error.response?.data?.error || 'Login failed. Please try again.',
           )
