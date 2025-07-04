@@ -53,6 +53,7 @@ import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-pas
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as PatientBookIndexRouteImport } from './routes/patient/book/index'
 import { Route as DonorCampaignsIndexRouteImport } from './routes/donor/campaigns/index'
+import { Route as PatientBookPaymentStatusRouteImport } from './routes/patient/book/payment-status'
 import { Route as PatientBookPayRouteImport } from './routes/patient/book/pay'
 import { Route as DonorCampaignsPaymentStatusRouteImport } from './routes/donor/campaigns/payment-status'
 import { Route as DonorCampaignsCreateRouteImport } from './routes/donor/campaigns/create'
@@ -280,6 +281,12 @@ const DonorCampaignsIndexRoute = DonorCampaignsIndexRouteImport.update({
   path: '/campaigns/',
   getParentRoute: () => DonorRoute,
 } as any)
+const PatientBookPaymentStatusRoute =
+  PatientBookPaymentStatusRouteImport.update({
+    id: '/book/payment-status',
+    path: '/book/payment-status',
+    getParentRoute: () => PatientRoute,
+  } as any)
 const PatientBookPayRoute = PatientBookPayRouteImport.update({
   id: '/book/pay',
   path: '/book/pay',
@@ -384,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
   '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book/payment-status': typeof PatientBookPaymentStatusRoute
   '/donor/campaigns': typeof DonorCampaignsIndexRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -433,6 +441,7 @@ export interface FileRoutesByTo {
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
   '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book/payment-status': typeof PatientBookPaymentStatusRoute
   '/donor/campaigns': typeof DonorCampaignsIndexRoute
   '/patient/book': typeof PatientBookIndexRoute
   '/sign-up/center': typeof authSignUpLayoutCenterRoute
@@ -489,6 +498,7 @@ export interface FileRoutesById {
   '/donor/campaigns/create': typeof DonorCampaignsCreateRoute
   '/donor/campaigns/payment-status': typeof DonorCampaignsPaymentStatusRoute
   '/patient/book/pay': typeof PatientBookPayRoute
+  '/patient/book/payment-status': typeof PatientBookPaymentStatusRoute
   '/donor/campaigns/': typeof DonorCampaignsIndexRoute
   '/patient/book/': typeof PatientBookIndexRoute
   '/(auth)/sign-up/_layout/center': typeof authSignUpLayoutCenterRoute
@@ -544,6 +554,7 @@ export interface FileRouteTypes {
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
     | '/patient/book/pay'
+    | '/patient/book/payment-status'
     | '/donor/campaigns'
     | '/patient/book'
     | '/sign-up/center'
@@ -593,6 +604,7 @@ export interface FileRouteTypes {
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
     | '/patient/book/pay'
+    | '/patient/book/payment-status'
     | '/donor/campaigns'
     | '/patient/book'
     | '/sign-up/center'
@@ -648,6 +660,7 @@ export interface FileRouteTypes {
     | '/donor/campaigns/create'
     | '/donor/campaigns/payment-status'
     | '/patient/book/pay'
+    | '/patient/book/payment-status'
     | '/donor/campaigns/'
     | '/patient/book/'
     | '/(auth)/sign-up/_layout/center'
@@ -973,6 +986,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DonorCampaignsIndexRouteImport
       parentRoute: typeof DonorRoute
     }
+    '/patient/book/payment-status': {
+      id: '/patient/book/payment-status'
+      path: '/book/payment-status'
+      fullPath: '/patient/book/payment-status'
+      preLoaderRoute: typeof PatientBookPaymentStatusRouteImport
+      parentRoute: typeof PatientRoute
+    }
     '/patient/book/pay': {
       id: '/patient/book/pay'
       path: '/book/pay'
@@ -1204,6 +1224,7 @@ interface PatientRouteChildren {
   PatientNotificationsRoute: typeof PatientNotificationsRoute
   PatientIndexRoute: typeof PatientIndexRoute
   PatientBookPayRoute: typeof PatientBookPayRoute
+  PatientBookPaymentStatusRoute: typeof PatientBookPaymentStatusRoute
   PatientBookIndexRoute: typeof PatientBookIndexRoute
 }
 
@@ -1213,6 +1234,7 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientNotificationsRoute: PatientNotificationsRoute,
   PatientIndexRoute: PatientIndexRoute,
   PatientBookPayRoute: PatientBookPayRoute,
+  PatientBookPaymentStatusRoute: PatientBookPaymentStatusRoute,
   PatientBookIndexRoute: PatientBookIndexRoute,
 }
 

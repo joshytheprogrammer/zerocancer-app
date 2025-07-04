@@ -78,7 +78,7 @@ export async function initializePaystackPayment(
     case "appointment_booking":
       if (!data.patientId)
         throw new Error("Patient ID required for appointment payment");
-      callbackUrl = `${FRONTEND_URL}/patient/appointments/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
+      callbackUrl = `${FRONTEND_URL}/patient/book/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
       break;
     default:
       throw new Error(`Unknown payment type: ${data.paymentType}`);
