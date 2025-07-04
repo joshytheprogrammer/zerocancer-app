@@ -298,18 +298,23 @@ donationApp.post(
   async (c) => {
     const db = getDB();
     const payload = c.req.valid("json");
-    const signature = c.req.header("x-paystack-signature");
-
     console.log("Received Paystack webhook!!!:", payload);
 
     // Verify webhook signature
+    const signature = c.req.header("x-paystack-signature");
+
+    // Get the raw body
+    const rawBody = await c.req.raw.arrayBuffer();
+    const rawBodyBuffer = Buffer.from(rawBody);
+
     const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
       c,
       "node"
     );
+
     const hash = crypto
       .createHmac("sha512", PAYSTACK_SECRET_KEY)
-      .update(JSON.stringify(payload))
+      .update(rawBodyBuffer)
       .digest("hex");
 
     if (hash !== signature) {
