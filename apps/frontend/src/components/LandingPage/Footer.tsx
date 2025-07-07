@@ -8,7 +8,6 @@ export default function Footer() {
         <div className="grid lg:grid-cols-3 gap-10">
           <div className="space-y-4 lg:col-span-2">
             <img src={logo} alt="ZeroCancer Logo" className="w-32" />
-            <h2 className="text-2xl font-bold">ZeroCancer</h2>
             <p className="text-muted-foreground max-w-md">
               No matter where you are, we're here for you. Reach out, get to
               know us better, and discover what we can do for your brand. We're

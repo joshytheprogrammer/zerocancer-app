@@ -5,6 +5,7 @@ import patients from '@/assets/images/patients.png'
 import screening from '@/assets/images/screening.png'
 import treatment from '@/assets/images/treatment.png'
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-aria-components'
 
 export default function How() {
   return (
@@ -24,11 +25,13 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Book a cancer screening or get sponsored.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
+           <Link href="sign-up">
+           <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
               <ArrowRight />
-            </button>
+            </button> 
+           </Link>
           </div>
-          <div className="mt-auto">
+          <div className="mt-auto"> 
             <img src={patients} alt="Patients" className="w-64" />
           </div>
         </div>
@@ -37,9 +40,11 @@ export default function How() {
           <p className="text-muted-foreground mt-2">
             Refer patients or access their results.
           </p>
-          <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-            <ArrowRight />
-          </button>
+          <Link href="sign-up">
+            <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+              <ArrowRight />
+            </button>
+          </Link>
           <div className="mt-4 flex justify-end">
             <img src={health} alt="Health Worker" className="w-48" />
           </div>
@@ -50,9 +55,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Sponsor someone's screening and track your impact.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={donor} alt="Donor" className="w-96" />
         </div>
@@ -61,9 +68,11 @@ export default function How() {
           <p className="text-muted-foreground mt-2">
             Manage screenings, patients, and reporting.
           </p>
-          <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-            <ArrowRight />
-          </button>
+          <Link href="sign-up">
+            <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+              <ArrowRight />
+            </button>
+          </Link>
           <img
             src={center}
             alt="Vaccination Center"
@@ -75,9 +84,11 @@ export default function How() {
           <p className="text-muted-foreground mt-2">
             Refer patients or access their results.
           </p>
-          <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-            <ArrowRight />
-          </button>
+          <Link href="sign-up">
+            <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+              <ArrowRight />
+            </button>
+          </Link>
           <img
             src={treatment}
             alt="Treatment Facilities"
@@ -89,9 +100,11 @@ export default function How() {
           <p className="text-muted-foreground mt-2">
             Manage appointments and upload screening results.
           </p>
-          <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-            <ArrowRight />
-          </button>
+          <Link href="sign-up">
+            <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+              <ArrowRight />
+            </button>
+          </Link>
           <img
             src={screening}
             alt="Screening Center"
@@ -107,9 +120,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Book a cancer screening or get sponsored.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={patients} alt="Patients" className="w-32" />
         </div>
@@ -120,9 +135,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Sponsor someone's screening and track your impact.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
         </div>
         <div className="bg-blue-50 rounded-2xl p-8 flex justify-between items-center gap-4">
@@ -131,9 +148,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Manage screenings, patients, and reporting.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={center} alt="Vaccination Center" className="w-32" />
         </div>
@@ -143,9 +162,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Refer patients or access their results.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={health} alt="Health Worker" className="w-32" />
         </div>
@@ -155,9 +176,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Refer patients or access their results.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={treatment} alt="Treatment Facilities" className="w-32" />
         </div>
@@ -167,9 +190,11 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Manage appointments and upload screening results.
             </p>
-            <button className="mt-4 bg-secondary text-white p-2 rounded-full">
-              <ArrowRight />
-            </button>
+              <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
           <img src={screening} alt="Screening Center" className="w-32" />
         </div>
