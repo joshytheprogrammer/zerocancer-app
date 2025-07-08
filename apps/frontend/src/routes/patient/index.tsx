@@ -1,8 +1,11 @@
+import cross from '@/assets/images/cross.png'
+import view from '@/assets/images/view.png'
 import ActionButtons from '@/components/patient/dashboard/ActionButtons'
 import NotificationsPanel from '@/components/patient/dashboard/NotificationsPanel'
 import UpcomingAppointmentsPanel from '@/components/patient/dashboard/UpcomingAppointmentsPanel'
 import ScreeningCard from '@/components/shared/ScreeningCard'
 import StatusCard from '@/components/shared/StatusCard'
+import { Button } from '@/components/ui/button'
 import request from '@/lib/request'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import {
@@ -11,12 +14,9 @@ import {
 } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import cross from '@/assets/images/cross.png'
-import view from '@/assets/images/view.png'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import type { TScreeningType } from '@zerocancer/shared/types'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
@@ -81,7 +81,7 @@ function PatientDashboard() {
 
           <div className="flex gap-4">
             <Link
-              to="/patient/appointments"
+              to="/patient/book"
               className="flex items-center justify-center w-full"
             >
               <div className="w-full px-12 h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
