@@ -31,12 +31,12 @@ export const createCampaignSchema = z
       .min(10, "Description must be at least 10 characters")
       .max(500),
     fundingAmount: z.number().min(1000, "Minimum campaign amount is ₦1,000"),
-    maxPerPatient: z.number().min(100, "Minimum per patient is ₦100"),
+    // maxPerPatient: z.number().min(100, "Minimum per patient is ₦100"),
     // initialFunding: z.number().min(100, "Minimum initial funding is ₦100"),
-    expiryMonths: z
-      .number()
-      .min(1, "Minimum 1 month")
-      .max(12, "Maximum 12 months"),
+    // expiryMonths: z
+    //   .number()
+    //   .min(1, "Minimum 1 month")
+    //   .max(12, "Maximum 12 months"),
 
     // Targeting filters
     targetStates: z.array(z.string()).optional(),
@@ -44,9 +44,8 @@ export const createCampaignSchema = z
     targetGender: z.enum(["MALE", "FEMALE", "ALL"]).default("ALL"),
     targetAgeMin: z.number().min(0).max(100).optional(),
     targetAgeMax: z.number().min(0).max(100).optional(),
-    screeningTypeIds: z
-      .array(z.string())
-      .min(1, "At least one screening type is required"),
+    screeningTypeIds: z.array(z.string()).optional(),
+    // .min(1, "At least one screening type is required"),
   })
   .refine(
     (data) => {
@@ -107,7 +106,7 @@ export const updateCampaignSchema = z
       .array(z.string().uuid())
       .min(1, "At least one screening type is required")
       .optional(),
-    expiryDate: z.string().datetime().optional(),
+    // expiryDate: z.string().datetime().optional(),
   })
   .refine(
     (data) => {
