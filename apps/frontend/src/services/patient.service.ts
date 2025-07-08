@@ -10,6 +10,7 @@ import { getPatientResultByIdSchema } from '@zerocancer/shared/schemas/result.sc
 import {
   getPatientWaitlistsSchema,
   joinWaitlistSchema,
+  leaveWaitlistSchema,
 } from '@zerocancer/shared/schemas/waitlist.schema'
 import type {
   TBookSelfPayAppointmentResponse,
@@ -24,6 +25,7 @@ import type {
   // TGetPatientResultsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
+  TLeaveWaitlistResponse,
   TSelectCenterResponse,
 } from '@zerocancer/shared/types'
 import { z } from 'zod'
@@ -42,6 +44,14 @@ export const joinWaitlist = async (
 ): Promise<TJoinWaitlistResponse> => {
   const res = await request.post(endpoints.joinWaitlist(), data)
   return res as TJoinWaitlistResponse
+}
+
+// Leave donation-based waitlist
+export const leaveWaitlist = async (
+  data: z.infer<typeof leaveWaitlistSchema>,
+): Promise<TLeaveWaitlistResponse> => {
+  const res = await request.post(endpoints.leaveWaitlist(), data)
+  return res as TLeaveWaitlistResponse
 }
 
 // Get patient waitlists (paginated, filterable)

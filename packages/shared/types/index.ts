@@ -42,7 +42,7 @@ export type TPatientRegisterResponse = TDataResponse<{
   fullName: string;
   phone: string;
   dateOfBirth: string;
-  gender: "male" | "female";
+  gender: "MALE" | "FEMALE";
   state: string;
   localGovernment: string;
 }>;
@@ -290,6 +290,10 @@ export type TBookSelfPayAppointmentResponse = TDataResponse<{
   };
 }>;
 export type TJoinWaitlistResponse = TDataResponse<{ waitlist: TWaitlist }>;
+export type TLeaveWaitlistResponse = TDataResponse<{
+  waitlistId: string;
+  message: string;
+}>;
 
 export type TGetPatientWaitlistResponse = TDataResponse<{
   waitlist: {
@@ -567,10 +571,7 @@ export type TDonationCampaign = {
   donorId: string;
   title: string;
   description: string;
-  targetAmount: number;
-  initialAmount: number;
-  availableAmount: number;
-  reservedAmount: number;
+  fundingAmount: number;
   usedAmount: number;
   purpose?: string;
   targetGender?: "MALE" | "FEMALE" | "ALL";
@@ -578,7 +579,7 @@ export type TDonationCampaign = {
   targetAgeMax?: number;
   targetStates?: string[];
   targetLgas?: string[];
-  status: "ACTIVE" | "COMPLETED" | "DELETED";
+  status: "ACTIVE" | "COMPLETED" | "DELETED" | "PENDING" | "SUSPENDED";
   expiryDate: string;
   createdAt: string;
   updatedAt: string;
@@ -594,8 +595,13 @@ export type TDonationCampaign = {
     id: string;
     name: string;
   }>;
-  patientsHelped: number;
-  allocationsCount: number;
+  patientAllocations: {
+    patientsHelped: number;
+    patientPendingAcceptance: number;
+    patientAppointmentInProgress: number;
+    patientAppointmentScheduled: number;
+    allocationsCount: number;
+  };
 };
 
 export type TDonationTransaction = {

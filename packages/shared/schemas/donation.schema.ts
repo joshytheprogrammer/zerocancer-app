@@ -30,9 +30,9 @@ export const createCampaignSchema = z
       .string()
       .min(10, "Description must be at least 10 characters")
       .max(500),
-    targetAmount: z.number().min(1000, "Minimum campaign amount is ₦1,000"),
+    fundingAmount: z.number().min(1000, "Minimum campaign amount is ₦1,000"),
     maxPerPatient: z.number().min(100, "Minimum per patient is ₦100"),
-    initialFunding: z.number().min(100, "Minimum initial funding is ₦100"),
+    // initialFunding: z.number().min(100, "Minimum initial funding is ₦100"),
     expiryMonths: z
       .number()
       .min(1, "Minimum 1 month")
@@ -58,14 +58,10 @@ export const createCampaignSchema = z
       ) {
         return false;
       }
-      // Initial funding can't exceed target amount
-      if (data.initialFunding > data.targetAmount) {
-        return false;
-      }
       // Max per patient can't exceed target amount
-      if (data.maxPerPatient > data.targetAmount) {
-        return false;
-      }
+      // if (data.maxPerPatient > data.fundingAmount) {
+      //   return false;
+      // }
       return true;
     },
     {

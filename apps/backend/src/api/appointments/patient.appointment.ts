@@ -24,7 +24,6 @@ import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
-import { z } from "zod";
 import { initializePaystackPayment } from "../donation";
 
 export const patientAppointmentApp = new Hono<{
@@ -205,6 +204,7 @@ patientAppointmentApp.get(
     const size = parseInt(c.req.query("size") || "20", 10);
     const state = c.req.query("state");
     const lga = c.req.query("lga");
+
     // Ensure allocation belongs to this patient and is not yet assigned to an appointment
     const allocation = await db.donationAllocation.findUnique({
       where: { id: allocationId },
@@ -649,64 +649,64 @@ patientAppointmentApp.get(
   }
 );
 
-// GET /api/appointment/patient/receipts - List patient receipts
-patientAppointmentApp.get(
-  "/patient/receipts",
-  zValidator("query", getPatientReceiptsSchema, (result, c) => {
-    if (!result.success)
-      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
-  }),
-  async (c) => {
-    const db = getDB();
-    const payload = c.get("jwtPayload");
-    if (!payload)
-      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
-    const userId = payload.id!;
-    const page = parseInt(c.req.query("page") || "1", 10);
-    const size = parseInt(c.req.query("size") || "20", 10);
-    const [receipts, total] = await Promise.all([
-      db.transaction.findMany({
-        where: { appointments: { some: { patientId: userId } } },
-        skip: (page - 1) * size,
-        take: size,
-        orderBy: { createdAt: "desc" },
-        include: {
-          appointments: {
-            select: {
-              id: true,
-              appointmentDate: true,
-              screeningType: { select: { id: true, name: true } },
-              patientId: true,
-            },
-          },
-        },
-      }),
-      db.transaction.count({
-        where: { appointments: { some: { patientId: userId } } },
-      }),
-    ]);
-    const safeReceipts = receipts.map((r) => ({
-      id: r.id!,
-      appointments: r.appointments.map((a) => ({
-        id: a.id!,
-        appointmentDate: a.appointmentDate.toISOString(),
-        screeningType: { id: a.screeningType.id!, name: a.screeningType.name! },
-        patientId: a.patientId!,
-      })),
-      createdAt: r.createdAt ? r.createdAt.toISOString() : undefined,
-    }));
-    return c.json<TGetPatientReceiptsResponse>({
-      ok: true,
-      data: {
-        receipts: safeReceipts,
-        page,
-        pageSize: size,
-        total,
-        totalPages: Math.ceil(total / size),
-      },
-    });
-  }
-);
+// // GET /api/appointment/patient/receipts - List patient receipts
+// patientAppointmentApp.get(
+//   "/patient/receipts",
+//   zValidator("query", getPatientReceiptsSchema, (result, c) => {
+//     if (!result.success)
+//       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+//   }),
+//   async (c) => {
+//     const db = getDB();
+//     const payload = c.get("jwtPayload");
+//     if (!payload)
+//       return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+//     const userId = payload.id!;
+//     const page = parseInt(c.req.query("page") || "1", 10);
+//     const size = parseInt(c.req.query("size") || "20", 10);
+//     const [receipts, total] = await Promise.all([
+//       db.transaction.findMany({
+//         where: { appointments: { some: { patientId: userId } } },
+//         skip: (page - 1) * size,
+//         take: size,
+//         orderBy: { createdAt: "desc" },
+//         include: {
+//           appointments: {
+//             select: {
+//               id: true,
+//               appointmentDate: true,
+//               screeningType: { select: { id: true, name: true } },
+//               patientId: true,
+//             },
+//           },
+//         },
+//       }),
+//       db.transaction.count({
+//         where: { appointments: { some: { patientId: userId } } },
+//       }),
+//     ]);
+//     const safeReceipts = receipts.map((r) => ({
+//       id: r.id!,
+//       appointments: r.appointments.map((a) => ({
+//         id: a.id!,
+//         appointmentDate: a.appointmentDate.toISOString(),
+//         screeningType: { id: a.screeningType.id!, name: a.screeningType.name! },
+//         patientId: a.patientId!,
+//       })),
+//       createdAt: r.createdAt ? r.createdAt.toISOString() : undefined,
+//     }));
+//     return c.json<TGetPatientReceiptsResponse>({
+//       ok: true,
+//       data: {
+//         receipts: safeReceipts,
+//         page,
+//         pageSize: size,
+//         total,
+//         totalPages: Math.ceil(total / size),
+//       },
+//     });
+//   }
+// );
 
 // GET /api/appointment/patient/receipts/:id - Get specific patient receipt
 patientAppointmentApp.get("/patient/receipts/:id", async (c) => {

@@ -21,6 +21,30 @@ export const useJoinWaitlist = () => {
   })
 }
 
+export const useLeaveWaitlist = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: [MutationKeys.leaveWaitlist],
+    mutationFn: patientService.leaveWaitlist,
+    onSettled: () => {
+      // Invalidate patient waitlists to refresh the list
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.patientWaitlists],
+      })
+      // Also invalidate waitlist status queries
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey.some(
+            (key) =>
+              typeof key === 'string' &&
+              (key.includes('patientWaitlists') || key.includes('waitlist')),
+          ),
+      })
+    },
+  })
+}
+
 // Get patient waitlists (paginated, filterable)
 export const usePatientWaitlists = (params: {
   page?: number
@@ -126,6 +150,7 @@ export const useEligibleCentersInfinite = (
   })
 
 // Select center for a matched allocation
+// Used for booking an appointment when you have an allocation
 export function useSelectCenter() {
   const queryClient = useQueryClient()
   return useMutation({

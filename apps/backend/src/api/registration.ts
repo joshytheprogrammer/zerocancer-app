@@ -76,7 +76,7 @@ registerApp.post(
         data: {
           patientProfile: {
             create: {
-              gender: data.gender!,
+              gender: data.gender as "MALE" | "FEMALE",
               dateOfBirth: data.dateOfBirth!,
               city: data.localGovernment!,
               state: data.state!,
@@ -100,10 +100,10 @@ registerApp.post(
                 ? updatedUser.patientProfile.dateOfBirth.toISOString()
                 : updatedUser.patientProfile?.dateOfBirth ?? "",
             gender:
-              updatedUser.patientProfile?.gender === "male" ||
-              updatedUser.patientProfile?.gender === "female"
+              updatedUser.patientProfile?.gender === "MALE" ||
+              updatedUser.patientProfile?.gender === "FEMALE"
                 ? updatedUser.patientProfile.gender
-                : "male",
+                : "MALE",
             state: updatedUser.patientProfile?.state ?? "",
             localGovernment: updatedUser.patientProfile?.city ?? "",
           },
@@ -178,10 +178,10 @@ registerApp.post(
               ? patient.patientProfile.dateOfBirth.toISOString()
               : patient.patientProfile?.dateOfBirth ?? "",
           gender:
-            patient.patientProfile?.gender === "male" ||
-            patient.patientProfile?.gender === "female"
+            patient.patientProfile?.gender === "MALE" ||
+            patient.patientProfile?.gender === "FEMALE"
               ? patient.patientProfile.gender
-              : "male",
+              : "MALE",
           state: patient.patientProfile?.state ?? "",
           localGovernment: patient.patientProfile?.city ?? "",
         },
@@ -227,19 +227,16 @@ registerApp.post(
         include: { donorProfile: true },
       });
 
-      return c.json<TPatientRegisterResponse>(
+      return c.json<TDonorRegisterResponse>(
         {
           ok: true,
           message: "Patient registered successfully",
           data: {
-            patientId: updatedUser.id,
+            donorId: updatedUser.id,
             email: updatedUser.email,
             fullName: updatedUser.fullName,
             phone: updatedUser.phone ?? "",
-            dateOfBirth: "",
-            gender: "male",
-            state: "",
-            localGovernment: "",
+            organization: updatedUser.donorProfile?.organizationName ?? "",
           },
         },
         201

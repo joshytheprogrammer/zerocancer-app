@@ -71,6 +71,7 @@ export enum MutationKeys {
   authUser = 'authUser',
   logoutUser = 'logoutUser',
   joinWaitlist = 'joinWaitlist',
+  leaveWaitlist = 'leaveWaitlist',
   bookAppointment = 'bookAppointment',
   uploadResult = 'uploadResult',
   verifyPatient = 'verifyPatient',

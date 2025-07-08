@@ -233,9 +233,9 @@ async function main() {
     create: {
       id: "general-donor-pool",
       donorId: "general-public",
+      title: "General donation public pool",
       availableAmount: 0,
-      reservedAmount: 0,
-      initialAmount: 0,
+      totalAmount: 0,
       status: "ACTIVE",
     },
   });
@@ -276,7 +276,7 @@ async function main() {
           passwordHash: await bcrypt.hash(password, 10),
           patientProfile: {
             create: {
-              gender: faker.helpers.arrayElement(["male", "female"]),
+              gender: faker.helpers.arrayElement(["MALE", "FEMALE"]),
               dateOfBirth: faker.date.birthdate({
                 min: 18,
                 max: 65,
