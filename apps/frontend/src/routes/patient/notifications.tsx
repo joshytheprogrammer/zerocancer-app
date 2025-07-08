@@ -1,16 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { Bell, Calendar, FileText } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  useNotifications, 
-  useMarkNotificationRead 
+import { Card, CardContent } from '@/components/ui/card'
+import {
+  useMarkNotificationRead,
+  useNotifications,
 } from '@/services/providers/notification.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Bell, Calendar, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/notifications')({
   component: PatientNotifications,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(useNotifications())
+  },
 })
 
 const notificationIcons = {
@@ -22,12 +25,12 @@ const notificationIcons = {
 }
 
 function PatientNotifications() {
-  const { 
-    data: notificationsData, 
-    isLoading, 
-    error 
+  const {
+    data: notificationsData,
+    isLoading,
+    error,
   } = useQuery(useNotifications())
-  
+
   const markAsReadMutation = useMarkNotificationRead()
 
   const handleMarkAsRead = (notificationRecipientId: string) => {
@@ -86,8 +89,8 @@ function PatientNotifications() {
             <p className="text-destructive">
               Failed to load notifications. Please try again.
             </p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={() => window.location.reload()}
             >
@@ -115,7 +118,7 @@ function PatientNotifications() {
               notifications.map((notificationRecipient) => {
                 const notification = notificationRecipient.notification
                 const isRead = notificationRecipient.read
-                
+
                 return (
                   <div
                     key={notificationRecipient.id}
@@ -124,8 +127,9 @@ function PatientNotifications() {
                     }`}
                   >
                     <div className="mt-1 text-muted-foreground">
-                      {notificationIcons[notification.type as keyof typeof notificationIcons] || 
-                       notificationIcons.default}
+                      {notificationIcons[
+                        notification.type as keyof typeof notificationIcons
+                      ] || notificationIcons.default}
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">{notification.title}</p>
@@ -143,13 +147,17 @@ function PatientNotifications() {
                       )}
                     </div>
                     {!isRead && (
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
-                        onClick={() => handleMarkAsRead(notificationRecipient.id)}
+                        onClick={() =>
+                          handleMarkAsRead(notificationRecipient.id)
+                        }
                         disabled={markAsReadMutation.isPending}
                       >
-                        {markAsReadMutation.isPending ? 'Marking...' : 'Mark as read'}
+                        {markAsReadMutation.isPending
+                          ? 'Marking...'
+                          : 'Mark as read'}
                       </Button>
                     )}
                   </div>
@@ -166,4 +174,4 @@ function PatientNotifications() {
       </Card>
     </div>
   )
-} 
+}

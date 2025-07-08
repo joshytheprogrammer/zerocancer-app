@@ -15,6 +15,9 @@ import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/patient/appointments')({
   component: PatientAppointments,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(usePatientAppointments({}))
+  },
 })
 
 function AppointmentCard({ appointment }: { appointment: any }) {
