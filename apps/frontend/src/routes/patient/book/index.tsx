@@ -29,7 +29,7 @@ function BookScreeningPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 lg:p-6">
       <div className="bg-white py-4 px-6 rounded-lg">
         <h1 className="text-3xl font-bold">Book a New Screening</h1>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -37,7 +37,7 @@ function BookScreeningPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {screeningTypesLoading ? (
           <p>Loading screenings...</p>
         ) : screeningTypesError ? (

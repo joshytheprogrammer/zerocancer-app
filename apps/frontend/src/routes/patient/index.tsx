@@ -1,4 +1,3 @@
-import ActionButtons from '@/components/patient/dashboard/ActionButtons'
 import NotificationsPanel from '@/components/patient/dashboard/NotificationsPanel'
 import UpcomingAppointmentsPanel from '@/components/patient/dashboard/UpcomingAppointmentsPanel'
 import ScreeningCard from '@/components/shared/ScreeningCard'
@@ -67,16 +66,16 @@ function PatientDashboard() {
       )[0] || null
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white py-4 px-6 rounded-lg">
+    <div className="">
+      <div className="bg-white p-4 lg:p-6 rounded-lg">
         <h1 className="text-3xl font-bold">Welcome, {userName}👋</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Here's a summary of your health journey.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 lg:p-6">
+        <div className="lg:col-span-2 space-y-6">
           <StatusCard appointment={upcomingAppointment} />
 
           <div className="flex gap-4">

@@ -19,7 +19,7 @@ export default function ScreeningCard({
   isBooking,
 }: ScreeningCardProps) {
   return (
-    <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm border border-gray-100">
+    <div className="bg-white rounded-xl p-6 flex items-center justify-between shadow-sm border border-gray-100">
       <div>
         <h3 className="text-xl font-bold text-gray-900">{name}</h3>
         <p className="text-gray-500 mt-1">{description}</p>
@@ -37,7 +37,7 @@ export default function ScreeningCard({
             onClick={onJoinWaitlist}
             disabled={isWaitlisted}
           >
-            {isWaitlisted ? 'Joined' : 'Join Waitlist'}
+            {isWaitlisted ? 'Already Joined' : 'Join Waitlist'}
           </Button>
         </div>
       </div>

@@ -6,14 +6,7 @@ import { toast } from 'sonner'
 
 import signupImage from '@/assets/images/signup.png'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
+import { Combobox } from '@/components/ui/combobox'
 import {
   Form,
   FormControl,
@@ -25,12 +18,6 @@ import {
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import {
   centers,
   useCenterStaffForgotPassword,
   useCenterStaffLogin,
@@ -40,7 +27,7 @@ import {
   centerStaffLoginSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
 import { useQuery } from '@tanstack/react-query'
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import type { z } from 'zod'
 
 export const Route = createFileRoute('/staff/login')({
@@ -53,26 +40,24 @@ type ForgotPasswordFormData = z.infer<typeof centerStaffForgotPasswordSchema>
 function RouteComponent() {
   const [showForgot, setShowForgot] = useState(false)
   const navigate = useNavigate()
-  const [loginPopoverOpen, setLoginPopoverOpen] = useState(false)
-  const [forgotPopoverOpen, setForgotPopoverOpen] = useState(false)
 
-  const { data: centersData, isLoading: centersLoading, isError, error } = useQuery(
+  const {
+    data: centersData,
+    isLoading: centersLoading,
+    isError,
+  } = useQuery(
     centers({
       page: 1,
       pageSize: 100, // Get a large number to show all available centers
       status: 'ACTIVE', // Only show active centers
-    })
+    }),
   )
 
-
-  if (isError) {
-    console.error('Failed to fetch centers:', error)
-  }
-  if (centersData) {
-    console.log('Fetched centers data:', centersData)
-  }
-
   const centersList = centersData?.data?.centers || []
+  const centerOptions = centersList.map(center => ({
+    value: center.id,
+    label: center.centerName,
+  }))
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(centerStaffLoginSchema),
@@ -122,82 +107,6 @@ function RouteComponent() {
     })
   }
 
-  const centerSelectField = (form: any, popoverOpen: boolean, setPopoverOpen: (open: boolean) => void) => (
-    <FormField
-      control={form.control}
-      name="centerId"
-      render={({ field }) => (
-        <FormItem className="flex flex-col">
-          <FormLabel>Center</FormLabel>
-          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className={cn(
-                    'w-full justify-between',
-                    !field.value && 'text-muted-foreground',
-                  )}
-                  disabled={centersLoading}
-                >
-                  {field.value
-                    ? centersList.find(
-                        (center) => center.id === field.value,
-                      )?.centerName
-                    : 'Select center'}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
-              <Command>
-                <CommandInput placeholder="Search centers..." />
-                <CommandList>
-                  {centersLoading && (
-                     <div className="p-4 text-center text-sm">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
-                        Loading...
-                    </div>
-                  )}
-                  {isError && <div className="p-2 text-center text-sm text-red-500">Failed to load centers.</div>}
-                  {!centersLoading && !isError && centersList.length === 0 && <CommandEmpty>No center found.</CommandEmpty>}
-                  <CommandGroup>
-                    {!centersLoading && !isError && centersList.map((center) => (
-                      <CommandItem
-                        value={center.centerName}
-                        key={center.id}
-                        onSelect={() => {
-                          form.setValue(
-                            'centerId',
-                            center.id,
-                          )
-                          setPopoverOpen(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            center.id === field.value
-                              ? 'opacity-100'
-                              : 'opacity-0',
-                          )}
-                        />
-                        {center.centerName}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-
-
   if (showForgot) {
     return (
       <div className="flex h-screen p-2">
@@ -240,7 +149,35 @@ function RouteComponent() {
                     onSubmit={forgotForm.handleSubmit(onForgotSubmit)}
                     className="space-y-4"
                   >
-                    {centerSelectField(forgotForm, forgotPopoverOpen, setForgotPopoverOpen)}
+                    <FormField
+                      control={forgotForm.control}
+                      name="centerId"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Center</FormLabel>
+                          <FormControl>
+                            <Combobox
+                              options={centerOptions}
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              placeholder="Select center"
+                              searchPlaceholder="Search centers..."
+                              emptyStateMessage={
+                                centersLoading
+                                  ? 'Loading...'
+                                  : isError
+                                    ? 'Failed to load centers.'
+                                    : 'No center found.'
+                              }
+                              disabled={centersLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={forgotForm.control}
@@ -321,7 +258,35 @@ function RouteComponent() {
                   onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                   className="space-y-4"
                 >
-                  {centerSelectField(loginForm, loginPopoverOpen, setLoginPopoverOpen)}
+                  <FormField
+                    control={loginForm.control}
+                    name="centerId"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Center</FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={centerOptions}
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            placeholder="Select center"
+                            searchPlaceholder="Search centers..."
+                            emptyStateMessage={
+                              centersLoading
+                                ? 'Loading...'
+                                : isError
+                                  ? 'Failed to load centers.'
+                                  : 'No center found.'
+                            }
+                            disabled={centersLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={loginForm.control}

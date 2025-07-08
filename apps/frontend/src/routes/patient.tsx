@@ -93,7 +93,7 @@ function PatientLayout() {
 
       {/* Main Content Area */}
       <div className="md:ml-60 xl:ml-72 pb-20 md:pb-0">
-        <main className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen bg-neutral-50">
+        <main className="flex flex-col gap-4 lg:gap-6 min-h-screen bg-neutral-50">
           <Outlet />
         </main>
       </div>
