@@ -290,6 +290,10 @@ export type TBookSelfPayAppointmentResponse = TDataResponse<{
   };
 }>;
 export type TJoinWaitlistResponse = TDataResponse<{ waitlist: TWaitlist }>;
+export type TLeaveWaitlistResponse = TDataResponse<{
+  waitlistId: string;
+  message: string;
+}>;
 
 export type TGetPatientWaitlistResponse = TDataResponse<{
   waitlist: {

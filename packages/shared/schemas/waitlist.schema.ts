@@ -18,6 +18,10 @@ export const joinWaitlistSchema = z.object({
     .min(1, { message: "Screening type is required." }),
 });
 
+export const leaveWaitlistSchema = z.object({
+  waitlistId: z.string().min(1, { message: "Waitlist ID is required." }),
+});
+
 export type TGetPatientWaitlistsSchema = typeof getPatientWaitlistsSchema;
 export type TGetPatientWaitlistsParams = z.infer<
   typeof getPatientWaitlistsSchema
@@ -26,3 +30,4 @@ export type TGetAllWaitlistsSchema = typeof getAllWaitlistsSchema;
 export type TGetAllWaitlistsParams = z.infer<typeof getAllWaitlistsSchema>;
 export type TJoinWaitlistSchema = typeof joinWaitlistSchema;
 export type TJoinWaitlistParams = z.infer<typeof joinWaitlistSchema>;
+export type TLeaveWaitlistSchema = typeof leaveWaitlistSchema;

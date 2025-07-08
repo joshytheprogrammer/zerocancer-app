@@ -4,11 +4,13 @@ import type {
   TGetAllWaitlistsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
+  TLeaveWaitlistResponse,
 } from "@zerocancer/shared";
 import {
   getAllWaitlistsSchema,
   getPatientWaitlistsSchema,
   joinWaitlistSchema,
+  leaveWaitlistSchema,
 } from "@zerocancer/shared";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
@@ -379,6 +381,60 @@ waitlistApp.post(
   }
 );
 
+// POST /api/waitlist/patient/leave - Leave waitlist
+waitlistApp.post(
+  "/patient/leave",
+  zValidator("json", leaveWaitlistSchema, (result, c) => {
+    if (!result.success) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid request data" },
+        400
+      );
+    }
+  }),
+  async (c) => {
+    try {
+      const payload = c.get("jwtPayload");
+      const userId = payload?.id;
+      const { waitlistId } = c.req.valid("json");
+
+      // Check if waitlist entry exists
+      const waitlist = await db.waitlist.findFirst({
+        where: {
+          id: waitlistId,
+          patientId: userId,
+        },
+      });
+
+      if (!waitlist) {
+        return c.json<TErrorResponse>(
+          { ok: false, error: "Waitlist entry not found" },
+          404
+        );
+      }
+
+      // Delete the waitlist entry
+      await db.waitlist.delete({
+        where: { id: waitlistId },
+      });
+
+      return c.json<TLeaveWaitlistResponse>({
+        ok: true,
+        data: {
+          waitlistId: waitlistId,
+          message: "Successfully left the waitlist",
+        },
+      });
+    } catch (error) {
+      console.error("Leave waitlist error:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Failed to leave waitlist" },
+        500
+      );
+    }
+  }
+);
+
 // ========================================
 // PUBLIC WAITLIST BROWSING
 // ========================================
@@ -558,7 +614,7 @@ waitlistApp.get("/matching-status", async (c) => {
 });
 
 // POST /api/waitlist/manual-trigger - Manual trigger for admins (with auth middleware)
-waitlistApp.post("/manual-trigger", /*authMiddleware(["admin"]),*/ async (c) => {
+waitlistApp.post("/manual-trigger", authMiddleware(["admin"]), async (c) => {
   try {
     const payload = c.get("jwtPayload");
     console.log(
