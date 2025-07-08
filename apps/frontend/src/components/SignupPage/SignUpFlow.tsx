@@ -10,6 +10,7 @@ export default function SignUpFlow() {
       <div className="flex gap-4 flex-wrap">
         <Link
           to="/sign-up/patient"
+          preload="render"
           className="bg-green-200 p-4 rounded-lg flex-1 min-w-[200px] flex flex-col items-center hover:bg-green-300 transition-colors duration-300 cursor-pointer"
         >
           <h3 className="text-2xl font-bold mb-12 w-full">Patient</h3>
@@ -21,6 +22,7 @@ export default function SignUpFlow() {
         </Link>
         <Link
           to="/sign-up/donor"
+          preload="render"
           className="bg-purple-200 p-4 rounded-lg flex-1 min-w-[200px] flex flex-col items-center hover:bg-purple-300 transition-colors duration-300 cursor-pointer"
         >
           <h3 className="text-2xl font-bold mb-12 w-full">Donor</h3>
@@ -32,6 +34,7 @@ export default function SignUpFlow() {
         </Link>
         <Link
           to="/sign-up/center"
+          preload="render"
           className="bg-blue-200 p-4 rounded-lg flex-1 min-w-[200px] flex flex-col items-center hover:bg-blue-300 transition-colors duration-300 cursor-pointer"
         >
           <h3 className="text-2xl font-bold mb-12 w-full">Screening Center</h3>

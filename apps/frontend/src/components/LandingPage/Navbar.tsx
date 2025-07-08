@@ -41,7 +41,7 @@ export default function Navbar() {
       </div>
       <div className="hidden md:flex items-center gap-8">
         {isAuthenticated && dashboardLink ? (
-          <Link to={dashboardLink}>
+          <Link to={dashboardLink} preload="render">
             <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
               Dashboard
             </button>
@@ -53,7 +53,7 @@ export default function Navbar() {
                 Login
               </button>
             </Link>
-            <Link to="/sign-up" preload="render">
+            <Link to="/sign-up">
               <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold cursor-pointer">
                 Sign Up
               </button>
