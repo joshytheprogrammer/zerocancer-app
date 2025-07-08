@@ -35,16 +35,25 @@ import {
   useCenterStaffForgotPassword,
   useCenterStaffLogin,
 } from '@/services/providers/center.provider'
+import { useQuery } from '@tanstack/react-query'
 import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
-import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import type { z } from 'zod'
 
 export const Route = createFileRoute('/staff/login')({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(
+      centers({
+        page: 1,
+        pageSize: 100, // Get a large number to show all available centers
+        status: 'ACTIVE', // Only show active centers
+      }),
+    )
+  },
 })
 
 type LoginFormData = z.infer<typeof centerStaffLoginSchema>
@@ -56,14 +65,18 @@ function RouteComponent() {
   const [loginPopoverOpen, setLoginPopoverOpen] = useState(false)
   const [forgotPopoverOpen, setForgotPopoverOpen] = useState(false)
 
-  const { data: centersData, isLoading: centersLoading, isError, error } = useQuery(
+  const {
+    data: centersData,
+    isLoading: centersLoading,
+    isError,
+    error,
+  } = useQuery(
     centers({
       page: 1,
       pageSize: 100, // Get a large number to show all available centers
       status: 'ACTIVE', // Only show active centers
-    })
+    }),
   )
-
 
   if (isError) {
     console.error('Failed to fetch centers:', error)
@@ -122,7 +135,11 @@ function RouteComponent() {
     })
   }
 
-  const centerSelectField = (form: any, popoverOpen: boolean, setPopoverOpen: (open: boolean) => void) => (
+  const centerSelectField = (
+    form: any,
+    popoverOpen: boolean,
+    setPopoverOpen: (open: boolean) => void,
+  ) => (
     <FormField
       control={form.control}
       name="centerId"
@@ -142,9 +159,8 @@ function RouteComponent() {
                   disabled={centersLoading}
                 >
                   {field.value
-                    ? centersList.find(
-                        (center) => center.id === field.value,
-                      )?.centerName
+                    ? centersList.find((center) => center.id === field.value)
+                        ?.centerName
                     : 'Select center'}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -155,37 +171,42 @@ function RouteComponent() {
                 <CommandInput placeholder="Search centers..." />
                 <CommandList>
                   {centersLoading && (
-                     <div className="p-4 text-center text-sm">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
-                        Loading...
+                    <div className="p-4 text-center text-sm">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
+                      Loading...
                     </div>
                   )}
-                  {isError && <div className="p-2 text-center text-sm text-red-500">Failed to load centers.</div>}
-                  {!centersLoading && !isError && centersList.length === 0 && <CommandEmpty>No center found.</CommandEmpty>}
+                  {isError && (
+                    <div className="p-2 text-center text-sm text-red-500">
+                      Failed to load centers.
+                    </div>
+                  )}
+                  {!centersLoading && !isError && centersList.length === 0 && (
+                    <CommandEmpty>No center found.</CommandEmpty>
+                  )}
                   <CommandGroup>
-                    {!centersLoading && !isError && centersList.map((center) => (
-                      <CommandItem
-                        value={center.centerName}
-                        key={center.id}
-                        onSelect={() => {
-                          form.setValue(
-                            'centerId',
-                            center.id,
-                          )
-                          setPopoverOpen(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            center.id === field.value
-                              ? 'opacity-100'
-                              : 'opacity-0',
-                          )}
-                        />
-                        {center.centerName}
-                      </CommandItem>
-                    ))}
+                    {!centersLoading &&
+                      !isError &&
+                      centersList.map((center) => (
+                        <CommandItem
+                          value={center.centerName}
+                          key={center.id}
+                          onSelect={() => {
+                            form.setValue('centerId', center.id)
+                            setPopoverOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              'mr-2 h-4 w-4',
+                              center.id === field.value
+                                ? 'opacity-100'
+                                : 'opacity-0',
+                            )}
+                          />
+                          {center.centerName}
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                 </CommandList>
               </Command>
@@ -196,7 +217,6 @@ function RouteComponent() {
       )}
     />
   )
-
 
   if (showForgot) {
     return (
@@ -240,7 +260,11 @@ function RouteComponent() {
                     onSubmit={forgotForm.handleSubmit(onForgotSubmit)}
                     className="space-y-4"
                   >
-                    {centerSelectField(forgotForm, forgotPopoverOpen, setForgotPopoverOpen)}
+                    {centerSelectField(
+                      forgotForm,
+                      forgotPopoverOpen,
+                      setForgotPopoverOpen,
+                    )}
 
                     <FormField
                       control={forgotForm.control}
@@ -321,7 +345,11 @@ function RouteComponent() {
                   onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                   className="space-y-4"
                 >
-                  {centerSelectField(loginForm, loginPopoverOpen, setLoginPopoverOpen)}
+                  {centerSelectField(
+                    loginForm,
+                    loginPopoverOpen,
+                    setLoginPopoverOpen,
+                  )}
 
                   <FormField
                     control={loginForm.control}
