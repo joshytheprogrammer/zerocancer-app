@@ -1,11 +1,12 @@
 import heroImg from '@/assets/images/hero.png'
+import { Link } from 'react-aria-components'
 // import type { User } from '@zerocancer/shared/index'
 
 export default function Hero() {
   return (
-    <div className="wrapper flex flex-col lg:flex-row items-center justify-between gap-12 bg-primary text-white py-12">
+    <div className="wrapper flex flex-col lg:flex-row items-center justify-between gap-12 bg-primary text-white lg:py-8 pb-8 lg:pb-auto">
       <div className="lg:w-1/2 space-y-8">
-        <h1 className="text-4xl lg:text-5xl font-bold">
+        <h1 className="text-4xl lg:text-5xl font-bold mt-20 lg:mt-0">
           Embark on Your Path to Wellness with ZeroCancer
         </h1>
         <p className="text-lg">
@@ -16,15 +17,17 @@ export default function Hero() {
           working diligently until the incidence and impact of this menace are
           minimized to zero in Africa.
         </p>
-        <button className="bg-secondary px-8 py-2 w-full lg:w-auto rounded-lg font-semibold text-lg">
-          Get Started
-        </button>
+        <Link href="/sign-up" className="cursor-pointer">
+          <button className="bg-secondary px-8 py-2 w-full lg:w-auto rounded-lg font-semibold text-lg cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+            Get Started
+          </button>
+        </Link>
       </div>
       <div className="flex justify-end">
         <img
           src={heroImg}
           alt="image of a woman"
-          className="w-full lg:w-9/10"
+          className="w-full lg:w-8/10"
         />
       </div>
     </div>

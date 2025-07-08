@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
-import { useForgotPassword, useLogin, useResendVerification } from '@/services/providers/auth.provider'
+import { useAuthUser, useForgotPassword, useLogin, useResendVerification } from '@/services/providers/auth.provider'
 import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
 import { toast } from 'sonner'
 import type { z } from 'zod'
@@ -69,9 +69,12 @@ export default function LoginForm() {
         onSuccess: async (response) => {
           toast.success('Login successful')
 
-          // Navigate to the correct dashboard based on backend profile, not UI selection
-          const userProfile = response.data.user.profile.toLowerCase()
-          navigate({ to: `/${userProfile}` })
+          queryClient.fetchQuery(useAuthUser()).then((data) => {
+            const userProfile = data?.data?.user?.profile.toLowerCase()
+            console.log('userProfile', userProfile)
+            navigate({ to: `/${userProfile}` })
+          })
+
         },
         onError: (error) => {
           if (error.response?.data?.err_code === 'email_not_verified') {

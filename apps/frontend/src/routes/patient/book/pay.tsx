@@ -121,8 +121,17 @@ function PayBookingPage() {
 
     bookSelfPayAppointmentMutation.mutate(formattedValues, {
         onSuccess: (data) => {
-          toast.success('Appointment booked successfully!')
-          navigate({ to: '/patient/appointments' })
+          console.log('Appointment booking response:', data)
+          
+          // Check if payment is required (same pattern as donor campaigns)
+          if (data.data.payment?.authorizationUrl) {
+            toast.success('Appointment created! Redirecting to payment...')
+            window.location.href = data.data.payment.authorizationUrl
+          } else {
+            // Fallback for appointments that don't require payment
+            toast.success('Appointment booked successfully!')
+            navigate({ to: '/patient/appointments' })
+          }
         },
         onError: (error: any) => {
           console.error('Booking error:', error)
