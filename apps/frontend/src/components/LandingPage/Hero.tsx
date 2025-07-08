@@ -4,7 +4,7 @@ import { Link } from 'react-aria-components'
 
 export default function Hero() {
   return (
-    <div className="wrapper flex flex-col lg:flex-row items-center justify-between gap-12 bg-primary text-white lg:py-8 pb-8 lg:pb-auto">
+    <div className="wrapper flex flex-col lg:flex-row items-center justify-between gap-12 bg-primary text-white pb-8 pt-0 lg:py-16">
       <div className="lg:w-1/2 space-y-8">
         <h1 className="text-4xl lg:text-5xl font-bold mt-20 lg:mt-0">
           Embark on Your Path to Wellness with ZeroCancer

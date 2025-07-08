@@ -7,6 +7,14 @@ import { toast } from 'sonner'
 import signupImage from '@/assets/images/signup.png'
 import { Button } from '@/components/ui/button'
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
   Form,
   FormControl,
   FormField,
@@ -17,6 +25,13 @@ import {
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import {
+  centers,
   useCenterStaffForgotPassword,
   useCenterStaffLogin,
 } from '@/services/providers/center.provider'
@@ -24,6 +39,8 @@ import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
+import { useQuery } from '@tanstack/react-query'
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import type { z } from 'zod'
 
 export const Route = createFileRoute('/staff/login')({
@@ -36,13 +53,33 @@ type ForgotPasswordFormData = z.infer<typeof centerStaffForgotPasswordSchema>
 function RouteComponent() {
   const [showForgot, setShowForgot] = useState(false)
   const navigate = useNavigate()
+  const [loginPopoverOpen, setLoginPopoverOpen] = useState(false)
+  const [forgotPopoverOpen, setForgotPopoverOpen] = useState(false)
+
+  const { data: centersData, isLoading: centersLoading, isError, error } = useQuery(
+    centers({
+      page: 1,
+      pageSize: 100, // Get a large number to show all available centers
+      status: 'ACTIVE', // Only show active centers
+    })
+  )
+
+
+  if (isError) {
+    console.error('Failed to fetch centers:', error)
+  }
+  if (centersData) {
+    console.log('Fetched centers data:', centersData)
+  }
+
+  const centersList = centersData?.data?.centers || []
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(centerStaffLoginSchema),
     defaultValues: {
-      centerId: '2928f20d-7c03-4d15-afbf-869895eca4ac',
-      email: 'staff2b@zerocancer.africa',
-      password: 'staffpass',
+      centerId: '',
+      email: '',
+      password: '',
     },
   })
 
@@ -59,7 +96,7 @@ function RouteComponent() {
 
   function onLoginSubmit(values: LoginFormData) {
     loginMutation.mutate(values, {
-      onSuccess: (response) => {
+      onSuccess: () => {
         toast.success('Login successful')
         navigate({ to: '/center' })
       },
@@ -84,6 +121,82 @@ function RouteComponent() {
       },
     })
   }
+
+  const centerSelectField = (form: any, popoverOpen: boolean, setPopoverOpen: (open: boolean) => void) => (
+    <FormField
+      control={form.control}
+      name="centerId"
+      render={({ field }) => (
+        <FormItem className="flex flex-col">
+          <FormLabel>Center</FormLabel>
+          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    'w-full justify-between',
+                    !field.value && 'text-muted-foreground',
+                  )}
+                  disabled={centersLoading}
+                >
+                  {field.value
+                    ? centersList.find(
+                        (center) => center.id === field.value,
+                      )?.centerName
+                    : 'Select center'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Search centers..." />
+                <CommandList>
+                  {centersLoading && (
+                     <div className="p-4 text-center text-sm">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
+                        Loading...
+                    </div>
+                  )}
+                  {isError && <div className="p-2 text-center text-sm text-red-500">Failed to load centers.</div>}
+                  {!centersLoading && !isError && centersList.length === 0 && <CommandEmpty>No center found.</CommandEmpty>}
+                  <CommandGroup>
+                    {!centersLoading && !isError && centersList.map((center) => (
+                      <CommandItem
+                        value={center.centerName}
+                        key={center.id}
+                        onSelect={() => {
+                          form.setValue(
+                            'centerId',
+                            center.id,
+                          )
+                          setPopoverOpen(false)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            center.id === field.value
+                              ? 'opacity-100'
+                              : 'opacity-0',
+                          )}
+                        />
+                        {center.centerName}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+
 
   if (showForgot) {
     return (
@@ -127,22 +240,7 @@ function RouteComponent() {
                     onSubmit={forgotForm.handleSubmit(onForgotSubmit)}
                     className="space-y-4"
                   >
-                    <FormField
-                      control={forgotForm.control}
-                      name="centerId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Center ID</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your center ID"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {centerSelectField(forgotForm, forgotPopoverOpen, setForgotPopoverOpen)}
 
                     <FormField
                       control={forgotForm.control}
@@ -169,26 +267,7 @@ function RouteComponent() {
                     >
                       {forgotPasswordMutation.status === 'pending' ? (
                         <>
-                          <svg
-                            className="animate-spin h-5 w-5 mr-2"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            ></path>
-                          </svg>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Sending...
                         </>
                       ) : (
@@ -242,22 +321,7 @@ function RouteComponent() {
                   onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                   className="space-y-4"
                 >
-                  <FormField
-                    control={loginForm.control}
-                    name="centerId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Center ID</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your center ID"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {centerSelectField(loginForm, loginPopoverOpen, setLoginPopoverOpen)}
 
                   <FormField
                     control={loginForm.control}
@@ -312,26 +376,7 @@ function RouteComponent() {
                     className="w-full flex items-center justify-center gap-2"
                   >
                     {loginMutation.status === 'pending' && (
-                      <svg
-                        className="animate-spin h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        ></path>
-                      </svg>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Sign In
                   </Button>

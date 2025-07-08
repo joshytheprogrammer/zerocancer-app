@@ -52,12 +52,12 @@ export default function RoleSelection({ field }: RoleSelectionProps) {
             <Label htmlFor={`${id}-${role.value}`} className="font-semibold">
               {role.label}
             </Label>
-            <p
+            {/* <p
               id={`${id}-${role.value}-description`}
               className="text-muted-foreground text-sm"
             >
               {role.description}
-            </p>
+            </p> */}
           </div>
         </div>
       ))}

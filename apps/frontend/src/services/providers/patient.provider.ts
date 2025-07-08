@@ -14,9 +14,9 @@ export const useBookSelfPayAppointment = () => {
   })
 }
 
-export const useJoinWaitlist = (screeningTypeId: string) => {
+export const useJoinWaitlist = () => {
   return useMutation({
-    mutationKey: [MutationKeys.joinWaitlist, screeningTypeId],
+    mutationKey: [MutationKeys.joinWaitlist],
     mutationFn: patientService.joinWaitlist,
   })
 }

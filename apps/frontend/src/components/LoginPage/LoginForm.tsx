@@ -145,7 +145,7 @@ export default function LoginForm() {
           className="w-full"
           onClick={() => setShowForgot(false)}
         >
-          Back to Sign In
+          Back to Login
         </Button>
       </div>
     )
@@ -154,13 +154,13 @@ export default function LoginForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold">Sign In</h2>
+        <h2 className="text-3xl font-bold">Login</h2>
         <p className="text-muted-foreground">
           Select your role to access your account.
         </p>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Sign in as...</label>
+        <label className="block text-sm font-medium mb-2">Login as...</label>
         <RoleSelection
           field={{
             value: role,
@@ -173,7 +173,7 @@ export default function LoginForm() {
         />
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="email"
@@ -245,7 +245,7 @@ export default function LoginForm() {
                 ></path>
               </svg>
             )}
-            Sign In
+            Login
           </Button>
         </form>
       </Form>

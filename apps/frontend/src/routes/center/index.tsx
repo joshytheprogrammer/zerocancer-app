@@ -44,10 +44,10 @@ function CenterDashboard() {
   const appointments = appointmentsData?.data?.appointments || []
   
   // Calculate stats from available data
-  const upcomingCount = appointments.filter((apt) => apt.status === 'scheduled').length
-  const completedCount = appointments.filter((apt) => apt.status === 'completed').length
-  const inProgressCount = appointments.filter((apt) => apt.status === 'in_progress').length
-  const pendingResultsCount = appointments.filter((apt) => 
+  const upcomingCount = appointments.filter((apt: any) => apt.status === 'scheduled').length
+  const completedCount = appointments.filter((apt: any) => apt.status === 'completed').length
+  const inProgressCount = appointments.filter((apt: any) => apt.status === 'in_progress').length
+  const pendingResultsCount = appointments.filter((apt: any) => 
     apt.status === 'completed' && !(apt as any).resultUploaded
   ).length
 
@@ -169,7 +169,7 @@ function CenterDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {appointments.map((appt) => (
+                {appointments.map((appt: any) => (
                   <TableRow key={appt.id}>
                     <TableCell className="font-medium">
                       {appt.patient?.fullName || 'Unknown Patient'}

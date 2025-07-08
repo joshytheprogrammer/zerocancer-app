@@ -1,19 +1,13 @@
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import ScreeningCard from '@/components/shared/ScreeningCard'
 import {
   useCheckWaitlistStatus,
   useJoinWaitlist,
 } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import type { TScreeningType } from '@zerocancer/shared/types'
 
 export const Route = createFileRoute('/patient/book/')({
   component: BookScreeningPage,
@@ -21,7 +15,6 @@ export const Route = createFileRoute('/patient/book/')({
 
 function BookScreeningPage() {
   const navigate = useNavigate()
-  // Fetch all screening types from backend
   const {
     data: screeningTypesData,
     isLoading: screeningTypesLoading,
@@ -29,7 +22,6 @@ function BookScreeningPage() {
   } = useQuery(useAllScreeningTypes())
 
   const handlePayAndBook = (screeningId: string) => {
-    console.log(`User wants to pay and book for: ${screeningId}`)
     navigate({
       to: '/patient/book/pay',
       search: { screeningTypeId: screeningId },
@@ -38,28 +30,23 @@ function BookScreeningPage() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Book a Screening</h1>
-        <p className="text-muted-foreground">
+      <div className="bg-white py-4 px-6 rounded-lg">
+        <h1 className="text-3xl font-bold">Book a New Screening</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Choose a screening type to book an appointment or join the waitlist.
         </p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
+
+      <div className="space-y-4">
         {screeningTypesLoading ? (
-          <div>Loading screening types...</div>
+          <p>Loading screenings...</p>
         ) : screeningTypesError ? (
-          <div>
-            Error loading screening types. {screeningTypesError.message}
-          </div>
+          <p>Error loading screenings.</p>
         ) : (
-          (screeningTypesData?.data || []).map((option) => (
-            <BookScreeningCard
-              key={option.id}
-              option={{
-                id: option.id,
-                name: option.name,
-                description: option.description || '',
-              }}
+          (screeningTypesData?.data || []).map((screeningType) => (
+            <ScreeningItem
+              key={screeningType.id}
+              screeningType={screeningType}
               handlePayAndBook={handlePayAndBook}
             />
           ))
@@ -69,67 +56,43 @@ function BookScreeningPage() {
   )
 }
 
-type BookScreeningCardProps = {
-  option: {
-    id: string
-    name: string
-    description?: string
-  }
-  handlePayAndBook: (screeningId: string) => void
-}
-
-// Doing it this way because react query is a context provider, so better mutation keys is needed
-// to avoid conflicts with other mutations in the app
-const BookScreeningCard: React.FC<BookScreeningCardProps> = ({
-  option,
+function ScreeningItem({
+  screeningType,
   handlePayAndBook,
-}) => {
-  const joinWaitlistMutation = useJoinWaitlist(option.id)
-  const { data } = useQuery(useCheckWaitlistStatus(option.id))
-
-  console.log('Join waitlist data:', data)
+}: {
+  screeningType: TScreeningType
+  handlePayAndBook: (id: string) => void
+}) {
+  const joinWaitlistMutation = useJoinWaitlist()
+  const { data: waitlistStatus, isLoading: isCheckingWaitlist } = useQuery(
+    useCheckWaitlistStatus(screeningType.id),
+  )
 
   const handleJoinWaitlist = (screeningId: string) => {
     joinWaitlistMutation.mutate(
       { screeningTypeId: screeningId },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success('You have been added to the waitlist')
-          console.log('Join waitlist success:', data)
         },
         onError: (error: any) => {
-          if (error?.response?.status === 400 && error?.response?.data?.error) {
-            toast.error(error.response.data.error)
-          } else {
-            toast.error(error.code)
-          }
-          console.error('Join waitlist error:', error)
+          toast.error(
+            error?.response?.data?.error ||
+              'Failed to join waitlist. Please try again.',
+          )
         },
       },
     )
   }
 
   return (
-    <Card key={option.id}>
-      <CardHeader>
-        <CardTitle>{option.name}</CardTitle>
-        <CardDescription className="line-clamp-2 min-h-[3em]">
-          {option.description || 'No description available'}
-        </CardDescription>
-      </CardHeader>
-      <CardFooter className="flex justify-between">
-        <Button onClick={() => handlePayAndBook(option.id)}>
-          Pay and Book
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => handleJoinWaitlist(option.id)}
-          disabled={joinWaitlistMutation.isPending || data?.data?.inWaitlist}
-          // disabled={joinWaitlistMutation.isPending}
-        >
-          {data?.data?.inWaitlist ? 'Already In' : 'Join Waitlist'}
-        </Button>
-      </CardFooter>
-    </Card>
+    <ScreeningCard
+      name={screeningType.name}
+      description={screeningType.description || 'No description available.'}
+      onBookNow={() => handlePayAndBook(screeningType.id)}
+      onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
+      isWaitlisted={waitlistStatus?.data?.inWaitlist}
+      isBooking={isCheckingWaitlist || joinWaitlistMutation.isPending}
+    />
   )
 }

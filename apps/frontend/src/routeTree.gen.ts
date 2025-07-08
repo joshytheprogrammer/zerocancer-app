@@ -23,6 +23,7 @@ import { Route as CenterIndexRouteImport } from './routes/center/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as StaffLoginRouteImport } from './routes/staff/login'
+import { Route as PatientProfileRouteImport } from './routes/patient/profile'
 import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
 import { Route as PatientResultsRouteImport } from './routes/patient/_results'
@@ -131,6 +132,11 @@ const StaffLoginRoute = StaffLoginRouteImport.update({
   id: '/staff/login',
   path: '/staff/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PatientProfileRoute = PatientProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PatientRoute,
 } as any)
 const PatientNotificationsRoute = PatientNotificationsRouteImport.update({
   id: '/notifications',
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/donation/payment-status': typeof DonationPaymentStatusRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/profile': typeof PatientProfileRoute
   '/staff/login': typeof StaffLoginRoute
   '/admin/': typeof AdminIndexRoute
   '/center/': typeof CenterIndexRoute
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/patient': typeof PatientIndexRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/profile': typeof PatientProfileRoute
   '/staff/login': typeof StaffLoginRoute
   '/admin': typeof AdminIndexRoute
   '/center': typeof CenterIndexRoute
@@ -485,6 +493,7 @@ export interface FileRoutesById {
   '/patient/_results': typeof PatientResultsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
+  '/patient/profile': typeof PatientProfileRoute
   '/staff/login': typeof StaffLoginRoute
   '/(public)/': typeof publicIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -543,6 +552,7 @@ export interface FileRouteTypes {
     | '/donation/payment-status'
     | '/patient/appointments'
     | '/patient/notifications'
+    | '/patient/profile'
     | '/staff/login'
     | '/admin/'
     | '/center/'
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/patient'
     | '/patient/appointments'
     | '/patient/notifications'
+    | '/patient/profile'
     | '/staff/login'
     | '/admin'
     | '/center'
@@ -647,6 +658,7 @@ export interface FileRouteTypes {
     | '/patient/_results'
     | '/patient/appointments'
     | '/patient/notifications'
+    | '/patient/profile'
     | '/staff/login'
     | '/(public)/'
     | '/admin/'
@@ -775,6 +787,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff/login'
       preLoaderRoute: typeof StaffLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/patient/profile': {
+      id: '/patient/profile'
+      path: '/profile'
+      fullPath: '/patient/profile'
+      preLoaderRoute: typeof PatientProfileRouteImport
+      parentRoute: typeof PatientRoute
     }
     '/patient/notifications': {
       id: '/patient/notifications'
@@ -1222,6 +1241,7 @@ interface PatientRouteChildren {
   PatientResultsRoute: typeof PatientResultsRoute
   PatientAppointmentsRoute: typeof PatientAppointmentsRoute
   PatientNotificationsRoute: typeof PatientNotificationsRoute
+  PatientProfileRoute: typeof PatientProfileRoute
   PatientIndexRoute: typeof PatientIndexRoute
   PatientBookPayRoute: typeof PatientBookPayRoute
   PatientBookPaymentStatusRoute: typeof PatientBookPaymentStatusRoute
@@ -1232,6 +1252,7 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientResultsRoute: PatientResultsRoute,
   PatientAppointmentsRoute: PatientAppointmentsRoute,
   PatientNotificationsRoute: PatientNotificationsRoute,
+  PatientProfileRoute: PatientProfileRoute,
   PatientIndexRoute: PatientIndexRoute,
   PatientBookPayRoute: PatientBookPayRoute,
   PatientBookPaymentStatusRoute: PatientBookPaymentStatusRoute,
