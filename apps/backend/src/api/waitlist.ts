@@ -421,7 +421,7 @@ waitlistApp.post(
       return c.json<TLeaveWaitlistResponse>({
         ok: true,
         data: {
-          waitlistId: waitlistId,
+          waitlistId: waitlistId!,
           message: "Successfully left the waitlist",
         },
       });

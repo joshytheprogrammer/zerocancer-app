@@ -557,11 +557,11 @@ donationApp.post(
       // Create pending campaign
       const campaign = await db.donationCampaign.create({
         data: {
-          donorId: donorId,
+          donorId: donorId!,
           totalAmount: 0,
           availableAmount: 0, // Will be updated after payment
-          title: campaignData.title,
-          purpose: campaignData.title,
+          title: campaignData.title!,
+          purpose: campaignData.description || "",
           targetGender:
             campaignData.targetGender === "ALL"
               ? null

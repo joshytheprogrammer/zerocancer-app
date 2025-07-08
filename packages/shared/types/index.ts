@@ -42,7 +42,7 @@ export type TPatientRegisterResponse = TDataResponse<{
   fullName: string;
   phone: string;
   dateOfBirth: string;
-  gender: "male" | "female";
+  gender: "MALE" | "FEMALE";
   state: string;
   localGovernment: string;
 }>;
