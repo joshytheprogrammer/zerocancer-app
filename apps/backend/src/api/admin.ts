@@ -521,7 +521,7 @@ adminApp.get(
               orderBy: { createdAt: "desc" },
             },
             donationCampaigns: {
-              select: { id: true, status: true, initialAmount: true },
+              select: { id: true, status: true, totalAmount: true },
               take: 3,
               orderBy: { createdAt: "desc" },
             },

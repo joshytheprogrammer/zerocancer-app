@@ -24,7 +24,6 @@ import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
-import { z } from "zod";
 import { initializePaystackPayment } from "../donation";
 
 export const patientAppointmentApp = new Hono<{

@@ -23,6 +23,8 @@ enum CampaignStatus {
   ACTIVE
   COMPLETED
   DELETED
+  PENDING
+  SUSPENDED
 }
 
 enum AppointmentStatus {
@@ -38,6 +40,11 @@ enum TransactionType {
   APPOINTMENT
   PAYOUT
   REFUND
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model User {
@@ -64,7 +71,7 @@ model User {
 model PatientProfile {
   id         String   @id @default(uuid())
   userId     String   @unique
-  gender     String?
+  gender     Gender?
   dateOfBirth DateTime
   city       String?
   state      String?
@@ -192,16 +199,19 @@ model Waitlist {
 model DonationCampaign {
   id              String           @id @default(uuid())
   donorId         String
-  initialAmount   Float
-  availableAmount Float
-  reservedAmount  Float
+  totalAmount   Float // What is currently available for allocation
+  availableAmount Float // Amount available for allocation
+  // reservedAmount  Float
+  title           String
   purpose         String?
-  targetGender    Boolean?
+  targetGender    Gender? // format is "number-number"
   targetAgeRange  String?
-  targetState     String?
-  targetLga       String?
+  targetStates     String[]
+  targetLgas       String[]
   status          CampaignStatus
+  expiryDate      DateTime? // Optional expiry date for the campaign
   createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   donor           User             @relation("UserDonationCampaigns", fields: [donorId], references: [id], onDelete: Cascade)
   allocations     DonationAllocation[]

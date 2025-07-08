@@ -155,8 +155,9 @@ export async function waitlistMatcherAlg() {
         db.donationCampaign.update({
           where: { id: matchedCampaign.id },
           data: {
+            // initialAmount: { decrement: 1 }, // TODO: use actual screening cost
             availableAmount: { decrement: 1 }, // TODO: use actual screening cost
-            reservedAmount: { increment: 1 },
+            // reservedAmount: { increment: 1 },
           },
         }),
         db.waitlist.update({

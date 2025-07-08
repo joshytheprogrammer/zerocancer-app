@@ -567,10 +567,7 @@ export type TDonationCampaign = {
   donorId: string;
   title: string;
   description: string;
-  targetAmount: number;
-  initialAmount: number;
-  availableAmount: number;
-  reservedAmount: number;
+  fundingAmount: number;
   usedAmount: number;
   purpose?: string;
   targetGender?: "MALE" | "FEMALE" | "ALL";
@@ -578,7 +575,7 @@ export type TDonationCampaign = {
   targetAgeMax?: number;
   targetStates?: string[];
   targetLgas?: string[];
-  status: "ACTIVE" | "COMPLETED" | "DELETED";
+  status: "ACTIVE" | "COMPLETED" | "DELETED" | "PENDING" | "SUSPENDED";
   expiryDate: string;
   createdAt: string;
   updatedAt: string;
@@ -594,8 +591,13 @@ export type TDonationCampaign = {
     id: string;
     name: string;
   }>;
-  patientsHelped: number;
-  allocationsCount: number;
+  patientAllocations: {
+    patientsHelped: number;
+    patientPendingAcceptance: number;
+    patientAppointmentInProgress: number;
+    patientAppointmentScheduled: number;
+    allocationsCount: number;
+  };
 };
 
 export type TDonationTransaction = {

@@ -344,6 +344,7 @@ export class AnalyticsService {
     );
   }
 
+  // Analytics isn't correct
   async getCampaignAnalytics(): Promise<CampaignAnalytics[]> {
     const campaigns = await this.prisma.donationCampaign.findMany({
       include: {
@@ -357,7 +358,7 @@ export class AnalyticsService {
     });
 
     return campaigns.map((campaign) => {
-      const targetAmount = Number(campaign.initialAmount);
+      const targetAmount = Number(campaign.availableAmount);
       const currentAmount = campaign.transactions.reduce(
         (sum: number, transaction) => sum + Number(transaction.amount),
         0
@@ -390,7 +391,7 @@ export class AnalyticsService {
 
       return {
         campaignId: campaign.id,
-        title: campaign.purpose || "Donation Campaign",
+        title: campaign.title || "Donation Campaign",
         targetAmount,
         currentAmount,
         fundingPercentage,

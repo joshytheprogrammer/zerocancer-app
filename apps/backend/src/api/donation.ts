@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { z } from 'zod'
+import { Prisma } from "@prisma/client";
 import {
   anonymousDonationSchema,
   createCampaignSchema,
@@ -23,10 +23,11 @@ import type {
 import crypto from "crypto";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
-import { getDB } from "src/lib/db";
+import { getDB, TDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { createNotificationForUsers } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
+import { z } from "zod";
 
 export const donationApp = new Hono<{
   Variables: THonoAppVariables;
@@ -78,7 +79,7 @@ export async function initializePaystackPayment(
     case "appointment_booking":
       if (!data.patientId)
         throw new Error("Patient ID required for appointment payment");
-      callbackUrl = `${FRONTEND_URL}/patient/appointments/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
+      callbackUrl = `${FRONTEND_URL}/patient/book/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
       break;
     default:
       throw new Error(`Unknown payment type: ${data.paymentType}`);
@@ -115,32 +116,94 @@ export async function initializePaystackPayment(
   return result.data;
 }
 
+/**
+ * 
+ * export type TDonationCampaign = {
+  id: string;
+  donorId: string;
+  title: string;
+  description: string;
+  fundingAmount: number;
+  usedAmount: number;
+  purpose?: string;
+  targetGender?: "MALE" | "FEMALE" | "ALL";
+  targetAgeMin?: number;
+  targetAgeMax?: number;
+  targetStates?: string[];
+  targetLgas?: string[];
+  status: "ACTIVE" | "COMPLETED" | "DELETED";
+  expiryDate: string;
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  donor: {
+    id: string;
+    fullName: string;
+    email: string;
+    organizationName?: string;
+  };
+  screeningTypes: Array<{
+    id: string;
+    name: string;
+  }>;
+  patientsHelped: number;
+  allocationsCount: number;
+}; 
+ * 
+ */
+
 // Helper function to format campaign for API response
 function formatCampaignForResponse(campaign: any): TDonationCampaign {
-  // Map boolean targetGender to enum
   let targetGender: "MALE" | "FEMALE" | "ALL" | undefined;
+
   if (campaign.targetGender === null || campaign.targetGender === undefined) {
     targetGender = "ALL";
-  } else if (campaign.targetGender === true) {
+  } else if (campaign.targetGender === "MALE") {
     targetGender = "MALE";
   } else {
     targetGender = "FEMALE";
   }
 
+  const patientsHelped = campaign.allocations.reduce(
+    (count: number, allocation: any) => {
+      // Count only allocations with completed appointments
+      return count + (allocation.appointment?.status === "COMPLETED" ? 1 : 0);
+    },
+    0
+  );
+
+  const patientAppointmentInProgress = campaign.allocations.reduce(
+    (count: number, allocation: any) => {
+      // Count only allocations with completed appointments
+      return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
+    },
+    0
+  );
+
+  const patientAppointmentScheduled = campaign.allocations.reduce(
+    (count: number, allocation: any) => {
+      // Count only allocations with completed appointments
+      return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
+    },
+    0
+  );
+
+  const patientPendingAcceptance = campaign.allocations.reduce(
+    (count: number, allocation: any) => {
+      // Count only allocations with completed appointments
+      return count + (allocation.appointment?.status === "PENDING" ? 1 : 0);
+    },
+    0
+  );
+
   return {
-    id: campaign.id,
+    id: campaign.id ?? "unknown-campaign-id",
     donorId: campaign.donorId,
-    title: campaign.purpose || "Untitled Campaign",
+    title: campaign.title || "Untitled Campaign",
     description: campaign.purpose || "",
-    targetAmount: campaign.initialAmount,
-    initialAmount: campaign.initialAmount,
-    availableAmount: campaign.availableAmount,
-    reservedAmount: campaign.reservedAmount,
-    usedAmount:
-      campaign.initialAmount -
-      campaign.availableAmount -
-      campaign.reservedAmount,
-    purpose: campaign.purpose,
+    fundingAmount: campaign.totalAmount,
+    usedAmount: campaign.totalAmount - (campaign.availableAmount || 0),
     targetGender,
     targetAgeMin: campaign.targetAgeRange?.split("-")[0]
       ? parseInt(campaign.targetAgeRange.split("-")[0])
@@ -148,12 +211,17 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     targetAgeMax: campaign.targetAgeRange?.split("-")[1]
       ? parseInt(campaign.targetAgeRange.split("-")[1])
       : undefined,
-    targetStates: campaign.targetState?.split(",") || [],
-    targetLgas: campaign.targetLga?.split(",") || [],
-    status: campaign.status as "ACTIVE" | "COMPLETED" | "DELETED",
-    expiryDate: campaign.createdAt.toISOString(), // TODO: Add proper expiry date field
+    targetStates: campaign.targetStates?.split(",") || [],
+    targetLgas: campaign.targetLgas?.split(",") || [],
+    status: campaign.status as
+      | "ACTIVE"
+      | "COMPLETED"
+      | "DELETED"
+      | "PENDING"
+      | "SUSPENDED",
+    expiryDate: campaign.expiryDate.toISOString() || null,
     createdAt: campaign.createdAt.toISOString(),
-    updatedAt: campaign.createdAt.toISOString(), // TODO: Add updatedAt field
+    updatedAt: campaign.createdAt.toISOString(),
     donor: {
       id: campaign.donor.id,
       fullName: campaign.donor.fullName,
@@ -161,8 +229,13 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
       organizationName: campaign.donor.donorProfile?.organizationName,
     },
     screeningTypes: campaign.screeningTypes || [],
-    patientsHelped: 0, // TODO: Calculate from allocations
-    allocationsCount: campaign.allocations?.length || 0,
+    patientAllocations: {
+      patientsHelped,
+      patientPendingAcceptance,
+      patientAppointmentInProgress,
+      patientAppointmentScheduled,
+      allocationsCount: campaign.allocations?.length || 0,
+    },
   };
 }
 
@@ -181,9 +254,9 @@ async function addToGeneralDonorPool(amount: number) {
       data: {
         id: "general-donor-pool",
         donorId: "system", // System-managed campaign
-        initialAmount: amount,
+        title: "General donation public pool",
+        totalAmount: amount,
         availableAmount: amount,
-        reservedAmount: 0,
         purpose: "General Donation Pool",
         status: "ACTIVE",
       },
@@ -194,7 +267,7 @@ async function addToGeneralDonorPool(amount: number) {
       where: { id: "general-donor-pool" },
       data: {
         availableAmount: { increment: amount },
-        initialAmount: { increment: amount },
+        totalAmount: { increment: amount },
       },
     });
   }
@@ -292,36 +365,39 @@ donationApp.post(
 // POST /api/donor/paystack-webhook - Handle Paystack webhook
 donationApp.post(
   "/paystack-webhook",
+  // Verify webhook signature
   async (c) => {
     const db = getDB();
-    
+
     try {
       console.log("Received Paystack webhook request");
 
       // Verify webhook signature
       const signature = c.req.header("x-paystack-signature");
-    
+
       // Get the raw body
       const rawBody = await c.req.raw.arrayBuffer();
       const rawBodyBuffer = Buffer.from(rawBody);
-    
+
       const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
         c,
         "node"
       );
-    
+
       const hash = crypto
         .createHmac("sha512", PAYSTACK_SECRET_KEY)
         .update(rawBodyBuffer)
         .digest("hex");
-    
+
       if (hash !== signature) {
         return c.json({ error: "Invalid signature" }, 401);
       }
 
       console.log(JSON.parse(rawBodyBuffer.toString()));
 
-      const payload = await JSON.parse(rawBodyBuffer.toString()) as z.infer<typeof paystackWebhookSchema>;
+      const payload = (await JSON.parse(rawBodyBuffer.toString())) as z.infer<
+        typeof paystackWebhookSchema
+      >;
 
       console.log("Received Valid Paystack webhook!!!:", payload);
 
@@ -351,13 +427,13 @@ donationApp.post(
 
           // Update campaign with initial funding
           const campaignId = metadata.campaign_id;
-          const initialFunding = metadata.initial_funding;
+          // const initialFunding = metadata.funding_amount;
 
-          if (campaignId && initialFunding) {
+          if (campaignId) {
             await db.donationCampaign.update({
               where: { id: campaignId },
               data: {
-                availableAmount: { increment: initialFunding },
+                totalAmount: { increment: amount },
               },
             });
           }
@@ -431,11 +507,7 @@ donationApp.post(
     const donorId = payload?.id!;
 
     // Validate required fields
-    if (
-      !campaignData.targetAmount ||
-      !campaignData.initialFunding ||
-      !campaignData.screeningTypeIds?.length
-    ) {
+    if (!campaignData.fundingAmount || !campaignData.screeningTypeIds?.length) {
       return c.json<TErrorResponse>(
         {
           ok: false,
@@ -486,21 +558,24 @@ donationApp.post(
       const campaign = await db.donationCampaign.create({
         data: {
           donorId: donorId,
-          initialAmount: campaignData.targetAmount,
+          totalAmount: 0,
           availableAmount: 0, // Will be updated after payment
-          reservedAmount: 0,
+          title: campaignData.title,
           purpose: campaignData.title,
           targetGender:
             campaignData.targetGender === "ALL"
               ? null
-              : campaignData.targetGender === "MALE",
+              : campaignData.targetGender === "MALE"
+              ? "MALE"
+              : "FEMALE",
           targetAgeRange:
             campaignData.targetAgeMin && campaignData.targetAgeMax
               ? `${campaignData.targetAgeMin}-${campaignData.targetAgeMax}`
               : null,
-          targetState: campaignData.targetStates?.join(",") || null,
-          targetLga: campaignData.targetLgas?.join(",") || null,
-          status: "ACTIVE",
+          targetStates: campaignData.targetStates,
+          targetLgas: campaignData.targetLgas,
+          // Initial status
+          status: "PENDING",
           screeningTypes: {
             connect: campaignData.screeningTypeIds.map((id: string) => ({
               id,
@@ -521,19 +596,34 @@ donationApp.post(
           screeningTypes: {
             select: { id: true, name: true },
           },
+          allocations: {
+            include: {
+              patient: {
+                select: { id: true, fullName: true },
+              },
+              appointment: {
+                where: {
+                  status: {
+                    notIn: ["PENDING", "CANCELLED"],
+                  },
+                },
+              },
+            },
+          }, // Include allocations to calculate patients helped
         },
       });
 
       // Initialize Paystack payment for initial funding
       const paystackResponse = await initializePaystackPayment(c, {
         email: donor.email,
-        amount: campaignData.initialFunding * 100, // Convert to kobo
+        amount: campaignData.fundingAmount * 100, // Convert to kobo
         reference,
         paymentType: "campaign_creation",
         campaignId: campaign.id,
         metadata: {
           donor_id: donorId,
-          initial_funding: campaignData.initialFunding,
+          campaign_id: campaign.id,
+          funding_amount: campaignData.fundingAmount,
         },
       });
 
@@ -542,7 +632,7 @@ donationApp.post(
         data: {
           type: "DONATION",
           status: "PENDING",
-          amount: campaignData.initialFunding,
+          amount: campaignData.fundingAmount,
           paymentReference: reference,
           paymentChannel: "PAYSTACK",
           relatedDonationId: campaign.id,
@@ -614,7 +704,20 @@ donationApp.get(
             screeningTypes: {
               select: { id: true, name: true },
             },
-            allocations: true,
+            allocations: {
+              include: {
+                patient: {
+                  select: { id: true, fullName: true },
+                },
+                appointment: {
+                  where: {
+                    status: {
+                      notIn: ["PENDING", "CANCELLED"],
+                    },
+                  },
+                },
+              },
+            }, // Include allocations to calculate patients helped
           },
           orderBy: { createdAt: "desc" },
           skip: (page - 1) * pageSize,
@@ -680,8 +783,15 @@ donationApp.get("/campaigns/:id", async (c) => {
             patient: {
               select: { id: true, fullName: true },
             },
+            appointment: {
+              where: {
+                status: {
+                  notIn: ["PENDING", "CANCELLED"],
+                },
+              },
+            },
           },
-        },
+        }, // Include allocations to calculate patients helped
       },
     });
 
@@ -788,6 +898,7 @@ donationApp.post(
         campaignId: campaignId,
         metadata: {
           donor_id: donorId,
+          campaign_id: campaignId,
           funding_amount: fundData.amount,
         },
       });
@@ -979,8 +1090,15 @@ donationApp.patch(
               patient: {
                 select: { id: true, fullName: true },
               },
+              appointment: {
+                where: {
+                  status: {
+                    notIn: ["PENDING", "CANCELLED"],
+                  },
+                },
+              },
             },
-          },
+          }, // Include allocations to calculate patients helped
         },
       });
 
@@ -1049,28 +1167,8 @@ donationApp.delete(
         );
       }
 
-      // Check if there are ongoing appointments that would be affected
-      const ongoingAppointments = existingCampaign.allocations.filter(
-        (allocation) =>
-          allocation.appointment &&
-          ["SCHEDULED", "IN_PROGRESS"].includes(allocation.appointment.status)
-      );
-
-      // NOTE TO SELF: Update so that allocations are connected to general donor pool instead of returning an error message
-      if (ongoingAppointments.length > 0) {
-        return c.json<TErrorResponse>(
-          {
-            ok: false,
-            error:
-              "Cannot delete campaign with ongoing appointments. Please wait for appointments to complete.",
-          },
-          400
-        );
-      }
-
       // Calculate total funds to transfer (available + reserved)
-      const fundsToTransfer =
-        existingCampaign.availableAmount + existingCampaign.reservedAmount;
+      const fundsToTransfer = existingCampaign.totalAmount;
 
       if (fundsToTransfer <= 0) {
         // If no funds to transfer, just mark as deleted
@@ -1095,6 +1193,13 @@ donationApp.delete(
         .randomBytes(6)
         .toString("hex")}`;
 
+      // Check if there are ongoing appointments that would be affected
+      const ongoingAllocations = existingCampaign.allocations.filter(
+        (allocation) =>
+          allocation.appointment &&
+          ["SCHEDULED", "IN_PROGRESS"].includes(allocation.appointment.status)
+      );
+
       // Perform the transfer in a transaction
       await db.$transaction(async (tx) => {
         // Mark campaign as deleted and zero out funds
@@ -1103,7 +1208,7 @@ donationApp.delete(
           data: {
             status: "DELETED",
             availableAmount: 0,
-            reservedAmount: 0,
+            totalAmount: 0,
           },
         });
 
@@ -1121,23 +1226,50 @@ donationApp.delete(
             relatedDonationId: "general-donor-pool",
           },
         });
+
+        // Update all affected allocations to point to the general-donor-pool campaign
+        if (ongoingAllocations.length > 0) {
+          const allocationIds = ongoingAllocations.map(
+            (allocations) => allocations.id
+          );
+
+          await tx.donationAllocation.updateMany({
+            where: { id: { in: allocationIds } },
+            data: { campaignId: "general-donor-pool" },
+          });
+        }
       });
 
       // Send notification to donor about campaign deletion
       try {
-        await createNotificationForUsers({
-          type: "CAMPAIGN_DELETED",
-          title: "Campaign Deleted Successfully",
-          message: `Your campaign has been deleted and ₦${fundsToTransfer.toFixed(
-            2
-          )} has been transferred to the general donation pool to help other patients.`,
-          userIds: [donorId],
-          data: {
-            campaignId: campaignId,
-            transferredAmount: fundsToTransfer,
-            transferReference: reference,
-          },
-        });
+        await Promise.all([
+          createNotificationForUsers({
+            type: "CAMPAIGN_DELETED",
+            title: "Campaign Deleted Successfully",
+            message: `Your campaign has been deleted and ₦${fundsToTransfer.toFixed(
+              2
+            )} has been transferred to the general donation pool to help other patients.`,
+            userIds: [donorId],
+            data: {
+              campaignId: campaignId,
+              transferredAmount: fundsToTransfer,
+              transferReference: reference,
+            },
+          }),
+          createNotificationForUsers({
+            type: "CAMPAIGN_DELETED_ALLOCATION_MOVED",
+            title: "Campaign Deleted - Allocation Moved",
+            message: `The campaign you were allocated to has been deleted. Your allocation has been moved to the general donation pool and you will still receive support.`,
+            userIds: ongoingAllocations
+              .map((allocation) => allocation.patientId)
+              .filter(Boolean),
+            data: {
+              campaignId: campaignId,
+              transferredAmount: fundsToTransfer,
+              transferReference: reference,
+            },
+          }),
+        ]);
       } catch (error) {
         // Log the error but don't fail the request
         console.error("Failed to send campaign deletion notification:", error);
@@ -1271,7 +1403,7 @@ donationApp.get("/verify-payment/:reference", async (c) => {
         type: "campaign_creation",
         campaignId,
         campaign: campaign ? formatCampaignForResponse(campaign) : null,
-        initialFunding: metadata.initial_funding,
+        initialFunding: metadata.funding_amount,
       };
     } else if (paymentType === "campaign_funding" && campaignId) {
       // Get campaign details
@@ -1281,6 +1413,34 @@ donationApp.get("/verify-payment/:reference", async (c) => {
         campaignId,
         campaign: campaign ? formatCampaignForResponse(campaign) : null,
         fundingAmount: metadata.funding_amount,
+      };
+    } else if (
+      paymentType === "appointment_booking" &&
+      metadata.appointmentId
+    ) {
+      // Get appointment details
+      const appointment = await db.appointment.findUnique({
+        where: { id: metadata.appointmentId },
+        include: {
+          patient: {
+            select: { id: true, fullName: true },
+          },
+        },
+      });
+
+      responseData.context = {
+        type: "appointment_booking",
+        appointmentId: metadata.appointmentId,
+        appointment: appointment
+          ? {
+              id: appointment.id,
+              patientId: appointment.patient.id,
+              patientName: appointment.patient.fullName,
+              status: appointment.status,
+              checkInCode: appointment.checkInCode,
+              checkInCodeExpiresAt: appointment.checkInCodeExpiresAt,
+            }
+          : null,
       };
     }
 
