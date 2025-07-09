@@ -33,8 +33,8 @@ function BookScreeningPage() {
   }
 
   return (
-    <div className="space-y-8 p-4 sm:p-6">
-      <div className="bg-white py-4 px-6 rounded-lg">
+    <div className="space-y-8">
+      <div className="bg-white p-4 rounded-lg">
         <h1 className="text-3xl font-bold">Book Screening</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Choose a screening type to book an appointment or join the waitlist.
