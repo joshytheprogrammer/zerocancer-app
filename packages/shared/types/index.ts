@@ -879,6 +879,8 @@ export type TPaymentContext =
       type: "anonymous_donation";
       wantsReceipt: boolean;
       message: string | null;
+      campaignId?: string | null;
+      campaign: TDonationCampaign | null;
     }
   | {
       type: "campaign_creation";
