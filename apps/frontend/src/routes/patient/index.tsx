@@ -53,12 +53,14 @@ function PatientDashboard() {
 
   const userName = authData?.data?.user?.fullName?.split(' ')[0] || 'Patient'
   const allAppointments = (appointmentsData as any)?.data?.appointments || []
-  const now = new Date()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Set to the beginning of the day
+
   const upcomingAppointment =
     allAppointments
       .filter(
         (apt: any) =>
-          new Date(apt.appointmentDate) >= now && apt.status === 'SCHEDULED',
+          new Date(apt.appointmentDate) >= today && apt.status === 'SCHEDULED',
       )
       .sort(
         (a: any, b: any) =>
@@ -75,7 +77,7 @@ function PatientDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 lg:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4 lg:py-6">
         <div className="lg:col-span-2 space-y-6">
           <StatusCard appointment={upcomingAppointment} />
 
