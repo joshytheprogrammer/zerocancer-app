@@ -51,7 +51,7 @@ function PatientDashboard() {
     })
   }
 
-  const userName = authData?.data?.user?.fullName || 'Patient'
+  const userName = authData?.data?.user?.fullName?.split(' ')[0] || 'Patient'
   const allAppointments = (appointmentsData as any)?.data?.appointments || []
   const now = new Date()
   const upcomingAppointment =

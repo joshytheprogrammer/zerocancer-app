@@ -104,13 +104,6 @@ function PatientLayout() {
             >
               <img src={logoutIcon} alt="logout" className="h-6 w-6" />
             </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 hover:text-white"
-            >
-              <Menu className="size-8" />
-            </Button>
           </div>
         </header>
 
