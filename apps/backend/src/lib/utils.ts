@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
 import bcrypt from "bcryptjs";
 import { getDB } from "./db";
+import { sendEmail, sendNotificationEmail } from "./email";
 
 export async function getUserWithProfiles({ email }: { email: string }) {
   const db = getDB();
@@ -174,16 +175,19 @@ export async function waitlistMatcherAlg() {
       ]);
       await Promise.all([
         // Notify patient of match
-        createNotificationForUsers({
-          type: "MATCHED",
-          title: "You have been matched to a donation campaign!",
-          message: `You have been matched for a free screening: ${screening.name}. Please check your appointments for details.`,
-          userIds: [waitlist.patientId],
-          data: {
-            screeningTypeId: screening.id,
-            campaignId: matchedCampaign.id,
+        createNotificationForUsers(
+          {
+            type: "MATCHED",
+            title: "You have been matched to a donation campaign!",
+            message: `You have been matched for a free screening: ${screening.name}. Please check your appointments for details.`,
+            userIds: [waitlist.patientId],
+            data: {
+              screeningTypeId: screening.id,
+              campaignId: matchedCampaign.id,
+            },
           },
-        }),
+          true
+        ), // Enable email notification for patient matches
         // Notify donor of match
         createNotificationForUsers({
           type: "PATIENT_MATCHED",
@@ -195,7 +199,7 @@ export async function waitlistMatcherAlg() {
             patientId: waitlist.patientId,
             allocation: true,
           },
-        }),
+        }), // Enable email notification for donor matches
       ]);
     }
   }
@@ -209,20 +213,51 @@ export async function waitlistMatcherAlg() {
  * @param params.userIds Array of user IDs to notify
  * @param params.data Optional extra data (object)
  */
-export async function createNotificationForUsers({
-  type,
-  title,
-  message,
-  userIds,
-  data,
-}: {
-  type: string;
-  title: string;
-  message: string;
-  userIds: string[];
-  data?: JsonObject | undefined;
-}) {
+export async function createNotificationForUsers(
+  {
+    type,
+    title,
+    message,
+    userIds,
+    data,
+  }: {
+    type: string;
+    title: string;
+    message: string;
+    userIds: string[];
+    data?: JsonObject | undefined;
+  },
+  email = false
+) {
   const db = getDB();
+
+  // Send emails if requested
+  if (email) {
+    try {
+      // Fetch user emails
+      const users = await db.user.findMany({
+        where: { id: { in: userIds } },
+        select: { email: true, fullName: true },
+      });
+
+      const emails = users.map((u) => u.email).filter(Boolean);
+
+      if (emails.length > 0) {
+        await sendNotificationEmail({
+          to: emails,
+          type,
+          title,
+          message,
+          data,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send email notifications:", error);
+      // Don't throw error here as we still want to create the notification
+    }
+  }
+
+  // Create the notification in database
   return db.notification.create({
     data: {
       type,

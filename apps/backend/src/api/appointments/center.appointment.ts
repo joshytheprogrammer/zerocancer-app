@@ -353,13 +353,16 @@ centerAppointmentApp.post(
 
     // Send notification to patient
     try {
-      await createNotificationForUsers({
-        type: "CHECK_IN_CONFIRMED",
-        title: "Check-in Confirmed",
-        message: `Your appointment at ${appointment.center.centerName} has been confirmed. Please proceed with your screening.`,
-        userIds: [appointment.patientId],
-        data: { appointmentId: appointment.id },
-      });
+      await createNotificationForUsers(
+        {
+          type: "CHECK_IN_CONFIRMED",
+          title: "Check-in Confirmed",
+          message: `Your appointment at ${appointment.center.centerName} has been confirmed. Please proceed with your screening.`,
+          userIds: [appointment.patientId],
+          data: { appointmentId: appointment.id },
+        },
+        true
+      ); // Enable email notification for appointment check-in
     } catch (error) {
       // Log the error but don't fail the request
       console.error("Failed to send notification:", error);
