@@ -78,9 +78,9 @@ function PatientNotifications() {
 
   if (error) {
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">My Notifications</h1>
+          <h1 className="text-2xl font-bold">Notifications</h1>
           <p className="text-muted-foreground">
             Here you can view your notifications.
           </p>
@@ -104,9 +104,9 @@ function PatientNotifications() {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">My Notifications</h1>
+        <h1 className="text-2xl font-bold">Notifications</h1>
         <p className="text-muted-foreground">
           Here you can view your notifications.
         </p>
