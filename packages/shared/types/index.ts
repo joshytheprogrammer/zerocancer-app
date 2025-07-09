@@ -174,6 +174,7 @@ export type TCenter = {
   services: Array<{
     id: string;
     name: string;
+    price: number;
   }>;
   staff: Array<{
     id: string;
@@ -277,6 +278,58 @@ export type TAppointmentDetails = {
   completionNotes?: string;
   canBeCompleted: boolean; // Computed field indicating if results exist
 };
+
+// Center-facing appointment types
+export type TCenterAppointment = {
+  id: string;
+  patientId: string;
+  centerId: string;
+  screeningTypeId: string;
+  donationId: string | null;
+  isDonation: boolean;
+  appointmentDate: string;
+  appointmentTime: string;
+  transactionId: string | null;
+  status: "PENDING" | "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  createdAt: string;
+  cancellationReason: string | null;
+  cancellationDate: string | null;
+  checkInCode: string | null;
+  checkInCodeExpiresAt: string | null;
+
+  // Relations (based on backend includes)
+  patient: {
+    id: string;
+    fullName: string;
+  };
+  center?: {
+    id: string;
+    centerName: string;
+  };
+  screeningType: {
+    id: string;
+    name: string;
+  };
+  verification?: {
+    id: string;
+    verifiedAt?: string;
+  } | null;
+};
+
+export type TGetCenterAppointmentsResponse = TDataResponse<{
+  appointments: TCenterAppointment[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
+export type TGetCenterAppointmentByIdResponse =
+  TDataResponse<TCenterAppointment>;
+
+export type TCancelCenterAppointmentResponse = TDataResponse<{
+  id: string;
+}>;
 
 // ...existing types continue...
 

@@ -211,15 +211,15 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     targetAgeMax: campaign.targetAgeRange?.split("-")[1]
       ? parseInt(campaign.targetAgeRange.split("-")[1])
       : undefined,
-    targetStates: campaign.targetStates?.split(",") || [],
-    targetLgas: campaign.targetLgas?.split(",") || [],
+    targetStates: campaign.targetStates || [],
+    targetLgas: campaign.targetLgas || [],
     status: campaign.status as
       | "ACTIVE"
       | "COMPLETED"
       | "DELETED"
       | "PENDING"
       | "SUSPENDED",
-    expiryDate: campaign.expiryDate.toISOString() || null,
+    expiryDate: campaign.expiryDate?.toISOString() || null,
     createdAt: campaign.createdAt.toISOString(),
     updatedAt: campaign.createdAt.toISOString(),
     donor: {

@@ -11,10 +11,13 @@ import {
   verifyCheckInCodeSchema,
 } from "@zerocancer/shared";
 import type {
+  TCancelCenterAppointmentResponse,
   TCompleteAppointmentResponse,
   TDataResponse,
   TDeleteResultFileResponse,
   TErrorResponse,
+  TGetCenterAppointmentByIdResponse,
+  TGetCenterAppointmentsResponse,
   TRestoreResultFileResponse,
   TUploadResultsResponse,
   TVerifyCheckInCodeResponse,
@@ -69,10 +72,22 @@ centerAppointmentApp.get(
       }),
       db.appointment.count({ where }),
     ]);
-    return c.json<TDataResponse<any>>({
+
+    // Transform the appointments to match the expected type
+    const transformedAppointments = appointments.map((appointment) => ({
+      ...appointment,
+      appointmentDate: appointment.appointmentDate.toISOString(),
+      appointmentTime: appointment.appointmentTime.toISOString(),
+      createdAt: appointment.createdAt.toISOString(),
+      cancellationDate: appointment.cancellationDate?.toISOString() || null,
+      checkInCodeExpiresAt:
+        appointment.checkInCodeExpiresAt?.toISOString() || null,
+    }));
+
+    return c.json<TGetCenterAppointmentsResponse>({
       ok: true,
       data: {
-        appointments,
+        appointments: transformedAppointments,
         page: Number(page),
         pageSize: Number(pageSize),
         total,
@@ -108,7 +123,22 @@ centerAppointmentApp.get(
         404
       );
     }
-    return c.json<TDataResponse<any>>({ ok: true, data: appointment });
+
+    // Transform the appointment to match the expected type
+    const transformedAppointment = {
+      ...appointment,
+      appointmentDate: appointment.appointmentDate.toISOString(),
+      appointmentTime: appointment.appointmentTime.toISOString(),
+      createdAt: appointment.createdAt.toISOString(),
+      cancellationDate: appointment.cancellationDate?.toISOString() || null,
+      checkInCodeExpiresAt:
+        appointment.checkInCodeExpiresAt?.toISOString() || null,
+    };
+
+    return c.json<TGetCenterAppointmentByIdResponse>({
+      ok: true,
+      data: transformedAppointment,
+    });
   }
 );
 
@@ -147,7 +177,7 @@ centerAppointmentApp.post(
     });
     // Optionally, notify patient
     // ...
-    return c.json<TDataResponse<{ id: string }>>({
+    return c.json<TCancelCenterAppointmentResponse>({
       ok: true,
       data: { id: id! },
     });

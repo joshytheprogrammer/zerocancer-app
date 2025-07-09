@@ -171,7 +171,7 @@ model ScreeningType {
   appointments            Appointment[]
   waitlists               Waitlist[]
   campaigns               DonationCampaign[] @relation("DonationCampaignScreeningTypes")
-  centers                 ServiceCenter[]
+  centers                 ServiceCenter[] // to be replaced with a relation to ServiceCenterScreeningType
   serviceCenters         ServiceCenterScreeningType[] @relation("ScreeningTypeToServiceCenters")
 }
 
