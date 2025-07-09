@@ -6,11 +6,14 @@ import {
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
 import type { TScreeningType } from '@zerocancer/shared/types'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/book/')({
   component: BookScreeningPage,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(useAllScreeningTypes())
+  },
 })
 
 function BookScreeningPage() {

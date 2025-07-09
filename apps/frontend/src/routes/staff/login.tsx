@@ -22,6 +22,7 @@ import {
   useCenterStaffForgotPassword,
   useCenterStaffLogin,
 } from '@/services/providers/center.provider'
+import { useQuery } from '@tanstack/react-query'
 import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
@@ -32,6 +33,15 @@ import type { z } from 'zod'
 
 export const Route = createFileRoute('/staff/login')({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(
+      centers({
+        page: 1,
+        pageSize: 100, // Get a large number to show all available centers
+        status: 'ACTIVE', // Only show active centers
+      }),
+    )
+  },
 })
 
 type LoginFormData = z.infer<typeof centerStaffLoginSchema>

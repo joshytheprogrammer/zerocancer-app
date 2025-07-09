@@ -1,7 +1,7 @@
+import selfSampleVideo from '@/assets/images/ZeroCancer_Video_ewxn02.webm'
+import cervicalVideo from '@/assets/images/Zerocancer_video_rchsqf.webm'
 import { PlayIcon } from 'lucide-react'
 import { useState } from 'react'
-import cervicalVideo from '@/assets/images/Zerocancer_video_rchsqf.webm'
-import selfSampleVideo from '@/assets/images/ZeroCancer_Video_ewxn02.webm'
 
 export default function Education() {
   const [currentVideo, setCurrentVideo] = useState(cervicalVideo)
@@ -43,10 +43,7 @@ export default function Education() {
               onClick={() => setCurrentVideo(video.src)}
             >
               <div className="w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black">
-                <video
-                  src={video.src}
-                  className="w-full h-full object-cover"
-                />
+                <video src={video.src} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h4 className="font-bold">{video.title}</h4>
@@ -72,7 +69,6 @@ export default function Education() {
           key={currentVideo}
           src={currentVideo}
           controls
-          autoPlay
           className="w-full h-full object-cover"
         />
       </div>

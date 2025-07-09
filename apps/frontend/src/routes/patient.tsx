@@ -1,14 +1,13 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { User } from 'lucide-react'
 
-import logo from '@/assets/images/logo.svg'
 import calendar from '@/assets/images/calendar.png'
 import cross from '@/assets/images/cross.png'
+import logo from '@/assets/images/logo.svg'
 import logoutIcon from '@/assets/images/logout.png'
 import notification from '@/assets/images/notification.png'
 import stethoscope from '@/assets/images/stethoscope.png'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
-import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
@@ -32,13 +31,16 @@ export const Route = createFileRoute('/patient')({
 
 function PatientLayout() {
   const { mutate: logout } = useLogout()
-  const navigate = useNavigate()
 
   const navLinks = [
     { to: '/patient', label: 'Dashboard', icon: cross },
     { to: '/patient/book', label: 'Book Screening', icon: stethoscope },
     { to: '/patient/appointments', label: 'Appointments', icon: calendar },
-    { to: '/patient/notifications', label: 'Notifications', icon: notification },
+    {
+      to: '/patient/notifications',
+      label: 'Notifications',
+      icon: notification,
+    },
   ]
 
   return (
@@ -47,7 +49,10 @@ function PatientLayout() {
       <div className="fixed inset-y-0 left-0 z-50 w-60 xl:w-72 hidden md:block bg-primary">
         <div className="flex h-full flex-col">
           <div className="flex h-20 items-center px-4 lg:h-[80px] lg:px-6">
-            <Link to="/patient" className="flex items-center gap-2 font-semibold">
+            <Link
+              to="/patient"
+              className="flex items-center gap-2 font-semibold"
+            >
               <img src={logo} alt="ZeroCancer" className="h-12" />
             </Link>
           </div>
@@ -79,7 +84,6 @@ function PatientLayout() {
               <button
                 onClick={() => {
                   logout()
-                  navigate({ to: '/', replace: true, reloadDocument: true })
                 }}
                 className="cursor-pointer flex w-full items-center gap-4 rounded-lg px-3 py-3 text-sm font-medium text-white transition-all hover:bg-white/20"
               >
@@ -102,26 +106,27 @@ function PatientLayout() {
       <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t z-50 shadow-t-md">
         <nav className="flex justify-around items-center h-16">
           {navLinks.map((link) => (
-             <Link
-                key={link.to}
-                to={link.to}
-                className="flex flex-col items-center justify-center text-xs w-full h-full"
-                activeOptions={{ exact: true }}
-                activeProps={{ className: 'text-primary' }}
-              >
-                <img src={link.icon} alt={link.label} className="h-6 w-6" />
-                <span>{link.label.split(' ')[0]}</span>
-              </Link>
-          ))}
             <Link
-                to="/patient/profile"
-                className="flex flex-col items-center justify-center text-xs w-full h-full"
-                activeOptions={{ exact: true }}
-                activeProps={{ className: 'text-primary' }}
-              >
-                <User className="h-6 w-6" />
-                <span>Profile</span>
-              </Link>
+              key={link.to}
+              to={link.to}
+              className="flex flex-col items-center justify-center text-xs w-full h-full"
+              activeOptions={{ exact: true }}
+              activeProps={{ className: 'text-primary' }}
+              preload="render"
+            >
+              <img src={link.icon} alt={link.label} className="h-6 w-6" />
+              <span>{link.label.split(' ')[0]}</span>
+            </Link>
+          ))}
+          <Link
+            to="/patient/profile"
+            className="flex flex-col items-center justify-center text-xs w-full h-full"
+            activeOptions={{ exact: true }}
+            activeProps={{ className: 'text-primary' }}
+          >
+            <User className="h-6 w-6" />
+            <span>Profile</span>
+          </Link>
         </nav>
       </div>
     </div>

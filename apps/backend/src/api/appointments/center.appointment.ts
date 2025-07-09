@@ -308,7 +308,7 @@ centerAppointmentApp.post(
       // Create verification record
       await tx.appointmentVerification.create({
         data: {
-          id: appointment.id, // Link to appointment ID
+          appointmentId: appointment.id, // Link to appointment ID
           verifiedBy: staffId!,
           verifiedAt: new Date(),
         },

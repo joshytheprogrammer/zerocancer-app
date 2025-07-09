@@ -82,14 +82,9 @@ export const useLogout = () => {
     onSuccess: () => {
       // Remove access token and user data from React Query cache
       queryClient.clear()
-      navigate({ to: '/', replace: true, reloadDocument: true })
+      navigate({ to: '/', reloadDocument: true })
     },
   })
-}
-
-export const logOut = () => {
-  const { mutate: logout } = useLogout()
-  logout()
 }
 
 export const useResendVerification = () => {
