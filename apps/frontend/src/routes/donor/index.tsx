@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useAuthUser } from '@/services/providers/auth.provider'
 import { useDonorCampaigns } from '@/services/providers/donor.provider'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -34,8 +35,9 @@ export const Route = createFileRoute('/donor/')({
 // Real API integration complete - removed mock data
 
 function DonorDashboard() {
-  const donor = { name: 'Acme Foundation' }
-
+  const { data: authData } = useQuery(useAuthUser())
+  const donorName =
+    authData?.data?.user?.fullName || 'Valued Donor'
   // Fetch recent campaigns
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery(
     useDonorCampaigns({
@@ -90,7 +92,7 @@ function DonorDashboard() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">
-                Welcome back, {donor.name}!
+                Welcome back, {donorName}!
               </h1>
               <p className="text-blue-100 mt-1">
                 Your generosity is changing lives and providing hope to those in

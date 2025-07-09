@@ -49,7 +49,7 @@ export default function ScreeningCard({
           {hasDonation ? (
             <Button
               onClick={onBookWithDonation}
-              className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-bold py-2 px-6 rounded-lg flex items-center gap-2"
+              className="bg-green-600 hover:bg-green-700 text-white cursor-pointer  py-2 px-6 rounded-lg flex items-center gap-2"
               disabled={isBookingWithDonation || isBooking}
             >
               {isBookingWithDonation ? 'Booking...' : 'Book with Donation'}
@@ -58,7 +58,7 @@ export default function ScreeningCard({
           ) : (
             <Button
               onClick={onBookNow}
-              className="bg-secondary hover:bg-secondary/80 text-neutral-700 cursor-pointer font-bold py-2 px-6 rounded-lg flex items-center gap-2"
+              className="bg-pink-600 hover:bg-pink-700 text-white cursor-pointer  py-2 px-6 rounded-lg flex items-center gap-2"
               disabled={isBooking || isBookingWithDonation}
             >
               {isBooking ? 'Booking...' : 'Book Now'}
@@ -71,7 +71,7 @@ export default function ScreeningCard({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 font-bold py-2 px-6 rounded-lg cursor-pointer"
+                  className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600  py-2 px-6 rounded-lg cursor-pointer"
                   disabled={isLeavingWaitlist}
                 >
                   {isLeavingWaitlist ? 'Leaving...' : 'Leave Waitlist'}
@@ -101,7 +101,7 @@ export default function ScreeningCard({
           ) : (
             <Button
               variant="outline"
-              className="border-primary text-primary hover:bg-blue-50 hover:text-primary/80 font-bold py-2 px-6 rounded-lg cursor-pointer"
+              className="border-primary text-primary hover:bg-blue-50 hover:text-primary/80  py-2 px-6 rounded-lg cursor-pointer"
               onClick={onJoinWaitlist}
               disabled={isJoiningWaitlist}
             >

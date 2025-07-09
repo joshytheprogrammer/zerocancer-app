@@ -1,13 +1,10 @@
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import type { TPatientAppointment } from '@zerocancer/shared/types'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import calendarIcon from '@/assets/images/calendar.png'
+import stethoscopeIcon from '@/assets/images/stethoscope.png'
+import { Loader2 } from 'lucide-react'
 
 interface UpcomingAppointmentsPanelProps {
   appointment: TPatientAppointment | null | undefined
@@ -21,32 +18,48 @@ const AppointmentItem = ({
 }) => {
   const navigate = useNavigate()
   return (
-    <div
-      className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50"
-      onClick={() => navigate({ to: '/patient/appointments' })}
-    >
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="font-bold text-lg">{appointment.screeningType?.name}</p>
-          <p className="text-sm text-muted-foreground">
+    <div className="bg-blue-50/50 p-4 rounded-xl space-y-3">
+      <div className="flex items-start gap-3">
+        <img
+          src={stethoscopeIcon}
+          alt="screening"
+          className="w-8 h-8 mt-1"
+        />
+        <div className="flex-1">
+          <h4 className="font-bold text-gray-800">
+            {appointment.screeningType?.name}
+          </h4>
+          <p className="text-sm text-gray-500 font-mono">
+            {appointment.id.slice(-10).toUpperCase()}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
             {appointment.center?.centerName}
           </p>
+          <p className="text-sm text-gray-600">
+            {new Date(appointment.appointmentDate).toLocaleDateString(
+              'en-US',
+              {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              },
+            )}
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {new Date(appointment.appointmentDate).toLocaleTimeString([], {
+        <p className="text-sm font-medium text-gray-700">
+          {new Date(appointment.appointmentTime).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           })}
         </p>
       </div>
-      <p className="text-sm text-muted-foreground mt-2">
-        {new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </p>
+      <Button
+        onClick={() => navigate({ to: '/patient/appointments' })}
+        className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-lg"
+      >
+        View Details
+      </Button>
     </div>
   )
 }
@@ -57,44 +70,34 @@ export default function UpcomingAppointmentsPanel({
 }: UpcomingAppointmentsPanelProps) {
   const navigate = useNavigate()
 
-  const handleBookNow = () => {
-    navigate({ to: '/patient/book' })
-  }
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading...</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Loading appointments...</p>
-        </CardContent>
-      </Card>
-    )
+  const handleSeeAll = () => {
+    navigate({ to: '/patient/appointments' })
   }
 
   return (
-    <Card className="h-[350px] flex items-center justify-center">
-      <CardContent>
-        {appointment ? (
+    <Card>
+      <CardContent className="p-4 space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src={calendarIcon} alt="Appointments" className="w-7 h-7" />
+            <h3 className="text-lg font-semibold text-gray-800">
+              Appointments
+            </h3>
+          </div>
+          <Button variant="link" onClick={handleSeeAll} className="text-sm">
+            See All
+          </Button>
+        </div>
+
+        {isLoading ? (
+          <div className="h-[150px] flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : appointment ? (
           <AppointmentItem appointment={appointment} />
         ) : (
-          <div className="text-center py-10 flex flex-col items-center justify-center h-full">
-            <img
-              src={calendarIcon}
-              alt="No appointments"
-              className="w-20 h-20 mb-4"
-            />
-            <p className="text-muted-foreground">
-              You have no upcoming appointments.
-            </p>
-            <Button
-              onClick={handleBookNow}
-              className="mt-4 bg-secondary hover:bg-secondary/80 cursor-pointer text-white font-bold py-2 px-6 rounded-lg"
-            >
-              Book Now
-            </Button>
+          <div className="text-center py-10 text-muted-foreground bg-gray-50/80 rounded-xl">
+            <p>You have no upcoming appointments.</p>
           </div>
         )}
       </CardContent>
