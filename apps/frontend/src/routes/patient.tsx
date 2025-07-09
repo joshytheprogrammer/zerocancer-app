@@ -63,7 +63,9 @@ function PatientLayout() {
                   key={link.to}
                   to={link.to}
                   className="flex items-center gap-4 rounded-lg px-3 py-3 text-white transition-all hover:bg-white/20"
-                  activeOptions={{ exact: true }}
+                  activeOptions={
+                    link.to === '/patient' ? { exact: true } : { exact: false }
+                  }
                   activeProps={{ className: 'bg-white/30 font-semibold' }}
                 >
                   <img src={link.icon} alt={link.label} className="h-6 w-6" />
@@ -110,7 +112,9 @@ function PatientLayout() {
               key={link.to}
               to={link.to}
               className="flex flex-col items-center justify-center text-xs w-full h-full"
-              activeOptions={{ exact: true }}
+              activeOptions={
+                link.to === '/patient' ? { exact: true } : { exact: false }
+              }
               activeProps={{ className: 'text-primary' }}
               preload="render"
             >

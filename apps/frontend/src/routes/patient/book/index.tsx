@@ -2,6 +2,7 @@ import ScreeningCard from '@/components/shared/ScreeningCard'
 import {
   useCheckWaitlistStatus,
   useJoinWaitlist,
+  useLeaveWaitlist,
 } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
@@ -66,7 +67,9 @@ function ScreeningItem({
   screeningType: TScreeningType
   handlePayAndBook: (id: string) => void
 }) {
+  const navigate = useNavigate()
   const joinWaitlistMutation = useJoinWaitlist()
+  const leaveWaitlistMutation = useLeaveWaitlist()
   const { data: waitlistStatus, isLoading: isCheckingWaitlist } = useQuery(
     useCheckWaitlistStatus(screeningType.id),
   )
@@ -88,14 +91,48 @@ function ScreeningItem({
     )
   }
 
+  const handleLeaveWaitlist = () => {
+    const waitlistId = waitlistStatus?.data?.waitlist?.id
+    if (!waitlistId) {
+      toast.error('Cannot leave waitlist without a waitlist ID.')
+      return
+    }
+    leaveWaitlistMutation.mutate(
+      { waitlistId },
+      {
+        onSuccess: () => {
+          toast.success('You have been removed from the waitlist')
+        },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.error ||
+              'Failed to leave waitlist. Please try again.',
+          )
+        },
+      },
+    )
+  }
+
+  const handleBookWithDonation = (screeningId: string) => {
+    navigate({
+      to: '/patient/book',
+      search: { screeningTypeId: screeningId, sponsored: true },
+    })
+  }
+
   return (
     <ScreeningCard
       name={screeningType.name}
       description={screeningType.description || 'No description available.'}
       onBookNow={() => handlePayAndBook(screeningType.id)}
       onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
+      onLeaveWaitlist={handleLeaveWaitlist}
+      onBookWithDonation={() => handleBookWithDonation(screeningType.id)}
+      hasDonation={!!waitlistStatus?.data?.waitlist?.allocation}
       isWaitlisted={waitlistStatus?.data?.inWaitlist}
-      isBooking={isCheckingWaitlist || joinWaitlistMutation.isPending}
+      isJoiningWaitlist={joinWaitlistMutation.isPending}
+      isLeavingWaitlist={leaveWaitlistMutation.isPending}
+      isBooking={isCheckingWaitlist}
     />
   )
 }

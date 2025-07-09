@@ -8,6 +8,7 @@ import { useAuthUser } from '@/services/providers/auth.provider'
 import {
   useCheckWaitlistStatus,
   useJoinWaitlist,
+  useLeaveWaitlist,
 } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
@@ -16,6 +17,7 @@ import type { TScreeningType } from '@zerocancer/shared/types'
 import { toast } from 'sonner'
 import cross from '@/assets/images/cross.png'
 import view from '@/assets/images/view.png'
+import calendar from '@/assets/images/calendar.png'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
@@ -96,9 +98,9 @@ function PatientDashboard() {
               className="flex items-center justify-center w-full"
             >
               <div className="w-full px-12 h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
-                <img src={view} alt="cross" className="w-8 h-8" />
+                <img src={calendar} alt="cross" className="w-8 h-8" />
                 <span className="text-lg font-medium text-neutral-800">
-                  View Results
+                  View Appointments
                 </span>
               </div>
             </Link>
@@ -153,7 +155,9 @@ function ScreeningItem({
   screeningType: TScreeningType
   handlePayAndBook: (id: string) => void
 }) {
+  const navigate = useNavigate()
   const joinWaitlistMutation = useJoinWaitlist()
+  const leaveWaitlistMutation = useLeaveWaitlist()
   const { data: waitlistStatus, isLoading: isCheckingWaitlist } = useQuery(
     useCheckWaitlistStatus(screeningType.id),
   )
@@ -175,14 +179,49 @@ function ScreeningItem({
     )
   }
 
+  const handleLeaveWaitlist = () => {
+    const waitlistId = waitlistStatus?.data?.waitlist?.id
+    if (!waitlistId) {
+      toast.error('Cannot leave waitlist without a waitlist ID.')
+      return
+    }
+    leaveWaitlistMutation.mutate(
+      { waitlistId },
+      {
+        onSuccess: () => {
+          toast.success('You have been removed from the waitlist')
+        },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.error ||
+              'Failed to leave waitlist. Please try again.',
+          )
+        },
+      },
+    )
+  }
+
+  const handleBookWithDonation = (screeningId: string) => {
+    // TODO: This should ideally navigate to a page where the user can select a center for their allocated screening
+    navigate({
+      to: '/patient/book',
+      search: { screeningTypeId: screeningId, sponsored: true },
+    })
+  }
+
   return (
     <ScreeningCard
       name={screeningType.name}
       description={screeningType.description || 'No description available.'}
       onBookNow={() => handlePayAndBook(screeningType.id)}
       onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
+      onLeaveWaitlist={handleLeaveWaitlist}
+      onBookWithDonation={() => handleBookWithDonation(screeningType.id)}
+      hasDonation={!!waitlistStatus?.data?.waitlist?.allocation}
       isWaitlisted={waitlistStatus?.data?.inWaitlist}
-      isBooking={isCheckingWaitlist || joinWaitlistMutation.isPending}
+      isJoiningWaitlist={joinWaitlistMutation.isPending}
+      isLeavingWaitlist={leaveWaitlistMutation.isPending}
+      isBooking={isCheckingWaitlist}
     />
   )
 }
