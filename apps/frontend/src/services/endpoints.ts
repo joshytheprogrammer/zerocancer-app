@@ -318,6 +318,7 @@ export const centerStaffForgotPassword = () =>
   '/api/center/staff/forgot-password'
 export const centerStaffResetPassword = () => '/api/center/staff/reset-password'
 export const inviteStaff = () => '/api/center/staff/invite'
+export const getStaffInvites = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>
   '/api/center/staff/create-new-password'
 export const centerStaffLogin = () => '/api/center/staff/login'

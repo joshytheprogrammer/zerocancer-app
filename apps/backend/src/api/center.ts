@@ -176,6 +176,27 @@ centerApp.get(
   }
 );
 
+// GET /api/center/staff/invite
+centerApp.get("/staff/invite", authMiddleware(["center"]), async (c) => {
+  const db = getDB();
+  const centerId = c.get("jwtPayload")?.id;
+
+  if (!centerId) {
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Center ID not found in token" },
+      400
+    );
+  }
+
+  // Fetch pending invites for the center
+  const invites = await db.centerStaffInvite.findMany({
+    where: { centerId: centerId!, acceptedAt: null },
+    select: { email: true, token: true, expiresAt: true },
+  });
+
+  return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });
+});
+
 // POST /api/center/staff/invite - Invite staff by email
 centerApp.post(
   "/staff/invite",
@@ -187,7 +208,7 @@ centerApp.post(
   async (c) => {
     const db = getDB();
     const { centerId, emails } = c.req.valid("json");
-    const invites = [];
+    const invites: Array<{ email: string; token: string }> = [];
     for (const email of emails!) {
       // Generate a unique token
       const token = crypto.randomBytes(32).toString("hex");
@@ -204,11 +225,13 @@ centerApp.post(
       const inviteUrl = `${
         env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
       }/staff/create-new-password?token=${token}`;
+
       await sendEmail({
         to: email!,
         subject: "You're invited to join a center on Zerocancer",
         html: `<p>You have been invited to join a center. <a href="${inviteUrl}">Click here to set your password and join.</a></p>`,
       });
+
       invites.push({ email: email!, token: token! });
     }
     return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });

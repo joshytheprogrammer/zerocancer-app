@@ -106,6 +106,11 @@ export const verifyCheckInCode = async (
 
 // --- Staff Management ---
 
+export const getStaffInvites = async (): Promise<TInviteStaffResponse> => {
+  const res = await request.get(endpoints.getStaffInvites())
+  return res as TInviteStaffResponse
+}
+
 export const inviteStaff = async (
   params: z.infer<typeof inviteStaffSchema>,
 ): Promise<TInviteStaffResponse> => {
