@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { User } from 'lucide-react'
+import { Menu, User } from 'lucide-react'
 
 import calendar from '@/assets/images/calendar.png'
 import cross from '@/assets/images/cross.png'
@@ -7,6 +7,7 @@ import logo from '@/assets/images/logo.svg'
 import logoutIcon from '@/assets/images/logout.png'
 import notification from '@/assets/images/notification.png'
 import stethoscope from '@/assets/images/stethoscope.png'
+import { Button } from '@/components/ui/button'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/patient')({
@@ -74,15 +75,6 @@ function PatientLayout() {
               ))}
             </nav>
             <div className="p-2 lg:p-4 mt-auto">
-              <Link
-                to="/patient/profile"
-                className="flex items-center gap-4 rounded-lg px-3 py-3 text-white transition-all hover:bg-white/20"
-                activeOptions={{ exact: true }}
-                activeProps={{ className: 'bg-white/30 font-semibold' }}
-              >
-                <User className="h-6 w-6" />
-                Profile
-              </Link>
               <button
                 onClick={() => {
                   logout()
@@ -97,40 +89,63 @@ function PatientLayout() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="md:ml-60 xl:ml-72 pb-20 md:pb-0">
-        <main className="flex flex-col gap-4 lg:gap-6 min-h-screen bg-neutral-50">
+      {/* Mobile Topbar */}
+
+      <div className="flex flex-col md:ml-60 xl:ml-72">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b bg-primary px-4 py-6 shadow-md md:hidden">
+          <Link to="/patient" className="flex items-center gap-2 font-semibold">
+            <img src={logo} alt="ZeroCancer" className="h-12" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => logout()}
+              className="cursor-pointer rounded-full p-2 text-white transition-all hover:bg-white/20"
+              aria-label="Logout"
+            >
+              <img src={logoutIcon} alt="logout" className="h-6 w-6" />
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-grow bg-neutral-50 p-4 pb-24 md:p-6 md:pb-6">
           <Outlet />
         </main>
       </div>
 
+
       {/* Bottom Navigation for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t z-50 shadow-t-md">
-        <nav className="flex justify-around items-center h-16">
+      <div className="fixed bottom-2 inset-x-2 md:hidden bg-white z-50 shadow-lg rounded-xl">
+        <nav className="flex justify-around items-center h-16 px-1">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className="flex flex-col items-center justify-center text-xs w-full h-full"
+              className="flex-1"
               activeOptions={
                 link.to === '/patient' ? { exact: true } : { exact: false }
               }
-              activeProps={{ className: 'text-primary' }}
               preload="render"
             >
-              <img src={link.icon} alt={link.label} className="h-6 w-6" />
-              <span>{link.label.split(' ')[0]}</span>
+              {({ isActive }) => (
+                <div
+                  className={`flex h-16 w-full flex-col items-center justify-center rounded-lg p-1 transition-colors duration-200 ${
+                    isActive ? 'bg-primary' : 'bg-transparent'
+                  }`}
+                >
+                  <img src={link.icon} alt={link.label} className="h-6 w-6" />
+                  <span
+                    className={`mt-2 text-xs ${
+                      isActive
+                        ? 'font-semibold text-white'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {link.label.split(' ')[0]}
+                  </span>
+                </div>
+              )}
             </Link>
           ))}
-          <Link
-            to="/patient/profile"
-            className="flex flex-col items-center justify-center text-xs w-full h-full"
-            activeOptions={{ exact: true }}
-            activeProps={{ className: 'text-primary' }}
-          >
-            <User className="h-6 w-6" />
-            <span>Profile</span>
-          </Link>
         </nav>
       </div>
     </div>

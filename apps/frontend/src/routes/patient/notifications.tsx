@@ -7,6 +7,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Bell, Calendar, FileText } from 'lucide-react'
+import bell from '@/assets/images/notification2.png'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/notifications')({
@@ -48,9 +49,9 @@ function PatientNotifications() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 sm:p-6">
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">My Notifications</h1>
+          <h1 className="text-2xl font-bold">Notifications</h1>
           <p className="text-muted-foreground">
             Here you can view your notifications.
           </p>
@@ -77,7 +78,7 @@ function PatientNotifications() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 sm:p-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">My Notifications</h1>
           <p className="text-muted-foreground">
@@ -103,7 +104,7 @@ function PatientNotifications() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">My Notifications</h1>
         <p className="text-muted-foreground">
@@ -165,8 +166,8 @@ function PatientNotifications() {
               })
             ) : (
               <div className="p-6 text-center text-muted-foreground">
-                <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>You have no notifications.</p>
+                <img src={bell} alt="No notifications" className="mx-auto size-24 mb-4" />
+                <p className='font-semibold text-lg'>You have no notifications.</p>
               </div>
             )}
           </div>

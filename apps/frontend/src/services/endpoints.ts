@@ -360,3 +360,6 @@ export const getCenterTransactions = (
 ) => `/api/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
 export const getBanks = () => '/api/payouts/banks'
 export const verifyAccount = () => '/api/payouts/verify-account'
+
+export const cancelPatientAppointment = (appointmentId: string) =>
+  `/api/appointment/${appointmentId}/cancel`

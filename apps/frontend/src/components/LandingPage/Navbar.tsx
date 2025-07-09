@@ -136,12 +136,16 @@ export default function Navbar() {
               </Link>
             ) : (
               <>
-                <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white">
-                  Login
-                </button>
-                <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
-                  Sign Up
-                </button>
+                <Link to="/login" preload="render">
+                  <button className="border-2 border-white font-semibold px-8 py-2 rounded-lg text-white">
+                    Login
+                  </button>
+                </Link>
+                <Link to="/sign-up" preload="render">
+                  <button className="bg-white text-primary px-8 py-2 rounded-lg font-semibold">
+                    Sign Up
+                  </button>
+                </Link>
               </>
             )}
           </div>

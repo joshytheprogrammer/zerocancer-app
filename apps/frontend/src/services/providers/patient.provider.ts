@@ -15,9 +15,15 @@ export const useBookSelfPayAppointment = () => {
 }
 
 export const useJoinWaitlist = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationKey: [MutationKeys.joinWaitlist],
     mutationFn: patientService.joinWaitlist,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.patientWaitlists],
+      })
+    },
   })
 }
 
