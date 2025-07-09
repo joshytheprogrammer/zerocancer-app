@@ -1,11 +1,14 @@
 import ScreeningCenterForm from '@/components/SignupPage/ScreeningCenterForm'
-import { Link } from '@tanstack/react-router'
-import { createFileRoute } from '@tanstack/react-router'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/sign-up/_layout/center')({
   component: RouteComponent,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(useAllScreeningTypes())
+  },
 })
 
 function RouteComponent() {
@@ -39,18 +42,19 @@ function RouteComponent() {
       <div className="">
         <div className="space-y-4">
           <p className="text-center text-lg">
-            A <span className="text-primary">verification link</span> has been sent to <b>{email}</b>. Please check your email and verify your account.
+            A <span className="text-primary">verification link</span> has been
+            sent to <b>{email}</b>. Please check your email and verify your
+            account.
           </p>
           <div className="text-center text-lg">Didnt reveive and email?</div>
           <div className="flex justify-center">
-            
-          <button
-            onClick={handleResend}
-            className="bg-primary text-white px-4 py-2 rounded-md cursor-pointer"
-            disabled={isResending}
-          >
-            {isResending ? 'Resending...' : 'Resend Email'}
-          </button>
+            <button
+              onClick={handleResend}
+              className="bg-primary text-white px-4 py-2 rounded-md cursor-pointer"
+              disabled={isResending}
+            >
+              {isResending ? 'Resending...' : 'Resend Email'}
+            </button>
           </div>
         </div>
       </div>
