@@ -9,6 +9,7 @@ import How from './How'
 import Navbar from './Navbar'
 import Stats from './Stats'
 import Why from './Why'
+import AnonymousDonate from './AnonymousDonate'
 
 function LandingPage() {
   return (
@@ -21,6 +22,7 @@ function LandingPage() {
       <Fight />
       <Find />
       <How />
+      <AnonymousDonate />
       <Faq />
       <Cta />
       <Footer />
