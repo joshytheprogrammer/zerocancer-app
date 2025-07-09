@@ -410,8 +410,8 @@ donationApp.post(
             await db.donationCampaign.update({
               where: { id: campaignId },
               data: {
-                totalAmount: { increment: amount },
-                availableAmount: { increment: amount },
+                totalAmount: { increment: amount / 100 },
+                availableAmount: { increment: amount / 100 },
                 status: "ACTIVE",
               },
             });
