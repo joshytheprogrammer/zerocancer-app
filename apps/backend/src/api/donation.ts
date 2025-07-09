@@ -329,7 +329,7 @@ donationApp.post(
 donationApp.post(
   "/paystack-webhook",
   // Verify webhook signature
-  async (c) => {
+  async (c, next) => {
     try {
       console.log("Received Paystack webhook request");
 
@@ -363,6 +363,8 @@ donationApp.post(
       c.set("jwtPayload", payload);
 
       console.log("Received Valid Paystack webhook!!!:", payload);
+
+      await next();
     } catch (error) {
       console.error("Webhook verification error:", error);
       return c.json({ error: "Webhook verification failed" }, 401);
