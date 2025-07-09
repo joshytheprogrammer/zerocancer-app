@@ -1,22 +1,24 @@
-import selfSampleVideo from '@/assets/images/ZeroCancer_Video_ewxn02.webm'
-import cervicalVideo from '@/assets/images/Zerocancer_video_rchsqf.webm'
+// import selfSampleVideo from '@/assets/images/ZeroCancer_Video_ewxn02.webm'
+// import cervicalVideo from '@/assets/images/Zerocancer_video_rchsqf.webm'
 import { PlayIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Education() {
-  const [currentVideo, setCurrentVideo] = useState(cervicalVideo)
+  const [currentVideo, setCurrentVideo] = useState(
+    'Zerocancer_video_rchsqf.webm',
+  )
 
   const videoData = [
     {
       id: 'cervical',
-      src: cervicalVideo,
+      src: 'ZeroCancer_Video_ewxn02.webm',
       title: 'Cervical Cancer Awareness',
       description:
         'Understand the risks, symptoms, and importance of early detection.',
     },
     {
       id: 'self-sample',
-      src: selfSampleVideo,
+      src: 'Zerocancer_video_rchsqf.webm',
       title: 'How to Collect Self Samples',
       description: 'Follow these easy steps to collect your sample correctly.',
     },

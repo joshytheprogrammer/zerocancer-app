@@ -1,15 +1,12 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useCreateCampaign } from '@/services/providers/donor.provider'
-import { useScreeningTypes } from '@/services/providers/screeningType.provider'
-import { useQuery } from '@tanstack/react-query'
-import { createCampaignSchema } from '@zerocancer/shared/schemas/donation.schema'
-import { z } from 'zod'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -19,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -26,16 +24,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { 
-  ArrowLeft, 
-  DollarSign, 
-  Users, 
+import { Textarea } from '@/components/ui/textarea'
+import { useCreateCampaign } from '@/services/providers/donor.provider'
+import { useScreeningTypes } from '@/services/providers/screeningType.provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createCampaignSchema } from '@zerocancer/shared/schemas/donation.schema'
+import {
+  ArrowLeft,
   Calendar,
+  DollarSign,
+  Heart,
   Info,
-  Heart
+  Users,
 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 export const Route = createFileRoute('/donor/campaigns/create')({
   component: CreateCampaign,
@@ -46,21 +52,19 @@ type CreateCampaignForm = z.infer<typeof createCampaignSchema>
 function CreateCampaign() {
   const navigate = useNavigate()
   const createCampaignMutation = useCreateCampaign()
-  
+
   // Fetch screening types
   const { data: screeningTypesData } = useQuery(useScreeningTypes({}))
   const screeningTypes = screeningTypesData?.data || []
-  
+
   const form = useForm<CreateCampaignForm>({
     resolver: zodResolver(createCampaignSchema) as any,
     defaultValues: {
       title: 'Cancer Screening For People In IDP Camps',
-      description: 'This campaign is to help people in IDP camps get cancer screening',
-      targetAmount: 10000,
-      maxPerPatient: 2500,
-      initialFunding: 10000,
-      expiryMonths: 6,
+      description:
+        'This campaign is to help people in IDP camps get cancer screening',
       screeningTypeIds: [],
+      fundingAmount: 10000,
       targetGender: 'ALL',
     },
   })
@@ -70,14 +74,14 @@ function CreateCampaign() {
       // Ensure all numeric fields are actually numbers
       const submitData = {
         ...data,
-        targetAmount: Number(data.targetAmount) || 0,
-        maxPerPatient: Number(data.maxPerPatient) || 0,
-        initialFunding: Number(data.initialFunding) || 0,
-        expiryMonths: Number(data.expiryMonths) || 1,
+        // targetAmount: Number(data.targetAmount) || 0,
+        // maxPerPatient: Number(data.maxPerPatient) || 0,
+        // initialFunding: Number(data.initialFunding) || 0,
+        // expiryMonths: Number(data.expiryMonths) || 1,
       }
-      
+
       const result = await createCampaignMutation.mutateAsync(submitData)
-      
+
       if (result.data.payment?.authorizationUrl) {
         toast.success('Campaign created! Redirecting to payment...')
         window.location.href = result.data.payment.authorizationUrl
@@ -89,40 +93,47 @@ function CreateCampaign() {
       console.error('Create campaign error:', error)
       console.error('Error response:', error.response?.data)
       console.error('Error status:', error.response?.status)
-      
+
       // Handle different error cases
       if (error.response?.status === 401) {
         toast.error('Please log in as a donor to create campaigns.')
         navigate({ to: '/login' })
         return
       }
-      
+
       if (error.response?.status === 403) {
-        toast.error('You do not have permission to create campaigns. Please ensure you are logged in as a donor.')
+        toast.error(
+          'You do not have permission to create campaigns. Please ensure you are logged in as a donor.',
+        )
         return
       }
-      
+
       if (error.response?.status === 500) {
-        toast.error('Server error occurred. Please check that all screening types are valid and try again.')
+        toast.error(
+          'Server error occurred. Please check that all screening types are valid and try again.',
+        )
         return
       }
-      
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to create campaign. Please try again.'
+
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Failed to create campaign. Please try again.'
       toast.error(errorMessage)
     }
   }
 
-  const watchedTargetAmount = form.watch('targetAmount') || 0
-  const watchedMaxPerPatient = form.watch('maxPerPatient') || 1
-  const estimatedPatients = watchedMaxPerPatient > 0 ? Math.floor(watchedTargetAmount / watchedMaxPerPatient) : 0
+  const watchedTargetAmount = form.watch('fundingAmount') || 0
+  // const watchedMaxPerPatient = form.watch('maxPerPatient') || 1
+  // const estimatedPatients = watchedMaxPerPatient > 0 ? Math.floor(watchedTargetAmount / watchedMaxPerPatient) : 0
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => navigate({ to: '/donor/campaigns' })}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -130,7 +141,8 @@ function CreateCampaign() {
         <div>
           <h1 className="text-3xl font-bold">Create New Campaign</h1>
           <p className="text-muted-foreground">
-            Set up a donation campaign to help patients access screening services.
+            Set up a donation campaign to help patients access screening
+            services.
           </p>
         </div>
       </div>
@@ -147,7 +159,10 @@ function CreateCampaign() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
                   <FormField
                     control={form.control}
                     name="title"
@@ -155,7 +170,7 @@ function CreateCampaign() {
                       <FormItem>
                         <FormLabel>Campaign Title</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="e.g., Cervical Cancer Screening for Rural Women"
                             {...field}
                           />
@@ -175,7 +190,7 @@ function CreateCampaign() {
                       <FormItem>
                         <FormLabel>Campaign Description</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Describe the purpose and goals of your campaign..."
                             className="resize-none"
                             rows={4}
@@ -183,14 +198,15 @@ function CreateCampaign() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Explain what your campaign aims to achieve and who it will help.
+                          Explain what your campaign aims to achieve and who it
+                          will help.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="grid gap-4 md:grid-cols-3">
+                  {/* <div className="grid gap-4 md:grid-cols-3">
                     <FormField
                       control={form.control}
                       name="targetAmount"
@@ -215,9 +231,9 @@ function CreateCampaign() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
+                    /> */}
 
-                    <FormField
+                  {/* <FormField
                       control={form.control}
                       name="maxPerPatient"
                       render={({ field }) => (
@@ -241,9 +257,9 @@ function CreateCampaign() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
+                    /> */}
 
-                    <FormField
+                  {/* <FormField
                       control={form.control}
                       name="expiryMonths"
                       render={({ field }) => (
@@ -267,17 +283,17 @@ function CreateCampaign() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                  </div>
+                    /> */}
+                  {/* </div> */}
 
                   <FormField
                     control={form.control}
-                    name="initialFunding"
+                    name="fundingAmount"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Initial Funding Amount (₦)</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="text"
                             placeholder="10000"
                             {...field}
@@ -289,7 +305,8 @@ function CreateCampaign() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Amount you want to contribute now. Must not exceed target amount.
+                          Amount you want to contribute now. Must not exceed
+                          target amount.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -301,39 +318,50 @@ function CreateCampaign() {
                     name="screeningTypeIds"
                     render={() => {
                       const selectedIds = form.watch('screeningTypeIds') || []
-                      const allSelected = selectedIds.length === screeningTypes.length && screeningTypes.length > 0
-                      const someSelected = selectedIds.length > 0 && selectedIds.length < screeningTypes.length
-                      
+                      const allSelected =
+                        selectedIds.length === screeningTypes.length &&
+                        screeningTypes.length > 0
+                      const someSelected =
+                        selectedIds.length > 0 &&
+                        selectedIds.length < screeningTypes.length
+
                       const handleSelectAll = () => {
-                        const allIds = screeningTypes.map(type => type.id)
-                        form.setValue('screeningTypeIds', allSelected ? [] : allIds)
+                        const allIds = screeningTypes.map((type) => type.id)
+                        form.setValue(
+                          'screeningTypeIds',
+                          allSelected ? [] : allIds,
+                        )
                       }
-                      
+
                       return (
                         <FormItem>
                           <div className="mb-4">
-                            <FormLabel className="text-base">Screening Types</FormLabel>
+                            <FormLabel className="text-base">
+                              Screening Types
+                            </FormLabel>
                             <FormDescription>
-                              Select the types of cancer screening your campaign will fund.
+                              Select the types of cancer screening your campaign
+                              will fund.
                             </FormDescription>
                           </div>
-                          
+
                           {/* Select All Controls */}
                           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border mb-4">
                             <div className="flex items-center space-x-3">
-                                                             <Checkbox
-                                 checked={allSelected}
-                                 onCheckedChange={handleSelectAll}
-                               />
+                              <Checkbox
+                                checked={allSelected}
+                                onCheckedChange={handleSelectAll}
+                              />
                               <span className="font-medium text-sm">
                                 {allSelected ? 'Deselect All' : 'Select All'}
                               </span>
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {selectedIds.length} of {screeningTypes.length} selected
+                              {selectedIds.length} of {screeningTypes.length}{' '}
+                              selected
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {screeningTypes.map((item) => (
                               <FormField
@@ -348,14 +376,20 @@ function CreateCampaign() {
                                     >
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(item.id)}
+                                          checked={field.value?.includes(
+                                            item.id,
+                                          )}
                                           onCheckedChange={(checked) => {
                                             return checked
-                                              ? field.onChange([...field.value, item.id])
+                                              ? field.onChange([
+                                                  ...field.value!,
+                                                  item.id,
+                                                ])
                                               : field.onChange(
                                                   field.value?.filter(
-                                                    (value) => value !== item.id
-                                                  )
+                                                    (value) =>
+                                                      value !== item.id,
+                                                  ),
                                                 )
                                           }}
                                         />
@@ -369,13 +403,14 @@ function CreateCampaign() {
                               />
                             ))}
                           </div>
-                          
+
                           {selectedIds.length === 0 && (
                             <p className="text-sm text-muted-foreground mt-2">
-                              💡 Tip: Select "Select All" to fund all available screening types
+                              💡 Tip: Select "Select All" to fund all available
+                              screening types
                             </p>
                           )}
-                          
+
                           <FormMessage />
                         </FormItem>
                       )
@@ -388,7 +423,10 @@ function CreateCampaign() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Target Gender</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select target gender" />
@@ -409,19 +447,21 @@ function CreateCampaign() {
                   />
 
                   <div className="flex gap-4 pt-6">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => navigate({ to: '/donor/campaigns' })}
                     >
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       type="submit"
                       disabled={createCampaignMutation.isPending}
                       className="flex-1"
                     >
-                      {createCampaignMutation.isPending ? 'Creating...' : 'Create Campaign'}
+                      {createCampaignMutation.isPending
+                        ? 'Creating...'
+                        : 'Create Campaign'}
                     </Button>
                   </div>
                 </form>
@@ -443,26 +483,30 @@ function CreateCampaign() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Target Amount:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Current Amount:
+                  </span>
                 </div>
-                <p className="text-lg font-semibold">₦{(watchedTargetAmount || 0).toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  ₦{(watchedTargetAmount || 0).toLocaleString()}
+                </p>
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Estimated Patients:</span>
                 </div>
                 <p className="text-lg font-semibold">{estimatedPatients || 0} patients</p>
-              </div>
+              </div> */}
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Duration:</span>
                 </div>
                 <p className="text-lg font-semibold">{form.watch('expiryMonths')} months</p>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
@@ -475,19 +519,27 @@ function CreateCampaign() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <div className="flex gap-3">
-                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">1</div>
-                <p>Create your campaign with target amount and criteria</p>
+                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">
+                  1
+                </div>
+                <p>Create your campaign and fund it</p>
               </div>
               <div className="flex gap-3">
-                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">2</div>
+                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">
+                  2
+                </div>
                 <p>Make initial payment via Paystack</p>
               </div>
               <div className="flex gap-3">
-                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">3</div>
+                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">
+                  3
+                </div>
                 <p>System matches eligible patients to your campaign</p>
               </div>
               <div className="flex gap-3">
-                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">4</div>
+                <div className="bg-primary/10 rounded-full p-1 text-primary font-semibold min-w-6 h-6 flex items-center justify-center text-xs">
+                  4
+                </div>
                 <p>Patients get free screening, you track the impact</p>
               </div>
             </CardContent>
@@ -496,4 +548,4 @@ function CreateCampaign() {
       </div>
     </div>
   )
-} 
+}
