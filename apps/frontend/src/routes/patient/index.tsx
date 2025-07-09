@@ -16,7 +16,6 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import type { TScreeningType } from '@zerocancer/shared/types'
 import { toast } from 'sonner'
 import cross from '@/assets/images/cross.png'
-import view from '@/assets/images/view.png'
 import calendar from '@/assets/images/calendar.png'
 
 export const Route = createFileRoute('/patient/')({
@@ -80,14 +79,14 @@ function PatientDashboard() {
         <div className="lg:col-span-2 space-y-6">
           <StatusCard appointment={upcomingAppointment} />
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 w-full">
             <Link
               to="/patient/book"
-              className="flex items-center justify-center w-full"
+              className="flex items-center justify-center w-1/2"
             >
-              <div className="w-full px-12 h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
+              <div className="w-full px-12 h-36 lg:h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
                 <img src={cross} alt="cross" className="w-8 h-8" />
-                <span className="text-lg font-medium text-neutral-800">
+                <span className="text-lg font-medium text-neutral-800 text-center">
                   Book Screening
                 </span>
               </div>
@@ -95,11 +94,11 @@ function PatientDashboard() {
 
             <Link
               to="/patient/appointments"
-              className="flex items-center justify-center w-full"
+              className="flex items-center justify-center w-1/2"
             >
-              <div className="w-full px-12 h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
+              <div className="w-full px-12 h-36 lg:h-28 bg-blue-100 rounded-lg flex items-center justify-center gap-2 flex-col">
                 <img src={calendar} alt="cross" className="w-8 h-8" />
-                <span className="text-lg font-medium text-neutral-800">
+                <span className="text-lg font-medium text-neutral-800 text-center">
                   View Appointments
                 </span>
               </div>

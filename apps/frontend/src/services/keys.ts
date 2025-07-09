@@ -121,6 +121,7 @@ export enum MutationKeys {
   verifyAccount = 'verifyAccount',
 
   triggerWaitlistMatching = 'trigger-waitlist-matching',
+  cancelAppointment = 'cancelAppointment',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'

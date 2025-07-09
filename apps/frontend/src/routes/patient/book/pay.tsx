@@ -22,7 +22,7 @@ import {
 import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
 import { centers } from '@/services/providers/center.provider'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDownIcon, Loader2, Check, ChevronsUpDown } from 'lucide-react'
+import { ChevronDownIcon, Loader2, Check, } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -65,8 +65,8 @@ function PayBookingPage() {
   const { data: centersData, isLoading: centersLoading, error: centersError } = useQuery(
     centers({
       page: 1,
-      pageSize: 100, // Get a large number to show all available centers
-      status: 'ACTIVE', // Only show active centers
+      pageSize: 100, 
+      status: 'ACTIVE', 
     })
   )
 
@@ -134,14 +134,14 @@ function PayBookingPage() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[60vh]">
-      <Card className="w-full max-w-md">
+    <div className="flex justify-center items-center min-h-screen">
+      <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>Book Self-Pay Appointment</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {!search.screeningTypeId && (
                 <FormField
                   control={form.control}
@@ -318,32 +318,9 @@ function PayBookingPage() {
                   </FormItem>
                 )}
               />
-
-
-              {/* 
-              
-              NOT NEEDED
-              
-              <FormField
-                control={form.control}
-                name="paymentReference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Payment Reference (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Auto-generated if left blank"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
-
             <Button
               type="submit"
-                className="w-full flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 cursor-pointer"
               disabled={bookSelfPayAppointmentMutation.isPending}
             >
                 {bookSelfPayAppointmentMutation.isPending && (

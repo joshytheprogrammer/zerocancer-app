@@ -1,17 +1,12 @@
+import AppointmentCard from '@/components/shared/AppointmentCard'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import appointment from '@/assets/images/appointment.png'
 
 export const Route = createFileRoute('/patient/appointments')({
   component: PatientAppointments,
@@ -20,114 +15,44 @@ export const Route = createFileRoute('/patient/appointments')({
   },
 })
 
-function AppointmentCard({ appointment }: { appointment: any }) {
-  const isPast = new Date(appointment.appointmentDate) < new Date()
-  const hasResult = appointment.result?.id
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {appointment.screeningType?.name || 'Unknown Screening'}
-        </CardTitle>
-        <CardDescription>
-          At {appointment.center?.centerName || 'Unknown Center'} on{' '}
-          {/* {new Date(appointment.appointmentDate).toLocaleString()} */}
-          {new Date(appointment.appointmentDate).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
-          {appointment.appointmentTime && (
-            <>
-              {' at '}
-              {new Date(appointment.appointmentTime).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </>
-          )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <p>
-            Status:{' '}
-            <span
-              className={
-                appointment.status === 'SCHEDULED'
-                  ? 'text-blue-600'
-                  : appointment.status === 'COMPLETED'
-                    ? 'text-green-600'
-                    : appointment.status === 'CANCELLED'
-                      ? 'text-red-600'
-                      : 'text-yellow-600'
-              }
-            >
-              {appointment.status}
-            </span>
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Location: {appointment.center?.address}
-          </p>
-          {appointment.checkInCode && (
-            <p className="text-sm">
-              Check-in Code:{' '}
-              <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                {appointment.checkInCode}
-              </span>
-            </p>
-          )}
-          {appointment.transaction && (
-            <p className="text-sm text-muted-foreground">
-              Payment: ${appointment.transaction.amount} (
-              {appointment.transaction.status})
-            </p>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        {isPast ? (
-          hasResult && (
-            <Button>
-              {/* <Link to="/patient/results">View Results</Link> */}
-              Doesn't work yet
-            </Button>
-          )
-        ) : (
-          <Button variant="destructive">Cancel</Button>
-        )}
-      </CardFooter>
-    </Card>
-  )
-}
-
 function PatientAppointments() {
-  // Fetch all appointments using the proper provider function
-  // Using empty object to avoid pagination validation issues
   const {
     data: appointmentsData,
     isLoading,
     error,
   } = useQuery(usePatientAppointments({}))
 
-  const appointments = appointmentsData?.data?.appointments || []
+  const handleCancelAppointment = (appointmentId: string) => {
+    toast.info('Cancelling appointment...')
+  }
 
-  // Separate upcoming and past appointments
-  const now = new Date()
+  const appointments = (appointmentsData?.data?.appointments || []).filter(
+    (appt: any) => appt.status !== 'PENDING',
+  )
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Set to beginning of today
+
   const upcomingAppointments = appointments.filter(
-    (appt: any) => new Date(appt.appointmentDate) >= now,
+    (appt: any) =>
+      new Date(appt.appointmentDate) >= today && appt.status === 'SCHEDULED',
   )
   const pastAppointments = appointments.filter(
-    (appt: any) => new Date(appt.appointmentDate) < now,
+    (appt: any) =>
+      new Date(appt.appointmentDate) < today && appt.status === 'COMPLETED',
+  )
+  const cancelledAppointments = appointments.filter(
+    (appt: any) => appt.status === 'CANCELLED',
   )
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading your appointments...</span>
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-muted-foreground">
+            Loading your appointments...
+          </span>
         </div>
       </div>
     )
@@ -137,73 +62,124 @@ function PatientAppointments() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-red-600">
+          <h3 className="text-lg font-medium text-destructive">
             Error loading appointments
           </h3>
           <p className="text-muted-foreground">
-            Please try refreshing the page
+            Please try refreshing the page.
           </p>
         </div>
       </div>
     )
   }
 
+  const renderEmptyState = (
+    title: string,
+    description: string,
+    showButton: boolean,
+  ) => (
+    <div className="text-center py-16 px-6 bg-gray-50 rounded-lg border-2 border-dashed">
+      <div className="flex justify-center mb-4">
+        <img src={appointment} alt="appointment" className="w-16 h-16" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+      <p className="text-muted-foreground mt-2 mb-6">{description}</p>
+      {showButton && (
+        <Button asChild className="bg-pink-600 hover:bg-pink-700 text-white">
+          <Link to="/patient/book">Book Screening</Link>
+        </Button>
+      )}
+    </div>
+  )
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">My Appointments</h1>
-        <p className="text-muted-foreground">
-          Here you can view and manage your appointments.
-        </p>
-        {appointments.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Total: {appointments.length} appointment
-            {appointments.length !== 1 ? 's' : ''}
+    <div className="p-4 sm:p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Appointments</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your screening bookings easily.
           </p>
-        )}
+        </div>
+        <Button
+          asChild
+          className="bg-pink-600 hover:bg-pink-700 text-white hidden sm:flex"
+        >
+          <Link to="/patient/book">Book Screening</Link>
+        </Button>
       </div>
 
-      <Tabs defaultValue="upcoming">
-        <TabsList>
+      <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 sm:max-w-md">
           <TabsTrigger value="upcoming">
             Upcoming ({upcomingAppointments.length})
           </TabsTrigger>
           <TabsTrigger value="past">
             Past ({pastAppointments.length})
           </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            Cancelled ({cancelledAppointments.length})
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming">
-          <div className="space-y-4">
-            {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appt: any) => (
-                <AppointmentCard key={appt.id} appointment={appt} />
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  You have no upcoming appointments.
-                </p>
-                <Button asChild>
-                  <Link to="/patient/book">Book New Appointment</Link>
-                </Button>
-              </div>
-            )}
-          </div>
+          {upcomingAppointments.length > 0 ? (
+            <div className="grid sm:grid-cols-2 gap-6 mt-4">
+              {upcomingAppointments.map((appt: any) => (
+                <AppointmentCard
+                  key={appt.id}
+                  appointment={appt}
+                  onCancel={handleCancelAppointment}
+                  isCancelling={false}
+                />
+              ))}
+            </div>
+          ) : (
+            renderEmptyState(
+              'No Appointment',
+              'Click the button below to book an appointment',
+              true,
+            )
+          )}
         </TabsContent>
         <TabsContent value="past">
-          <div className="space-y-4">
-            {pastAppointments.length > 0 ? (
-              pastAppointments.map((appt: any) => (
-                <AppointmentCard key={appt.id} appointment={appt} />
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  You have no past appointments.
-                </p>
-              </div>
-            )}
-          </div>
+          {pastAppointments.length > 0 ? (
+            <div className="grid sm:grid-cols-2 gap-6 mt-4">
+              {pastAppointments.map((appt: any) => (
+                <AppointmentCard
+                  key={appt.id}
+                  appointment={appt}
+                  onCancel={handleCancelAppointment}
+                  isCancelling={false}
+                />
+              ))}
+            </div>
+          ) : (
+            renderEmptyState(
+              'No Past Appointments',
+              'Your completed appointment history will appear here.',
+              false,
+            )
+          )}
+        </TabsContent>
+        <TabsContent value="cancelled">
+          {cancelledAppointments.length > 0 ? (
+            <div className="grid sm:grid-cols-2 gap-6 mt-4">
+              {cancelledAppointments.map((appt: any) => (
+                <AppointmentCard
+                  key={appt.id}
+                  appointment={appt}
+                  onCancel={handleCancelAppointment}
+                  isCancelling={false}
+                />
+              ))}
+            </div>
+          ) : (
+            renderEmptyState(
+              'No Cancelled Appointments',
+              'Your cancelled appointments will be listed here.',
+              false,
+            )
+          )}
         </TabsContent>
       </Tabs>
     </div>
