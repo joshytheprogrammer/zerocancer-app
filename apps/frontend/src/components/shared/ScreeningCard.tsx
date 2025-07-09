@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from '@/components/ui/dialog'
 import { ArrowRight } from 'lucide-react'
 
@@ -45,7 +45,7 @@ export default function ScreeningCard({
       <div>
         <h3 className="text-xl font-bold text-gray-900">{name}</h3>
         <p className="text-gray-500 mt-1">{description}</p>
-        <div className="flex items-center gap-4 mt-5">
+        <div className="flex flex-wrap items-center gap-4 mt-5">
           {hasDonation ? (
             <Button
               onClick={onBookWithDonation}

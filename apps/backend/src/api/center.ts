@@ -194,7 +194,17 @@ centerApp.get("/staff/invite", authMiddleware(["center"]), async (c) => {
     select: { email: true, token: true, expiresAt: true },
   });
 
-  return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });
+  // Transform Date objects to strings for JSON serialization
+  const transformedInvites = invites.map((invite) => ({
+    email: invite.email,
+    token: invite.token,
+    expiresAt: invite.expiresAt?.toISOString() || null,
+  }));
+
+  return c.json<TInviteStaffResponse>({
+    ok: true,
+    data: { invites: transformedInvites },
+  });
 });
 
 // POST /api/center/staff/invite - Invite staff by email
@@ -208,17 +218,23 @@ centerApp.post(
   async (c) => {
     const db = getDB();
     const { centerId, emails } = c.req.valid("json");
-    const invites: Array<{ email: string; token: string }> = [];
+    const invites: Array<{
+      email: string;
+      token: string;
+      expiresAt: string | null;
+    }> = [];
     for (const email of emails!) {
       // Generate a unique token
       const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
       // Store invite in DB (pseudo-code, adjust to your schema)
       await db.centerStaffInvite.create({
         data: {
           centerId: centerId!,
           email,
           token,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+          expiresAt,
         },
       });
       // Send invite email
@@ -232,7 +248,11 @@ centerApp.post(
         html: `<p>You have been invited to join a center. <a href="${inviteUrl}">Click here to set your password and join.</a></p>`,
       });
 
-      invites.push({ email: email!, token: token! });
+      invites.push({
+        email: email!,
+        token: token!,
+        expiresAt: expiresAt.toISOString(),
+      });
     }
     return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });
   }

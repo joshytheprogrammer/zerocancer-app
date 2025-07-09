@@ -185,17 +185,17 @@ export async function waitlistMatcherAlg() {
           },
         }),
         // Notify donor of match
-        // createNotificationForUsers({
-        //   type: "PATIENT_MATCHED",
-        //   title: "A patient has been matched to your campaign!",
-        //   message: `A patient has been matched for a screening: ${screening.name}.`,
-        //   userIds: [matchedCampaign.donorId],
-        //   data: {
-        //     screeningTypeId: screening.id,
-        //     patientId: waitlist.patientId,
-        //     allocation: true,
-        //   },
-        // }),
+        createNotificationForUsers({
+          type: "PATIENT_MATCHED",
+          title: "A patient has been matched to your campaign!",
+          message: `A patient has been matched for a screening: ${screening.name}.`,
+          userIds: [matchedCampaign.donorId],
+          data: {
+            screeningTypeId: screening.id,
+            patientId: waitlist.patientId,
+            allocation: true,
+          },
+        }),
       ]);
     }
   }
