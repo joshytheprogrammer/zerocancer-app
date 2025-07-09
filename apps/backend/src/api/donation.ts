@@ -116,43 +116,6 @@ export async function initializePaystackPayment(
   return result.data;
 }
 
-/**
- * 
- * export type TDonationCampaign = {
-  id: string;
-  donorId: string;
-  title: string;
-  description: string;
-  fundingAmount: number;
-  usedAmount: number;
-  purpose?: string;
-  targetGender?: "MALE" | "FEMALE" | "ALL";
-  targetAgeMin?: number;
-  targetAgeMax?: number;
-  targetStates?: string[];
-  targetLgas?: string[];
-  status: "ACTIVE" | "COMPLETED" | "DELETED";
-  expiryDate: string;
-  createdAt: string;
-  updatedAt: string;
-
-  // Relations
-  donor: {
-    id: string;
-    fullName: string;
-    email: string;
-    organizationName?: string;
-  };
-  screeningTypes: Array<{
-    id: string;
-    name: string;
-  }>;
-  patientsHelped: number;
-  allocationsCount: number;
-}; 
- * 
- */
-
 // Helper function to format campaign for API response
 function formatCampaignForResponse(campaign: any): TDonationCampaign {
   let targetGender: "MALE" | "FEMALE" | "ALL" | undefined;
@@ -367,8 +330,6 @@ donationApp.post(
   "/paystack-webhook",
   // Verify webhook signature
   async (c) => {
-    const db = getDB();
-
     try {
       console.log("Received Paystack webhook request");
 
@@ -399,7 +360,23 @@ donationApp.post(
         typeof paystackWebhookSchema
       >;
 
+      c.set("jwtPayload", payload);
+
       console.log("Received Valid Paystack webhook!!!:", payload);
+    } catch (error) {
+      console.error("Webhook verification error:", error);
+      return c.json({ error: "Webhook verification failed" }, 401);
+    }
+  },
+  async (c) => {
+    try {
+      console.log("Processing Paystack webhook...");
+
+      // Get the database instance
+      const db = getDB();
+      const payload = c.get("jwtPayload") as unknown as z.infer<
+        typeof paystackWebhookSchema
+      >;
 
       if (payload.event === "charge.success") {
         const { data } = payload;
@@ -423,7 +400,7 @@ donationApp.post(
           console.log("Adding to general donor pool:", amount / 100);
           await addToGeneralDonorPool(amount / 100);
         } else if (paymentType === "campaign_creation" && metadata) {
-          console.log("Creating new campaign:", metadata);
+          console.log("Funding new campaign:", metadata);
 
           // Update campaign with initial funding
           const campaignId = metadata.campaign_id;
@@ -434,6 +411,8 @@ donationApp.post(
               where: { id: campaignId },
               data: {
                 totalAmount: { increment: amount },
+                availableAmount: { increment: amount },
+                status: "ACTIVE",
               },
             });
           }
@@ -450,7 +429,9 @@ donationApp.post(
             await db.donationCampaign.update({
               where: { id: campaignId },
               data: {
+                totalAmount: { increment: amount / 100 },
                 availableAmount: { increment: amount / 100 },
+                status: "ACTIVE",
               },
             });
           }
@@ -870,7 +851,7 @@ donationApp.post(
         where: {
           id: campaignId,
           donorId: donorId,
-          status: "ACTIVE", // Only allow funding active campaigns
+          status: { in: ["ACTIVE", "COMPLETED"] }, // Only allow funding active or completed campaigns
         },
       });
 
