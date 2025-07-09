@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -32,11 +34,11 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import {
+  Activity,
   AlertTriangle,
   ArrowLeft,
   CheckCircle,
   Clock,
-  Activity,
   DollarSign,
   Edit,
   MoreHorizontal,
@@ -49,11 +51,13 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/donor/campaigns/$campaignId')({
   component: CampaignDetails,
+  // preload:
+  // loader: ({ context, params: { campaignId } }) => {
+  //   context.queryClient.prefetchQuery(useDonorCampaign(campaignId))
+  // },
 })
 
 function CampaignDetails() {
@@ -173,8 +177,6 @@ function CampaignDetails() {
     )
   }
 
-
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -232,7 +234,7 @@ function CampaignDetails() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₦{campaign.initialAmount.toLocaleString()}
+              ₦{campaign.fundingAmount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               Initial donation amount
@@ -250,7 +252,7 @@ function CampaignDetails() {
               ₦{campaign.usedAmount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              {getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}%
+              {getUsagePercentage(campaign.usedAmount, campaign.fundingAmount)}%
               of total
             </p>
           </CardContent>
@@ -263,7 +265,7 @@ function CampaignDetails() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₦{campaign.availableAmount.toLocaleString()}
+              ₦{campaign.usedAmount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               Ready for allocation
@@ -279,7 +281,9 @@ function CampaignDetails() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{campaign.patientsHelped}</div>
+            <div className="text-2xl font-bold">
+              {campaign.patientAllocations.patientsHelped}
+            </div>
             <p className="text-xs text-muted-foreground">Lives impacted</p>
           </CardContent>
         </Card>
@@ -306,7 +310,7 @@ function CampaignDetails() {
                   <span>
                     {getUsagePercentage(
                       campaign.usedAmount,
-                      campaign.initialAmount,
+                      campaign.fundingAmount,
                     )}
                     %
                   </span>
@@ -314,14 +318,12 @@ function CampaignDetails() {
                 <Progress
                   value={getUsagePercentage(
                     campaign.usedAmount,
-                    campaign.initialAmount,
+                    campaign.fundingAmount,
                   )}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>₦{campaign.usedAmount.toLocaleString()} used</span>
-                  <span>
-                    ₦{campaign.availableAmount.toLocaleString()} remaining
-                  </span>
+                  <span>₦{campaign.usedAmount.toLocaleString()} remaining</span>
                 </div>
               </div>
 
@@ -336,7 +338,7 @@ function CampaignDetails() {
                     </span>
                   </div>
                   <p className="text-2xl font-bold">
-                    {campaign.patientsHelped}
+                    {campaign.patientAllocations.patientsHelped}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Patients screened
@@ -351,7 +353,7 @@ function CampaignDetails() {
                     </span>
                   </div>
                   <p className="text-2xl font-bold">
-                    {Math.floor(campaign.availableAmount / 2500)}
+                    {Math.floor(campaign.usedAmount / 2500)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Estimated capacity

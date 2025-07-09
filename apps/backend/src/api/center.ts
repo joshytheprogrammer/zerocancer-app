@@ -68,7 +68,11 @@ centerApp.get(
         orderBy: { createdAt: "desc" },
         include: {
           services: {
-            select: { id: true, name: true },
+            select: {
+              id: true,
+              name: true,
+              serviceCenters: { select: { amount: true } },
+            },
           },
           staff: {
             select: { id: true, email: true },
@@ -90,7 +94,11 @@ centerApp.get(
       bankName: center.bankName,
       status: center.status.toString(),
       createdAt: center.createdAt.toISOString(),
-      services: center.services,
+      services: center.services.map((service) => ({
+        id: service.id,
+        name: service.name,
+        price: service.serviceCenters?.[0]?.amount || 0, // Assuming amount is the price
+      })),
       staff: center.staff,
     }));
 
@@ -122,7 +130,11 @@ centerApp.get(
       where: { id: id! },
       include: {
         services: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            serviceCenters: { select: { amount: true } },
+          },
         },
         staff: {
           select: { id: true, email: true },
@@ -149,7 +161,11 @@ centerApp.get(
       bankName: center.bankName,
       status: center.status.toString(),
       createdAt: center.createdAt.toISOString(),
-      services: center.services,
+      services: center.services.map((service) => ({
+        id: service.id,
+        name: service.name,
+        price: service.serviceCenters?.[0]?.amount || 0, // Assuming amount is the price
+      })),
       staff: center.staff,
     };
 

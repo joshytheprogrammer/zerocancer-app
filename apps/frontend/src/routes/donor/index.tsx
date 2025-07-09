@@ -49,13 +49,13 @@ function DonorDashboard() {
   const completedCampaigns = campaigns.filter((c) => c.status === 'COMPLETED')
 
   // Calculate stats from real data
-  const totalDonated = campaigns.reduce((sum, c) => sum + c.initialAmount, 0)
+  const totalDonated = campaigns.reduce((sum, c) => sum + c.fundingAmount, 0) // wrong stats
   const totalPatientsHelped = campaigns.reduce(
-    (sum, c) => sum + c.patientsHelped,
+    (sum, c) => sum + c.patientAllocations.patientsHelped,
     0,
   )
   const totalAvailable = campaigns.reduce(
-    (sum, c) => sum + c.availableAmount,
+    (sum, c) => sum + c.fundingAmount, // wrong stats
     0,
   )
   const totalUsed = campaigns.reduce((sum, c) => sum + c.usedAmount, 0)
@@ -345,10 +345,10 @@ function DonorDashboard() {
                           <TableCell>
                             <div>
                               <div className="font-medium">
-                                ₦{campaign.initialAmount.toLocaleString()}
+                                ₦{campaign.fundingAmount.toLocaleString()}
                               </div>
                               <div className="text-sm text-gray-500">
-                                ₦{campaign.availableAmount.toLocaleString()}{' '}
+                                ₦{campaign.usedAmount.toLocaleString()}{' '}
                                 available
                               </div>
                             </div>
@@ -370,7 +370,7 @@ function DonorDashboard() {
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-gray-400" />
                               <span className="font-medium">
-                                {campaign.patientsHelped}
+                                {campaign.patientAllocations.patientsHelped}
                               </span>
                             </div>
                           </TableCell>
@@ -527,13 +527,13 @@ function DonorDashboard() {
                       <div>
                         <span className="text-gray-500">Amount:</span>
                         <div className="font-semibold">
-                          ₦{activeCampaign.initialAmount.toLocaleString()}
+                          ₦{activeCampaign.fundingAmount.toLocaleString()}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Patients:</span>
                         <div className="font-semibold">
-                          {activeCampaign.patientsHelped}
+                          {activeCampaign.patientAllocations.patientsHelped}
                         </div>
                       </div>
                     </div>
@@ -555,7 +555,7 @@ function DonorDashboard() {
                   <div className="pt-2">
                     <span className="text-sm text-gray-500">Available:</span>
                     <div className="font-semibold text-green-600">
-                      ₦{activeCampaign.availableAmount.toLocaleString()}
+                      ₦{activeCampaign.usedAmount.toLocaleString()}
                     </div>
                   </div>
                 </div>

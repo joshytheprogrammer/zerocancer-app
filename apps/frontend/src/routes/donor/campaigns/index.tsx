@@ -1,11 +1,34 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useDonorCampaigns, useDeleteCampaign, useUpdateCampaign } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -15,42 +38,40 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  useDeleteCampaign,
+  useDonorCampaigns,
+  useUpdateCampaign,
+} from '@/services/providers/donor.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Eye, 
-  Trash2, 
-  DollarSign,
-  Users,
+  AlertTriangle,
   Calendar,
+  DollarSign,
+  Eye,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
   TrendingUp,
-  AlertTriangle
+  Users,
 } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/donor/campaigns/')({
   component: DonorCampaigns,
+  loader: ({ context }) => {
+    // update to properly match later
+    context.queryClient.prefetchQuery(
+      useDonorCampaigns({
+        page: 1,
+        pageSize: 10,
+        status: undefined,
+        search: undefined,
+      }),
+    )
+  },
 })
 
 // Real API integration will be added here - keeping mock for now during development
@@ -58,28 +79,32 @@ export const Route = createFileRoute('/donor/campaigns/')({
 function DonorCampaigns() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ACTIVE' | 'COMPLETED' | 'DELETED' | undefined>(undefined)
+  const [statusFilter, setStatusFilter] = useState<
+    'ACTIVE' | 'COMPLETED' | 'DELETED' | undefined
+  >(undefined)
   const [page, setPage] = useState(1)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null)
 
   // Fetch campaigns with filters
-  const { 
-    data: campaignsData, 
-    isLoading, 
-    error 
-  } = useQuery(useDonorCampaigns({
-    page,
-    pageSize: 10,
-    status: statusFilter,
-    search: searchTerm || undefined
-  }))
+  const {
+    data: campaignsData,
+    isLoading,
+    error,
+  } = useQuery(
+    useDonorCampaigns({
+      page,
+      pageSize: 10,
+      status: statusFilter,
+      search: searchTerm || undefined,
+    }),
+  )
 
   // Delete campaign mutation
   const deleteCampaignMutation = useDeleteCampaign()
 
   const campaigns = campaignsData?.data?.campaigns || []
-  
+
   const handleDeleteCampaign = (campaignId: string) => {
     setCampaignToDelete(campaignId)
     setDeleteDialogOpen(true)
@@ -91,7 +116,7 @@ function DonorCampaigns() {
         await deleteCampaignMutation.mutateAsync({
           campaignId: campaignToDelete,
           action: 'recycle_to_general', // Default action
-          reason: 'Deleted by donor'
+          reason: 'Deleted by donor',
         })
         toast.success('Campaign deleted successfully')
         setDeleteDialogOpen(false)
@@ -126,7 +151,8 @@ function DonorCampaigns() {
         <div>
           <h1 className="text-2xl font-bold">My Campaigns</h1>
           <p className="text-muted-foreground">
-            Create and manage your donation campaigns to help patients access screening services.
+            Create and manage your donation campaigns to help patients access
+            screening services.
           </p>
         </div>
         <Button asChild>
@@ -141,15 +167,17 @@ function DonorCampaigns() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Campaigns
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : (campaignsData?.data?.total || 0)}
+              {isLoading ? '...' : campaignsData?.data?.total || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {campaigns.filter(c => c.status === 'ACTIVE').length} active
+              {campaigns.filter((c) => c.status === 'ACTIVE').length} active
             </p>
           </CardContent>
         </Card>
@@ -161,22 +189,35 @@ function DonorCampaigns() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : `₦${campaigns.reduce((sum, c) => sum + c.initialAmount, 0).toLocaleString()}`}
+              {isLoading
+                ? '...'
+                : `₦${campaigns.reduce((sum, c) => sum + c.fundingAmount, 0).toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">
-              ₦{campaigns.reduce((sum, c) => sum + c.usedAmount, 0).toLocaleString()} used
+              ₦
+              {campaigns
+                .reduce((sum, c) => sum + c.usedAmount, 0)
+                .toLocaleString()}{' '}
+              used
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Patients Helped</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Patients Helped
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : campaigns.reduce((sum, c) => sum + c.patientsHelped, 0)}
+              {isLoading
+                ? '...'
+                : campaigns.reduce(
+                    (sum, c) => sum + c.patientAllocations.patientsHelped,
+                    0,
+                  )}
             </div>
             <p className="text-xs text-muted-foreground">
               Across all campaigns
@@ -186,12 +227,16 @@ function DonorCampaigns() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Funds</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Available Funds
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : `₦${campaigns.reduce((sum, c) => sum + c.availableAmount, 0).toLocaleString()}`}
+              {isLoading
+                ? '...'
+                : `₦${campaigns.reduce((sum, c) => sum + c.usedAmount, 0).toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">
               Ready for allocation
@@ -216,10 +261,12 @@ function DonorCampaigns() {
                 className="pl-10"
               />
             </div>
-            
-            <Select 
-              value={statusFilter || 'ALL'} 
-              onValueChange={(value) => setStatusFilter(value === 'ALL' ? undefined : value as any)}
+
+            <Select
+              value={statusFilter || 'ALL'}
+              onValueChange={(value) =>
+                setStatusFilter(value === 'ALL' ? undefined : (value as any))
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Statuses" />
@@ -231,9 +278,9 @@ function DonorCampaigns() {
                 <SelectItem value="DELETED">Deleted</SelectItem>
               </SelectContent>
             </Select>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               onClick={() => {
                 setSearchTerm('')
                 setStatusFilter(undefined)
@@ -267,13 +314,16 @@ function DonorCampaigns() {
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-red-600">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-red-600"
+                    >
                       Error loading campaigns. Please try again.
                     </TableCell>
                   </TableRow>
                 ) : campaigns.length > 0 ? (
                   campaigns.map((campaign) => (
-                                      <TableRow key={campaign.id}>
+                    <TableRow key={campaign.id}>
                       <TableCell>
                         <div>
                           <p className="font-medium">{campaign.title}</p>
@@ -283,13 +333,15 @@ function DonorCampaigns() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {campaign.screeningTypes?.length > 0 ? (
-                          campaign.screeningTypes.map(st => st.name).join(', ')
-                        ) : (
-                          'All Types'
-                        )}
+                        {campaign.screeningTypes?.length > 0
+                          ? campaign.screeningTypes
+                              .map((st) => st.name)
+                              .join(', ')
+                          : 'All Types'}
                       </TableCell>
-                      <TableCell>₦{campaign.initialAmount.toLocaleString()}</TableCell>
+                      <TableCell>
+                        ₦{campaign.fundingAmount.toLocaleString()}
+                      </TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2">
@@ -297,12 +349,16 @@ function DonorCampaigns() {
                               <div
                                 className="bg-green-500 h-2 rounded-full"
                                 style={{
-                                  width: `${getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}%`
+                                  width: `${getUsagePercentage(campaign.usedAmount, campaign.fundingAmount)}%`,
                                 }}
                               />
                             </div>
                             <span className="text-xs text-muted-foreground">
-                              {getUsagePercentage(campaign.usedAmount, campaign.initialAmount)}%
+                              {getUsagePercentage(
+                                campaign.usedAmount,
+                                campaign.fundingAmount,
+                              )}
+                              %
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground">
@@ -312,9 +368,11 @@ function DonorCampaigns() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <p>{campaign.patientsHelped} helped</p>
+                          <p>
+                            {campaign.patientAllocations.patientsHelped} helped
+                          </p>
                           <p className="text-muted-foreground">
-                            ₦{campaign.availableAmount.toLocaleString()} available
+                            ₦{campaign.usedAmount.toLocaleString()} available
                           </p>
                         </div>
                       </TableCell>
@@ -328,14 +386,19 @@ function DonorCampaigns() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link to="/donor/campaigns/$campaignId" params={{ campaignId: campaign.id }}>
+                              <Link
+                                to="/donor/campaigns/$campaignId"
+                                params={{ campaignId: campaign.id }}
+                              >
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </Link>
                             </DropdownMenuItem>
                             {campaign.status === 'ACTIVE' && (
                               <DropdownMenuItem
-                                onClick={() => handleDeleteCampaign(campaign.id)}
+                                onClick={() =>
+                                  handleDeleteCampaign(campaign.id)
+                                }
                                 className="text-red-600"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -350,7 +413,9 @@ function DonorCampaigns() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
-                      <p className="text-muted-foreground">No campaigns found.</p>
+                      <p className="text-muted-foreground">
+                        No campaigns found.
+                      </p>
                       <Button variant="outline" className="mt-2" asChild>
                         <Link to="/donor/campaigns/create">
                           Create Your First Campaign
@@ -374,12 +439,16 @@ function DonorCampaigns() {
               Delete Campaign
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this campaign? This action cannot be undone.
-              Any unused funds will be moved to the general donation pool.
+              Are you sure you want to delete this campaign? This action cannot
+              be undone. Any unused funds will be moved to the general donation
+              pool.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
@@ -390,4 +459,4 @@ function DonorCampaigns() {
       </Dialog>
     </div>
   )
-} 
+}

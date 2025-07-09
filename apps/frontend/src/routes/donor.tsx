@@ -53,6 +53,7 @@ function DonorLayout() {
                 to="/donor/campaigns"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
+                preload="render"
               >
                 <Briefcase className="h-4 w-4" />
                 My Campaigns
