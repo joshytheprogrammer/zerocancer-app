@@ -1,14 +1,21 @@
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   useMarkNotificationRead,
   useNotifications,
 } from '@/services/providers/notification.provider'
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { Bell, Calendar, FileText } from 'lucide-react'
-import bell from '@/assets/images/notification2.png'
+import type { TNotificationRecipient } from '@zerocancer/shared/types'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+// Asset imports
+import bellIcon from '@/assets/images/notification.png'
+import resultIcon from '@/assets/images/screening.png'
+import donationIcon from '@/assets/images/donor.png'
+import reminderIcon from '@/assets/images/calendar.png'
+import waitlistIcon from '@/assets/images/patients.png' // using patients for waitlist
 
 export const Route = createFileRoute('/patient/notifications')({
   component: PatientNotifications,
@@ -17,12 +24,61 @@ export const Route = createFileRoute('/patient/notifications')({
   },
 })
 
-const notificationIcons = {
-  appointment: <Calendar className="h-5 w-5" />,
-  result: <FileText className="h-5 w-5" />,
-  general: <Bell className="h-5 w-5" />,
-  // Default fallback
-  default: <Bell className="h-5 w-5" />,
+const notificationIcons: Record<string, string> = {
+  APPOINTMENT_REMINDER: reminderIcon,
+  APPOINTMENT_CONFIRMATION: reminderIcon,
+  APPOINTMENT_CANCELLED: reminderIcon,
+  RESULTS_AVAILABLE: resultIcon,
+  DONATION_ALLOCATED: donationIcon,
+  WAITLIST_UPDATE: waitlistIcon,
+  default: bellIcon,
+}
+
+// Helper to group notifications by date
+const groupNotificationsByDate = (notifications: TNotificationRecipient[]) => {
+  const groups: { [key: string]: TNotificationRecipient[] } = {}
+
+  notifications.forEach((n) => {
+    const date = new Date(n.notification.createdAt)
+    const today = new Date()
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    let key: string
+
+    if (date.toDateString() === today.toDateString()) {
+      key = 'Today'
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      key = 'Yesterday'
+    } else {
+      key = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    }
+
+    if (!groups[key]) {
+      groups[key] = []
+    }
+    groups[key].push(n)
+  })
+
+  // Sort groups: Today, Yesterday, then by date descending
+  const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
+    if (a === 'Today') return -1
+    if (b === 'Today') return 1
+    if (a === 'Yesterday') return -1
+    if (b === 'Yesterday') return 1
+    return new Date(b).getTime() - new Date(a).getTime()
+  })
+
+  const sortedGroups: { [key: string]: TNotificationRecipient[] } = {}
+  for (const key of sortedGroupKeys) {
+    sortedGroups[key] = groups[key]
+  }
+
+  return sortedGroups
 }
 
 function PatientNotifications() {
@@ -31,21 +87,54 @@ function PatientNotifications() {
     isLoading,
     error,
   } = useQuery(useNotifications())
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const markAsReadMutation = useMarkNotificationRead()
 
   const handleMarkAsRead = (notificationRecipientId: string) => {
     markAsReadMutation.mutate(notificationRecipientId, {
       onSuccess: () => {
-        toast.success('Notification marked as read')
+        queryClient.invalidateQueries({ queryKey: useNotifications().queryKey })
       },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.error || 'Failed to mark as read')
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.error || 'Failed to mark as read')
       },
     })
   }
 
-  const notifications = notificationsData?.data || []
+  const handleNotificationClick = (
+    notificationRecipient: TNotificationRecipient,
+  ) => {
+    const { notification, read, id } = notificationRecipient
+    if (!read) {
+      handleMarkAsRead(id)
+    }
+
+    const data = notification.data as {
+      appointmentId?: string
+      waitlistId?: string
+    }
+
+    // Specific navigation logic
+    if (notification.type === 'RESULTS_AVAILABLE') {
+      // Assuming results are linked to appointments for now
+      if (data?.appointmentId) {
+        navigate({ to: '/patient/appointments' })
+      }
+      return
+    }
+
+    if (notification.type === 'DONATION_ALLOCATED') {
+      navigate({ to: '/patient/book' })
+      return
+    }
+
+    if (data?.appointmentId) {
+      navigate({ to: '/patient/appointments' })
+      return
+    }
+  }
 
   if (isLoading) {
     return (
@@ -53,19 +142,18 @@ function PatientNotifications() {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">Notifications</h1>
           <p className="text-muted-foreground">
-            Here you can view your notifications.
+            Manage your screening bookings easily.
           </p>
         </div>
         <Card>
           <CardContent className="p-6">
             <div className="animate-pulse space-y-4">
-              {[...Array(3)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-start gap-4">
-                  <div className="h-5 w-5 bg-gray-200 rounded"></div>
+                  <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                     <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
                   </div>
                 </div>
               ))}
@@ -82,7 +170,7 @@ function PatientNotifications() {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">Notifications</h1>
           <p className="text-muted-foreground">
-            Here you can view your notifications.
+            Manage your screening bookings easily.
           </p>
         </div>
         <Card>
@@ -103,76 +191,127 @@ function PatientNotifications() {
     )
   }
 
+  const notifications = notificationsData?.data || []
+  const groupedNotifications = groupNotificationsByDate(notifications)
+  const notificationGroups = Object.entries(groupedNotifications)
+
+  const EmptyState = ({ title, message }: { title: string; message: string }) => (
+    <div className="flex flex-col items-center justify-center text-center py-20">
+      <img
+        src={bellIcon}
+        alt="No notifications"
+        className="w-24 h-24 mb-6"
+      />
+      <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+      <p className="text-muted-foreground mt-1">{message}</p>
+    </div>
+  )
+
+  const notificationsByType = (type: string) =>
+    notifications.filter((n) => n.notification.type === type)
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Notifications</h1>
+    <div className="space-y-4 md:space-y-6 min-h-[calc(100vh-100px)]">
+      <div className="space-y-1">
+        <h1 className="text-2xl lg:text-3xl font-bold">Notifications</h1>
         <p className="text-muted-foreground">
-          Here you can view your notifications.
+          Manage your screening bookings easily.
         </p>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            {notifications.length > 0 ? (
-              notifications.map((notificationRecipient) => {
-                const notification = notificationRecipient.notification
-                const isRead = notificationRecipient.read
+      <Tabs defaultValue="all">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-lg">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="results">Results</TabsTrigger>
+          <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="referrals">Referrals</TabsTrigger>
+        </TabsList>
 
-                return (
-                  <div
-                    key={notificationRecipient.id}
-                    className={`flex items-start gap-4 p-4 ${
-                      !isRead ? 'bg-blue-50/50' : ''
-                    }`}
-                  >
-                    <div className="mt-1 text-muted-foreground">
-                      {notificationIcons[
-                        notification.type as keyof typeof notificationIcons
-                      ] || notificationIcons.default}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold">{notification.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </p>
-                      {notification.data && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {/* Display additional notification data if needed */}
-                          {JSON.stringify(notification.data)}
+        <TabsContent value="all" className="mt-4">
+          {notifications.length > 0 ? (
+            <div className="space-y-8">
+              {notificationGroups.map(
+                ([groupTitle, groupNotifications]) => (
+                  <div key={groupTitle}>
+                    <h3 className="text-base font-semibold mb-4 text-gray-600">
+                      {groupTitle}
+                    </h3>
+                    <div className="space-y-2">
+                      {groupNotifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100/50 cursor-pointer"
+                          onClick={() => handleNotificationClick(n)}
+                        >
+                          <div
+                            className={`p-2 rounded-full ${!n.read ? 'bg-blue-100' : 'bg-gray-100'}`}
+                          >
+                            <img
+                              src={
+                                notificationIcons[n.notification.type] ||
+                                notificationIcons.default
+                              }
+                              alt=""
+                              className="w-7 h-7"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800">
+                              {n.notification.title}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {n.notification.message}
+                            </p>
+                          </div>
+                          <div className="text-right space-y-1.5 self-start">
+                            <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(
+                                n.notification.createdAt,
+                              ).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                            {!n.read && (
+                              <div className="flex justify-end">
+                                <Badge className="bg-red-500 text-white hover:bg-red-600">
+                                  New
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                    {!isRead && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          handleMarkAsRead(notificationRecipient.id)
-                        }
-                        disabled={markAsReadMutation.isPending}
-                      >
-                        {markAsReadMutation.isPending
-                          ? 'Marking...'
-                          : 'Mark as read'}
-                      </Button>
-                    )}
                   </div>
-                )
-              })
-            ) : (
-              <div className="p-6 text-center text-muted-foreground">
-                <img src={bell} alt="No notifications" className="mx-auto size-24 mb-4" />
-                <p className='font-semibold text-lg'>You have no notifications.</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                ),
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              title="No Notification"
+              message="Your new notifications will appear here"
+            />
+          )}
+        </TabsContent>
+        <TabsContent value="results" className="mt-4">
+           {notificationsByType('RESULTS_AVAILABLE').length > 0 ? (
+            <p>Results notifications will be here</p>
+           ) : (
+            <EmptyState title='No Results' message='Your results notifications will appear here' />
+           )}
+        </TabsContent>
+         <TabsContent value="appointments" className="mt-4">
+           {notificationsByType('APPOINTMENT_REMINDER').length > 0 ? (
+            <p>Appointments notifications will be here</p>
+           ) : (
+            <EmptyState title='No Appointment Updates' message='Your appointment notifications will appear here' />
+           )}
+        </TabsContent>
+         <TabsContent value="referrals" className="mt-4">
+            <EmptyState title='No Referrals' message='Your referral notifications will appear here' />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
