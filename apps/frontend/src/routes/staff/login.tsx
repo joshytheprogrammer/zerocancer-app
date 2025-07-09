@@ -27,7 +27,6 @@ import {
   centerStaffForgotPasswordSchema,
   centerStaffLoginSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
-import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import type { z } from 'zod'
 
