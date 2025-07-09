@@ -624,8 +624,8 @@ export type TDonationCampaign = {
   donorId: string;
   title: string;
   description: string;
-  fundingAmount: number;
-  usedAmount: number;
+  fundingAmount: number; // What is currently in account
+  usedAmount: number; // What is available for allocation
   purpose?: string;
   targetGender?: "MALE" | "FEMALE" | "ALL";
   targetAgeMin?: number;

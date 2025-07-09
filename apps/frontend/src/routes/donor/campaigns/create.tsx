@@ -45,6 +45,9 @@ import { z } from 'zod'
 
 export const Route = createFileRoute('/donor/campaigns/create')({
   component: CreateCampaign,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(useScreeningTypes({}))
+  },
 })
 
 type CreateCampaignForm = z.infer<typeof createCampaignSchema>

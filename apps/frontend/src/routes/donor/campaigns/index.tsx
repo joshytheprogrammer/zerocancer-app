@@ -61,6 +61,17 @@ import { toast } from 'sonner'
 
 export const Route = createFileRoute('/donor/campaigns/')({
   component: DonorCampaigns,
+  loader: ({ context }) => {
+    // update to properly match later
+    context.queryClient.prefetchQuery(
+      useDonorCampaigns({
+        page: 1,
+        pageSize: 10,
+        status: undefined,
+        search: undefined,
+      }),
+    )
+  },
 })
 
 // Real API integration will be added here - keeping mock for now during development

@@ -54,6 +54,10 @@ import { toast } from 'sonner'
 
 export const Route = createFileRoute('/donor/campaigns/$campaignId')({
   component: CampaignDetails,
+  // preload:
+  // loader: ({ context, params: { campaignId } }) => {
+  //   context.queryClient.prefetchQuery(useDonorCampaign(campaignId))
+  // },
 })
 
 function CampaignDetails() {

@@ -199,7 +199,7 @@ model Waitlist {
 model DonationCampaign {
   id              String           @id @default(uuid())
   donorId         String
-  totalAmount   Float // What is currently available for allocation
+  totalAmount   Float // What is currently in bank
   availableAmount Float // Amount available for allocation
   // reservedAmount  Float
   title           String
