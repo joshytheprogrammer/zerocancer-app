@@ -96,13 +96,22 @@ function PatientLayout() {
           <Link to="/patient" className="flex items-center gap-2 font-semibold">
             <img src={logo} alt="ZeroCancer" className="h-12" />
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20 hover:text-white"
-          >
-            <Menu className="size-8" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => logout()}
+              className="cursor-pointer rounded-full p-2 text-white transition-all hover:bg-white/20"
+              aria-label="Logout"
+            >
+              <img src={logoutIcon} alt="logout" className="h-6 w-6" />
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 hover:text-white"
+            >
+              <Menu className="size-8" />
+            </Button>
+          </div>
         </header>
 
         <main className="flex-grow bg-neutral-50 p-4 pb-24 md:p-6 md:pb-6">
