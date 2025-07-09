@@ -136,7 +136,7 @@ function DonorCampaigns() {
       case 'DELETED':
         return <Badge className="bg-red-100 text-red-800">Deleted</Badge>
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}a</Badge>
     }
   }
 

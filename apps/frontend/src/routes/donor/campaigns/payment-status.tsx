@@ -1,19 +1,19 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useVerifyPayment } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useVerifyPayment } from '@/services/providers/donor.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
   AlertTriangle,
-  Loader2,
   ArrowRight,
+  CheckCircle,
+  Clock,
   DollarSign,
+  Gift,
+  Loader2,
   Users,
-  Gift
+  XCircle,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -33,34 +33,38 @@ function PaymentStatusPage() {
   const navigate = useNavigate()
   const { ref, type, campaignId } = Route.useSearch()
   const [redirectTimer, setRedirectTimer] = useState(5)
-  
-  const { 
-    data: paymentData, 
-    isLoading, 
+
+  const {
+    data: paymentData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery(useVerifyPayment(ref))
-  
+
   const payment = paymentData?.data
 
   // Auto-redirect timer for successful payments
-  useEffect(() => {
-    if (payment?.status === 'success' && redirectTimer > 0) {
-      const timer = setTimeout(() => {
-        setRedirectTimer(prev => prev - 1)
-      }, 1000)
-      
-      if (redirectTimer === 1) {
-        if (type === 'create' && campaignId) {
-          navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })
-        } else {
-          navigate({ to: '/donor/campaigns' })
-        }
-      }
-      
-      return () => clearTimeout(timer)
-    }
-  }, [payment?.status, redirectTimer, navigate, type, campaignId])
+  // Temporal removal of auto-redirect logic
+  // useEffect(() => {
+  //   if (payment?.status === 'success' && redirectTimer > 0) {
+  //     const timer = setTimeout(() => {
+  //       setRedirectTimer((prev) => prev - 1)
+  //     }, 1000)
+
+  //     if (redirectTimer === 1) {
+  //       if (type === 'create' && campaignId) {
+  //         navigate({
+  //           to: '/donor/campaigns/$campaignId',
+  //           params: { campaignId },
+  //         })
+  //       } else {
+  //         navigate({ to: '/donor/campaigns' })
+  //       }
+  //     }
+
+  //     return () => clearTimeout(timer)
+  //   }
+  // }, [payment?.status, redirectTimer, navigate, type, campaignId])
 
   // Handle missing reference
   if (!ref) {
@@ -75,7 +79,8 @@ function PaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              No payment reference was provided. Please check your payment link or try again.
+              No payment reference was provided. Please check your payment link
+              or try again.
             </p>
             <Button onClick={() => navigate({ to: '/donor/campaigns' })}>
               Return to Campaigns
@@ -95,11 +100,10 @@ function PaymentStatusPage() {
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
             <h3 className="text-lg font-semibold mb-2">Verifying Payment</h3>
             <p className="text-gray-600 mb-4">
-              Please wait while we confirm your payment with our payment provider...
+              Please wait while we confirm your payment with our payment
+              provider...
             </p>
-            <div className="text-sm text-gray-500">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500">Reference: {ref}</div>
           </CardContent>
         </Card>
       </div>
@@ -119,7 +123,8 @@ function PaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't verify your payment at this time. This might be a temporary issue.
+              We couldn't verify your payment at this time. This might be a
+              temporary issue.
             </p>
             <div className="flex gap-3">
               <Button onClick={() => refetch()} variant="outline">
@@ -147,11 +152,10 @@ function PaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't find a payment with this reference. Please check your payment confirmation email or contact support.
+              We couldn't find a payment with this reference. Please check your
+              payment confirmation email or contact support.
             </p>
-            <div className="text-sm text-gray-500 mb-4">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500 mb-4">Reference: {ref}</div>
             <Button onClick={() => navigate({ to: '/donor/campaigns' })}>
               Return to Campaigns
             </Button>
@@ -165,8 +169,8 @@ function PaymentStatusPage() {
   if (payment.status === 'success') {
     const isCreation = payment.context?.type === 'campaign_creation'
     const isFunding = payment.context?.type === 'campaign_funding'
-    const campaign = (isCreation || isFunding) ? (payment.context as any)?.campaign : null
-    
+    const campaign = isCreation || isFunding ? payment.context?.campaign : null
+
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-green-200 bg-green-50">
@@ -182,9 +186,11 @@ function PaymentStatusPage() {
                 ₦{payment.amount.toLocaleString()}
               </div>
               <p className="text-gray-600">
-                {isCreation ? 'Campaign created and funded successfully' : 
-                 isFunding ? 'Campaign funding completed' : 
-                 'Payment completed successfully'}
+                {isCreation
+                  ? 'Campaign created and funded successfully'
+                  : isFunding
+                    ? 'Campaign funding completed'
+                    : 'Payment completed successfully'}
               </p>
             </div>
 
@@ -200,7 +206,11 @@ function PaymentStatusPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Date:</span>
-                <span>{new Date(payment.paidAt || payment.transactionDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(
+                    payment.paidAt || payment.transactionDate,
+                  ).toLocaleDateString()}
+                </span>
               </div>
               {campaign && (
                 <div className="flex justify-between text-sm">
@@ -220,15 +230,22 @@ function PaymentStatusPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Available Amount:</span>
-                    <div className="font-semibold">₦{campaign.availableAmount.toLocaleString()}</div>
+                    <div className="font-semibold">
+                      ₦{campaign.fundingAmount.toLocaleString()}
+                    </div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Patients Helped:</span>
-                    <div className="font-semibold">{campaign.patientsHelped}</div>
+                    <span className="text-gray-600">
+                      Current Patients Helped:
+                    </span>
+                    <div className="font-semibold">
+                      {campaign.patientAllocations.patientsHelped}
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-blue-700 mt-2">
-                  Your campaign is now active and available for patient matching!
+                  Your campaign is now active and available for patient
+                  matching!
                 </p>
               </div>
             )}
@@ -240,12 +257,18 @@ function PaymentStatusPage() {
 
             {/* Action buttons */}
             <div className="flex gap-3">
-              <Button 
+              <Button
                 onClick={() => {
                   if (type === 'create' && campaignId) {
-                    navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })
+                    navigate({
+                      to: '/donor/campaigns/$campaignId',
+                      params: { campaignId },
+                    })
                   } else if (campaign) {
-                    navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId: campaign.id } })
+                    navigate({
+                      to: '/donor/campaigns/$campaignId',
+                      params: { campaignId: campaign.id },
+                    })
                   } else {
                     navigate({ to: '/donor/campaigns' })
                   }
@@ -255,7 +278,7 @@ function PaymentStatusPage() {
                 <ArrowRight className="h-4 w-4 mr-2" />
                 View Campaign
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -283,7 +306,7 @@ function PaymentStatusPage() {
             <p className="text-gray-600">
               Your payment could not be processed. Your card was not charged.
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 text-sm">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Amount:</span>
@@ -296,13 +319,13 @@ function PaymentStatusPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button 
+              <Button
                 onClick={() => navigate({ to: '/donor/campaigns/create' })}
                 className="flex-1"
               >
                 Try Again
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -328,17 +351,18 @@ function PaymentStatusPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              You cancelled the payment process. No charges were made to your card.
+              You cancelled the payment process. No charges were made to your
+              card.
             </p>
-            
+
             <div className="flex gap-3">
-              <Button 
+              <Button
                 onClick={() => navigate({ to: '/donor/campaigns/create' })}
                 className="flex-1"
               >
                 Try Again
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -363,9 +387,10 @@ function PaymentStatusPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            Your payment is still being processed. We'll update the status automatically.
+            Your payment is still being processed. We'll update the status
+            automatically.
           </p>
-          
+
           <div className="bg-gray-50 rounded-lg p-4 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Reference:</span>
@@ -373,7 +398,7 @@ function PaymentStatusPage() {
             </div>
           </div>
 
-          <Button 
+          <Button
             onClick={() => refetch()}
             variant="outline"
             className="w-full"
@@ -385,4 +410,4 @@ function PaymentStatusPage() {
       </Card>
     </div>
   )
-} 
+}

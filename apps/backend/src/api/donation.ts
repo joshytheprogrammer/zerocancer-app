@@ -165,7 +165,7 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     targetGender = "FEMALE";
   }
 
-  const patientsHelped = campaign.allocations.reduce(
+  const patientsHelped = campaign.allocations?.reduce(
     (count: number, allocation: any) => {
       // Count only allocations with completed appointments
       return count + (allocation.appointment?.status === "COMPLETED" ? 1 : 0);
@@ -173,7 +173,7 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     0
   );
 
-  const patientAppointmentInProgress = campaign.allocations.reduce(
+  const patientAppointmentInProgress = campaign.allocations?.reduce(
     (count: number, allocation: any) => {
       // Count only allocations with completed appointments
       return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
@@ -181,7 +181,7 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     0
   );
 
-  const patientAppointmentScheduled = campaign.allocations.reduce(
+  const patientAppointmentScheduled = campaign.allocations?.reduce(
     (count: number, allocation: any) => {
       // Count only allocations with completed appointments
       return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
@@ -189,7 +189,7 @@ function formatCampaignForResponse(campaign: any): TDonationCampaign {
     0
   );
 
-  const patientPendingAcceptance = campaign.allocations.reduce(
+  const patientPendingAcceptance = campaign.allocations?.reduce(
     (count: number, allocation: any) => {
       // Count only allocations with completed appointments
       return count + (allocation.appointment?.status === "PENDING" ? 1 : 0);
