@@ -20,57 +20,67 @@ export default function StatusCard({ appointment }: StatusCardProps) {
     if (appointment) {
       navigate({
         to: '/patient/appointments',
-        search: { appointmentId: appointment.id },
       })
     }
   }
 
+  const isScheduled = !!appointment
+
   return (
-    <div className="w-full bg-pink-100 rounded-lg p-6 flex items-center justify-between">
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">Status</p>
-        {appointment ? (
-          <>
-            <h2 className="text-3xl font-bold text-blue-900">
-              Screening Scheduled
-            </h2>
-            <p className="text-muted-foreground">
-              Location: {appointment.center?.centerName},{' '}
-              {new Date(appointment.appointmentDate).toLocaleDateString(
-                'en-US',
-                {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                },
-              )}{' '}
-              |{' '}
-              {new Date(appointment.appointmentTime).toLocaleTimeString([], {
+    <div
+      className={`w-full rounded-2xl p-6 flex items-center justify-between transition-colors duration-300 ${
+        isScheduled ? 'bg-yellow-50' : 'bg-pink-50'
+      }`}
+    >
+      <div className="space-y-3">
+        <p className="text-sm text-gray-600">Status</p>
+        <h2
+          className={`text-2xl lg:text-3xl font-bold ${
+            isScheduled ? 'text-yellow-900' : 'text-pink-900'
+          }`}
+        >
+          {isScheduled ? 'Screening Scheduled' : 'Not Screened'}
+        </h2>
+        <p className="text-gray-500">
+          <span className="font-semibold">Location:</span>{' '}
+          {isScheduled
+            ? `${appointment.center?.centerName}, ${new Date(
+                appointment.appointmentDate,
+              ).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })} |  ${new Date(
+                appointment.appointmentTime,
+              ).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
-              })}
-            </p>
-            <Button onClick={handleViewDetails}>View Details</Button>
-          </>
-        ) : (
-          <>
-            <h2 className="text-3xl font-bold text-red-900">Not Screened</h2>
-            <p className="text-muted-foreground">Location: -</p>
+              })}`
+            : '-'}
+        </p>
+        <div className="pt-2">
+          {isScheduled ? (
+            <Button
+              onClick={handleViewDetails}
+              className="bg-pink-600 hover:bg-pink-700 text-white rounded-lg px-6"
+            >
+              View Details
+            </Button>
+          ) : (
             <Button
               onClick={handleBookScreening}
-              variant="secondary"
-              className="flex items-center gap-2"
+              className="bg-pink-600 hover:bg-pink-700 text-white rounded-lg px-6 flex items-center gap-2"
             >
               Book Screening <ArrowRight className="w-4 h-4" />
             </Button>
-          </>
-        )}
+          )}
+        </div>
       </div>
-      <div>
+      <div className="w-1/3 flex justify-center">
         <img
-          src={appointment ? scheduledIllustration : notScreenedIllustration}
-          alt={appointment ? 'Screening scheduled' : 'Not screened'}
-          className="h-32"
+          src={isScheduled ? scheduledIllustration : notScreenedIllustration}
+          alt={isScheduled ? 'Screening scheduled' : 'Not screened'}
+          className="h-36 object-contain hidden lg:block"
         />
       </div>
     </div>
