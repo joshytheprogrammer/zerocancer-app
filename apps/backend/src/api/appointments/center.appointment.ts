@@ -310,6 +310,14 @@ centerAppointmentApp.post(
       appointmentDate.getFullYear() === today.getFullYear();
 
     if (!isToday) {
+      console.log(
+        appointmentDate.getDate(),
+        today.getDate(),
+        appointmentDate.getMonth(),
+        today.getMonth(),
+        appointmentDate.getFullYear(),
+        today.getFullYear()
+      );
       return c.json<TVerifyCheckInCodeResponse>({
         ok: true,
         data: {
