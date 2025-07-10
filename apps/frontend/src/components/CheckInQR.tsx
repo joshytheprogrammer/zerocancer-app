@@ -1,10 +1,17 @@
 import QRCode from 'react-qr-code'
 
-const CheckInQR = ({ checkInCode }: { checkInCode: string }) => {
+const CheckInQR = ({
+  checkInCode,
+  size,
+}: {
+  checkInCode: string
+  size?: number
+}) => {
   return (
     <div className="bg-white p-4">
       <QRCode
-        value={`${window.location.origin}/api/center/appointments/verify-checkin/${checkInCode}`}
+        size={size || 120}
+        value={`${window.location.origin}/center/verify-code?checkInCode=${checkInCode}`}
       />
     </div>
   )

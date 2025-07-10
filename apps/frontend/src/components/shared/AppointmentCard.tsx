@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import {
   Dialog,
   DialogClose,
@@ -9,12 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import type {
+  TAppointmentDetails,
+  TPatientAppointment,
+} from '@zerocancer/shared/types'
 import { CalendarDays, Clock, FlaskConical, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
+import CheckInQR from '../CheckInQR'
 
 interface AppointmentCardProps {
-  appointment: any
+  appointment: TPatientAppointment
   onCancel: (appointmentId: string) => void
   isCancelling: boolean
 }
@@ -29,56 +34,64 @@ export default function AppointmentCard({
 
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="">
-        <div className="flex justify-between items-start">
-          <div className="flex items-start gap-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <FlaskConical className="h-6 w-6 text-primary" />
+      <CardContent className="flex">
+        <div>
+          <div className="flex justify-between items-start">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <FlaskConical className="h-6 w-6 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg text-gray-800">
+                  {appointment.screeningType?.name || 'Unknown Screening'}
+                </h3>
+                <p className="text-sm">
+                  Check-in code:{' '}
+                  <span className="text-sm font-mono font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded w-fit">
+                    {appointment.checkInCode || appointment.id.slice(-10)}
+                  </span>
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <h3 className="font-bold text-lg text-gray-800">
-                {appointment.screeningType?.name || 'Unknown Screening'}
-              </h3>
-              <p className="text-sm">
-                Check-in code:{' '}
-                <span className="text-sm font-mono font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded w-fit">
-                  {appointment.checkInCode || appointment.id.slice(-10)}
-                </span>
-              </p>
-            </div>
           </div>
-        </div>
-        <div className="mt-4 space-y-3 pl-14">
-          <div className="flex items-center gap-2 text-gray-600">
-            <MapPin className="h-4 w-4" />
-            <span className="text-sm">{appointment.center?.centerName}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
-            <CalendarDays className="h-4 w-4" />
-            <span className="text-sm">
-              {new Date(appointment.appointmentDate).toLocaleDateString(
-                undefined,
-                {
-                  weekday: 'short',
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                },
-              )}
-            </span>
-          </div>
-          {appointment.appointmentTime && (
+          <div className="mt-4 space-y-3 pl-14">
             <div className="flex items-center gap-2 text-gray-600">
-              <Clock className="h-4 w-4" />
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm">{appointment.center?.centerName}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <CalendarDays className="h-4 w-4" />
               <span className="text-sm">
-                {new Date(appointment.appointmentTime).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {new Date(appointment.appointmentDate).toLocaleDateString(
+                  undefined,
+                  {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  },
+                )}
               </span>
             </div>
-          )}
+            {appointment.appointmentTime && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span className="text-sm">
+                  {new Date(appointment.appointmentTime).toLocaleTimeString(
+                    [],
+                    {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    },
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
+        {appointment.checkInCode && (
+          <CheckInQR checkInCode={appointment.checkInCode} />
+        )}
       </CardContent>
       {/* <CardFooter className="flex justify-end space-x-2 bg-gray-50 py-3 px-6">
         {isPast ? (

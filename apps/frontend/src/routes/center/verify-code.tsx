@@ -1,10 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -14,26 +10,36 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Badge } from '@/components/ui/badge'
-import { 
-  QrCode, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  User,
-  Calendar,
-  AlertCircle,
-  Scan
-} from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import { useVerifyCheckInCode } from '@/services/providers/center.provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute } from '@tanstack/react-router'
+import { fallback, zodValidator } from '@tanstack/zod-adapter'
 import { verifyCheckInCodeSchema } from '@zerocancer/shared/schemas/appointment.schema'
-import type { z } from 'zod'
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  QrCode,
+  Scan,
+  User,
+  XCircle,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 type FormData = z.infer<typeof verifyCheckInCodeSchema>
 
 export const Route = createFileRoute('/center/verify-code')({
   component: CenterVerifyCode,
+  validateSearch: zodValidator(
+    fallback(verifyCheckInCodeSchema.partial(), {
+      checkInCode: '',
+    }).default({ checkInCode: '' }),
+  ),
 })
 
 function CenterVerifyCode() {
@@ -42,24 +48,31 @@ function CenterVerifyCode() {
     appointmentId?: string
     message?: string
   } | null>(null)
-  
+
+  const codeFromUrl = Route.useSearch().checkInCode || ''
+
   const form = useForm<FormData>({
     resolver: zodResolver(verifyCheckInCodeSchema),
     defaultValues: {
-      checkInCode: '',
+      checkInCode: codeFromUrl,
     },
   })
+
+  // Submit form on mount if verification code exist
+  useEffect(() => {
+    if (codeFromUrl) form.handleSubmit(onSubmit)()
+  }, [codeFromUrl])
 
   const verifyMutation = useVerifyCheckInCode()
 
   const onSubmit = (values: FormData) => {
     setVerificationResult(null)
-    
+
     verifyMutation.mutate(values, {
       onSuccess: (response) => {
         const result = response.data
         setVerificationResult(result)
-        
+
         if (result.valid) {
           toast.success(result.message || 'Check-in verified successfully!')
           form.reset() // Clear the form on successful verification
@@ -68,11 +81,12 @@ function CenterVerifyCode() {
         }
       },
       onError: (error: any) => {
-        const errorMessage = error.response?.data?.error || 'Failed to verify check-in code'
+        const errorMessage =
+          error.response?.data?.error || 'Failed to verify check-in code'
         toast.error(errorMessage)
         setVerificationResult({
           valid: false,
-          message: errorMessage
+          message: errorMessage,
         })
       },
     })
@@ -90,7 +104,8 @@ function CenterVerifyCode() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Verify Patient Check-in</h1>
         <p className="text-muted-foreground">
-          Enter a patient's check-in code to verify their appointment and update their status.
+          Enter a patient's check-in code to verify their appointment and update
+          their status.
         </p>
       </div>
 
@@ -105,7 +120,10 @@ function CenterVerifyCode() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="checkInCode"
@@ -123,7 +141,8 @@ function CenterVerifyCode() {
                         />
                       </FormControl>
                       <FormDescription>
-                        The patient should provide this code from their appointment confirmation
+                        The patient should provide this code from their
+                        appointment confirmation
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -131,11 +150,7 @@ function CenterVerifyCode() {
                 />
 
                 <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="flex-1"
-                  >
+                  <Button type="submit" disabled={isLoading} className="flex-1">
                     {isLoading ? (
                       <>
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
@@ -148,7 +163,7 @@ function CenterVerifyCode() {
                       </>
                     )}
                   </Button>
-                  
+
                   {(verificationResult || form.getValues().checkInCode) && (
                     <Button
                       type="button"
@@ -165,9 +180,9 @@ function CenterVerifyCode() {
 
             {/* Future QR Scanner Option */}
             <div className="mt-6 pt-6 border-t">
-              <Button 
-                variant="outline" 
-                disabled 
+              <Button
+                variant="outline"
+                disabled
                 className="w-full"
                 title="QR scanning feature coming soon"
               >
@@ -206,11 +221,13 @@ function CenterVerifyCode() {
               <div className="space-y-4">
                 {/* Status Badge */}
                 <div className="flex items-center justify-center">
-                  <Badge 
-                    variant={verificationResult.valid ? "default" : "destructive"}
+                  <Badge
+                    variant={
+                      verificationResult.valid ? 'default' : 'destructive'
+                    }
                     className="text-base px-4 py-2"
                   >
-                    {verificationResult.valid ? "✓ Valid" : "✗ Invalid"}
+                    {verificationResult.valid ? '✓ Valid' : '✗ Invalid'}
                   </Badge>
                 </div>
 
@@ -224,7 +241,9 @@ function CenterVerifyCode() {
                 {/* Appointment ID (if available) */}
                 {verificationResult.appointmentId && (
                   <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm font-medium mb-1">Appointment Details:</p>
+                    <p className="text-sm font-medium mb-1">
+                      Appointment Details:
+                    </p>
                     <p className="text-sm text-muted-foreground font-mono">
                       ID: {verificationResult.appointmentId}
                     </p>
@@ -276,7 +295,7 @@ function CenterVerifyCode() {
                 <li>• Each code can only be used once</li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-2 flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -294,4 +313,4 @@ function CenterVerifyCode() {
       </Card>
     </div>
   )
-} 
+}
