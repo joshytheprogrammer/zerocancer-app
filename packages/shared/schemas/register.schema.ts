@@ -61,11 +61,8 @@ export const bookSelfPayAppointmentSchema = z.object({
     message: "Screening type is required.",
   }),
   centerId: z.string().min(1, { message: "Center is required." }),
-  appointmentDate: z.string().min(1, {
-    message: "Appointment date is required.",
-  }),
-  appointmentTime: z.string().min(1, {
-    message: "Appointment time is required.",
+  appointmentDateTime: z.string().min(1, {
+    message: "Appointment date and time is required.",
   }),
   paymentReference: z.string().min(1, {
     message: "Payment reference is required.",
@@ -75,12 +72,9 @@ export const bookSelfPayAppointmentSchema = z.object({
 export const selectCenterSchema = z.object({
   allocationId: z.string().min(1, { message: "Allocation ID is required." }),
   centerId: z.string().min(1, { message: "Center ID is required." }),
-  appointmentDate: z
+  appointmentDateTime: z
     .string()
-    .min(1, { message: "Appointment date is required." }),
-  appointmentTime: z
-    .string()
-    .min(1, { message: "Appointment time is required." }),
+    .min(1, { message: "Appointment date and time is required." }),
 });
 
 export const getPatientAppointmentsSchema = z.object({

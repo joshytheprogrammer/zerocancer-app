@@ -256,8 +256,7 @@ type TAdminAppointment = {
   screeningTypeId: string
   donationId?: string | null
   isDonation: boolean
-  appointmentDate: string
-  appointmentTime: string
+  appointmentDateTime: string
   status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   createdAt: string
   patient: {

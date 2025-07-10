@@ -29,7 +29,7 @@ export default function AppointmentCard({
   onCancel,
   isCancelling,
 }: AppointmentCardProps) {
-  const isPast = new Date(appointment.appointmentDate) < new Date()
+  const isPast = new Date(appointment.appointmentDateTime) < new Date()
   const hasResult = appointment.result?.id
 
   return (
@@ -62,7 +62,7 @@ export default function AppointmentCard({
             <div className="flex items-center gap-2 text-gray-600">
               <CalendarDays className="h-4 w-4" />
               <span className="text-sm">
-                {new Date(appointment.appointmentDate).toLocaleDateString(
+                {new Date(appointment.appointmentDateTime).toLocaleDateString(
                   undefined,
                   {
                     weekday: 'short',
@@ -73,20 +73,18 @@ export default function AppointmentCard({
                 )}
               </span>
             </div>
-            {appointment.appointmentTime && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">
-                  {new Date(appointment.appointmentTime).toLocaleTimeString(
-                    [],
-                    {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    },
-                  )}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">
+                {new Date(appointment.appointmentDateTime).toLocaleTimeString(
+                  [],
+                  {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )}
+              </span>
+            </div>
           </div>
         </div>
         {appointment.checkInCode && (

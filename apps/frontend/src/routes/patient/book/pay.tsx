@@ -1,8 +1,5 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { Calendar as ShadCalendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
@@ -13,19 +10,22 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Calendar as ShadCalendar } from '@/components/ui/calendar'
 import {
   Popover as ShadPopover,
   PopoverContent as ShadPopoverContent,
   PopoverTrigger as ShadPopoverTrigger,
 } from '@/components/ui/popover'
-import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
-import { centers } from '@/services/providers/center.provider'
-import { useQuery } from '@tanstack/react-query'
-import { ChevronDownIcon, Loader2, Check, } from 'lucide-react'
-import { toast } from 'sonner'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { centers } from '@/services/providers/center.provider'
+import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Check, ChevronDownIcon, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
 // Zod schema for form validation
 const bookingSchema = z.object({
@@ -53,28 +53,35 @@ function PayBookingPage() {
   const form = useForm<FormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-    screeningTypeId: search.screeningTypeId || '',
-    centerId: '',
-    appointmentDate: '',
-    appointmentTime: '',
-    paymentReference: '',
+      screeningTypeId: search.screeningTypeId || '',
+      centerId: '',
+      appointmentDate: '',
+      appointmentTime: '',
+      paymentReference: '',
     },
   })
 
   // Fetch centers for the dropdown
-  const { data: centersData, isLoading: centersLoading, error: centersError } = useQuery(
+  const {
+    data: centersData,
+    isLoading: centersLoading,
+    error: centersError,
+  } = useQuery(
     centers({
       page: 1,
-      pageSize: 100, 
-      status: 'ACTIVE', 
-    })
+      pageSize: 100,
+      status: 'ACTIVE',
+    }),
   )
 
   // Filter centers that offer the selected screening service
-  const availableCenters = centersData?.data?.centers?.filter((center) => {
-    if (!search.screeningTypeId) return true // Show all if no service selected
-    return center.services?.some((service) => service.id === search.screeningTypeId)
-  }) || []
+  const availableCenters =
+    centersData?.data?.centers?.filter((center) => {
+      if (!search.screeningTypeId) return true // Show all if no service selected
+      return center.services?.some(
+        (service) => service.id === search.screeningTypeId,
+      )
+    }) || []
 
   // Filter centers based on search query
   const filteredCenters = availableCenters.filter((center) => {
@@ -93,43 +100,47 @@ function PayBookingPage() {
   function onSubmit(values: FormData) {
     // Generate a dummy payment reference if not provided
     const paymentReference =
-      values.paymentReference || 'PAY-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+      values.paymentReference ||
+      'PAY-' + Math.random().toString(36).substring(2, 10).toUpperCase()
 
-    // Parse and format the appointment time properly
+    // Combine date and time into a single datetime
     const appointmentDateTime = new Date(values.appointmentDate)
     const [hours, minutes] = values.appointmentTime.split(':')
     appointmentDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
 
     const formattedValues = {
-      ...values,
+      screeningTypeId: values.screeningTypeId,
+      centerId: values.centerId,
       paymentReference,
-      // Ensure date is properly formatted as ISO string
-      appointmentDate: values.appointmentDate ? new Date(values.appointmentDate).toISOString() : values.appointmentDate,
-      // Format appointment time as a proper datetime ISO string
-      appointmentTime: appointmentDateTime.toISOString()
+      // Send combined datetime instead of separate date and time
+      appointmentDateTime: appointmentDateTime.toISOString(),
     }
 
     console.log('Booking data being sent:', formattedValues)
 
     bookSelfPayAppointmentMutation.mutate(formattedValues, {
-        onSuccess: (data) => {
-          console.log('Appointment booking response:', data)
-          
-          // Check if payment is required (same pattern as donor campaigns)
-          if (data.data.payment?.authorizationUrl) {
-            toast.success('Appointment created! Redirecting to payment...')
-            window.location.href = data.data.payment.authorizationUrl
-          } else {
-            // Fallback for appointments that don't require payment
-            toast.success('Appointment booked successfully!')
-            navigate({ to: '/patient/appointments' })
-          }
-        },
-        onError: (error: any) => {
-          console.error('Booking error:', error)
-          console.error('Error response:', error?.response?.data)
-          toast.error(error?.response?.data?.error || error?.response?.data?.message || 'Booking failed')
-        },
+      onSuccess: (data) => {
+        console.log('Appointment booking response:', data)
+
+        // Check if payment is required (same pattern as donor campaigns)
+        if (data.data.payment?.authorizationUrl) {
+          toast.success('Appointment created! Redirecting to payment...')
+          window.location.href = data.data.payment.authorizationUrl
+        } else {
+          // Fallback for appointments that don't require payment
+          toast.success('Appointment booked successfully!')
+          navigate({ to: '/patient/appointments' })
+        }
+      },
+      onError: (error: any) => {
+        console.error('Booking error:', error)
+        console.error('Error response:', error?.response?.data)
+        toast.error(
+          error?.response?.data?.error ||
+            error?.response?.data?.message ||
+            'Booking failed',
+        )
+      },
     })
   }
 
@@ -142,7 +153,7 @@ function PayBookingPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {!search.screeningTypeId && (
+              {!search.screeningTypeId && (
                 <FormField
                   control={form.control}
                   name="screeningTypeId"
@@ -153,11 +164,11 @@ function PayBookingPage() {
                         <Input
                           placeholder="Enter screening type ID"
                           {...field}
-                />
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-            )}
+                  )}
                 />
               )}
 
@@ -168,11 +179,14 @@ function PayBookingPage() {
                   <FormItem>
                     <FormLabel>
                       Screening Center
-                      {search.screeningTypeId && availableCenters.length > 0 && (
-                        <span className="text-sm font-normal text-muted-foreground ml-2">
-                          ({availableCenters.length} center{availableCenters.length !== 1 ? 's' : ''} available)
-                        </span>
-                      )}
+                      {search.screeningTypeId &&
+                        availableCenters.length > 0 && (
+                          <span className="text-sm font-normal text-muted-foreground ml-2">
+                            ({availableCenters.length} center
+                            {availableCenters.length !== 1 ? 's' : ''}{' '}
+                            available)
+                          </span>
+                        )}
                     </FormLabel>
                     <FormControl>
                       <div className="space-y-2">
@@ -182,7 +196,7 @@ function PayBookingPage() {
                           onChange={(e) => setSearchQuery(e.target.value)}
                           disabled={centersLoading}
                         />
-                        
+
                         {searchQuery && (
                           <div className="border rounded-md max-h-48 overflow-y-auto bg-white">
                             {filteredCenters.length > 0 ? (
@@ -190,11 +204,16 @@ function PayBookingPage() {
                                 <div
                                   key={center.id}
                                   className={cn(
-                                    "p-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0",
-                                    field.value === center.id && "bg-blue-50 border-blue-200"
+                                    'p-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0',
+                                    field.value === center.id &&
+                                      'bg-blue-50 border-blue-200',
                                   )}
                                   onClick={() => {
-                                    console.log('Selected center:', center.id, center.centerName)
+                                    console.log(
+                                      'Selected center:',
+                                      center.id,
+                                      center.centerName,
+                                    )
                                     field.onChange(center.id)
                                     setSearchQuery(center.centerName)
                                   }}
@@ -204,7 +223,9 @@ function PayBookingPage() {
                                       <Check className="h-4 w-4 text-blue-600" />
                                     )}
                                     <div className="flex flex-col">
-                                      <span className="font-medium">{center.centerName}</span>
+                                      <span className="font-medium">
+                                        {center.centerName}
+                                      </span>
                                       <span className="text-sm text-muted-foreground">
                                         {center.lga}, {center.state}
                                       </span>
@@ -217,17 +238,21 @@ function PayBookingPage() {
                               ))
                             ) : (
                               <div className="p-3 text-center text-sm text-muted-foreground">
-                                {search.screeningTypeId 
-                                  ? "No centers offer this service" 
-                                  : "No centers found"}
+                                {search.screeningTypeId
+                                  ? 'No centers offer this service'
+                                  : 'No centers found'}
                               </div>
                             )}
                           </div>
                         )}
-                        
+
                         {field.value && !searchQuery && (
                           <div className="text-sm text-green-600">
-                            ✓ Selected: {availableCenters.find(c => c.id === field.value)?.centerName}
+                            ✓ Selected:{' '}
+                            {
+                              availableCenters.find((c) => c.id === field.value)
+                                ?.centerName
+                            }
                           </div>
                         )}
                       </div>
@@ -278,16 +303,18 @@ function PayBookingPage() {
                                 field.value ? new Date(field.value) : undefined
                               }
                               onSelect={(date: Date | undefined) => {
-                                field.onChange(
-                                  date ? date.toISOString() : '',
-                                )
+                                field.onChange(date ? date.toISOString() : '')
                               }}
                               disabled={(date) => {
                                 const today = new Date()
                                 today.setHours(0, 0, 0, 0)
                                 const dayOfWeek = date.getDay()
                                 // Disable past dates, weekends (Saturday=6, Sunday=0)
-                                return date < today || dayOfWeek === 0 || dayOfWeek === 6
+                                return (
+                                  date < today ||
+                                  dayOfWeek === 0 ||
+                                  dayOfWeek === 6
+                                )
                               }}
                               initialFocus
                             />
@@ -307,31 +334,44 @@ function PayBookingPage() {
                   <FormItem>
                     <FormLabel>Appointment Time</FormLabel>
                     <FormControl>
-                      <Input
-                        type="time"
-                        min="09:00"
-                        max="17:00"
-                        {...field}
-              />
+                      <Input type="time" min="09:00" max="17:00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            <Button
-              type="submit"
+              <Button
+                type="submit"
                 className="w-full flex items-center justify-center gap-2 cursor-pointer"
-              disabled={bookSelfPayAppointmentMutation.isPending}
-            >
+                disabled={bookSelfPayAppointmentMutation.isPending}
+              >
                 {bookSelfPayAppointmentMutation.isPending && (
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
                   </svg>
                 )}
-              {bookSelfPayAppointmentMutation.isPending ? 'Booking...' : 'Book Appointment'}
-            </Button>
-          </form>
+                {bookSelfPayAppointmentMutation.isPending
+                  ? 'Booking...'
+                  : 'Book Appointment'}
+              </Button>
+            </form>
           </Form>
         </CardContent>
       </Card>

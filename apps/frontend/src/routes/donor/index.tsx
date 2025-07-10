@@ -30,14 +30,21 @@ import {
 
 export const Route = createFileRoute('/donor/')({
   component: DonorDashboard,
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(
+      useDonorCampaigns({
+        page: 1,
+        pageSize: 5,
+      }),
+    )
+  },
 })
 
 // Real API integration complete - removed mock data
 
 function DonorDashboard() {
   const { data: authData } = useQuery(useAuthUser())
-  const donorName =
-    authData?.data?.user?.fullName || 'Valued Donor'
+  const donorName = authData?.data?.user?.fullName || 'Valued Donor'
   // Fetch recent campaigns
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery(
     useDonorCampaigns({
@@ -91,9 +98,7 @@ function DonorDashboard() {
               <Heart className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">
-                Welcome back, {donorName}!
-              </h1>
+              <h1 className="text-3xl font-bold">Welcome back, {donorName}!</h1>
               <p className="text-blue-100 mt-1">
                 Your generosity is changing lives and providing hope to those in
                 need.

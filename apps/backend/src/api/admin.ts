@@ -758,9 +758,9 @@ adminApp.get(
     if (isDonation !== undefined) where.isDonation = isDonation;
 
     if (dateFrom || dateTo) {
-      where.appointmentDate = {};
-      if (dateFrom) where.appointmentDate.gte = new Date(dateFrom);
-      if (dateTo) where.appointmentDate.lte = new Date(dateTo);
+      where.appointmentDateTime = {};
+      if (dateFrom) where.appointmentDateTime.gte = new Date(dateFrom);
+      if (dateTo) where.appointmentDateTime.lte = new Date(dateTo);
     }
 
     try {

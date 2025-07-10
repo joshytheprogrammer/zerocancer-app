@@ -124,8 +124,7 @@ export type TPatientAppointment = {
   patientId: string;
   centerId: string;
   screeningTypeId: string;
-  appointmentDate: string;
-  appointmentTime: string;
+  appointmentDateTime: string; // Combined date and time
   isDonation: boolean;
   status: string;
   transactionId?: string;
@@ -213,8 +212,7 @@ export type TPatientResult = {
   uploadedAt: string;
   appointment: {
     id: string;
-    appointmentDate: string;
-    appointmentTime?: string;
+    appointmentDateTime: string; // Combined date and time
     screeningType: {
       id: string;
       name: string;
@@ -287,8 +285,7 @@ export type TCenterAppointment = {
   screeningTypeId: string;
   donationId: string | null;
   isDonation: boolean;
-  appointmentDate: string;
-  appointmentTime: string;
+  appointmentDateTime: string; // Combined date and time
   transactionId: string | null;
   status: "PENDING" | "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   createdAt: string;
@@ -507,7 +504,7 @@ export type TReceipt = {
     taxDeductible: boolean;
     centerName: string | null;
     centerAddress: string | null;
-    appointmentDate: string | null;
+    appointmentDateTime: string | null; // Combined date and time
     serviceType: string | null;
     organizationName: string;
     organizationAddress: string;

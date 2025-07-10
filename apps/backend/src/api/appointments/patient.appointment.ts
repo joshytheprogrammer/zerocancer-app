@@ -45,8 +45,7 @@ patientAppointmentApp.post(
     const {
       screeningTypeId,
       centerId,
-      appointmentDate,
-      appointmentTime,
+      appointmentDateTime,
       // paymentReference,
     } = c.req.valid("json");
     const payload = c.get("jwtPayload");
@@ -98,8 +97,7 @@ patientAppointmentApp.post(
         patientId: userId!,
         centerId: centerId!,
         screeningTypeId: screeningTypeId!,
-        appointmentDate: new Date(appointmentDate!),
-        appointmentTime: new Date(appointmentTime!),
+        appointmentDateTime: new Date(appointmentDateTime!),
         isDonation: false,
         status: "PENDING", // Set initial status to PENDING
         transactionId: transaction.id!, // Link appointment to transaction
@@ -133,8 +131,7 @@ patientAppointmentApp.post(
       patientId: appointment.patientId!,
       centerId: appointment.centerId!,
       screeningTypeId: appointment.screeningTypeId!,
-      appointmentDate: appointment.appointmentDate.toISOString(),
-      appointmentTime: appointment.appointmentTime.toISOString(),
+      appointmentDateTime: appointment.appointmentDateTime.toISOString(),
       isDonation: appointment.isDonation!,
       status: appointment.status!,
       transactionId:
@@ -276,8 +273,7 @@ patientAppointmentApp.post(
     if (!payload)
       return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
-    const { allocationId, centerId, appointmentDate, appointmentTime } =
-      c.req.valid("json");
+    const { allocationId, centerId, appointmentDateTime } = c.req.valid("json");
     // Validate allocation
     const allocation = await db.donationAllocation.findUnique({
       where: { id: allocationId },
@@ -301,8 +297,7 @@ patientAppointmentApp.post(
         screeningTypeId: allocation.waitlist.screeningTypeId!,
         isDonation: true,
         status: "SCHEDULED",
-        appointmentDate: new Date(appointmentDate!),
-        appointmentTime: new Date(appointmentTime!),
+        appointmentDateTime: new Date(appointmentDateTime!),
         donationId: allocation.campaignId!,
         checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -323,8 +318,7 @@ patientAppointmentApp.post(
       patientId: appointment.patientId!,
       centerId: appointment.centerId!,
       screeningTypeId: appointment.screeningTypeId!,
-      appointmentDate: appointment.appointmentDate.toISOString(),
-      appointmentTime: appointment.appointmentTime.toISOString(),
+      appointmentDateTime: appointment.appointmentDateTime.toISOString(),
       isDonation: appointment.isDonation!,
       status: appointment.status!,
       transactionId:
@@ -397,7 +391,7 @@ patientAppointmentApp.get(
         skip: (page - 1) * size,
         take: size,
         where,
-        orderBy: { appointmentDate: "desc" },
+        orderBy: { appointmentDateTime: "desc" },
         include: {
           center: {
             select: {
@@ -420,8 +414,7 @@ patientAppointmentApp.get(
       patientId: a.patientId!,
       centerId: a.centerId!,
       screeningTypeId: a.screeningTypeId!,
-      appointmentDate: a.appointmentDate.toISOString(),
-      appointmentTime: a.appointmentTime.toISOString(),
+      appointmentDateTime: a.appointmentDateTime.toISOString(),
       isDonation: a.isDonation!,
       status: a.status!,
       transactionId: a.transactionId === null ? undefined : a.transactionId,
@@ -586,8 +579,7 @@ patientAppointmentApp.get(
         appointment: {
           select: {
             id: true,
-            appointmentDate: true,
-            appointmentTime: true,
+            appointmentDateTime: true,
             screeningType: { select: { id: true, name: true } },
             center: { select: { id: true, centerName: true, address: true } },
           },
@@ -628,8 +620,8 @@ patientAppointmentApp.get(
         uploadedAt: result.uploadedAt.toISOString(),
         appointment: {
           id: result.appointment.id,
-          appointmentDate: result.appointment.appointmentDate.toISOString(),
-          appointmentTime: result.appointment.appointmentTime?.toISOString(),
+          appointmentDateTime:
+            result.appointment.appointmentDateTime.toISOString(),
           screeningType: result.appointment.screeningType,
           center: result.appointment.center,
         },
@@ -723,7 +715,7 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
         select: {
           id: true,
           patientId: true,
-          appointmentDate: true,
+          appointmentDateTime: true,
           screeningType: { select: { id: true, name: true } },
         },
       },
@@ -739,7 +731,7 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
     id: receipt.id!,
     appointments: receipt.appointments.map((a) => ({
       id: a.id!,
-      appointmentDate: a.appointmentDate.toISOString(),
+      appointmentDateTime: a.appointmentDateTime.toISOString(),
       screeningType: { id: a.screeningType.id!, name: a.screeningType.name! },
       patientId: a.patientId!,
     })),
@@ -763,7 +755,7 @@ patientAppointmentApp.get("/:id/checkin-code", async (c) => {
       patientId: true,
       checkInCode: true,
       checkInCodeExpiresAt: true,
-      appointmentDate: true,
+      appointmentDateTime: true,
       status: true,
     },
   });

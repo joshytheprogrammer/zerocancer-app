@@ -1,17 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useAdminAppointments } from '@/services/providers/admin.provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -20,18 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Label } from '@/components/ui/label'
-import { 
-  Calendar, 
-  MapPin, 
-  User, 
-  Activity,
-  Heart,
-  Building2,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
+import { useAdminAppointments } from '@/services/providers/admin.provider'
+import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import {
+  Activity,
+  Building2,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MapPin,
+  User,
+} from 'lucide-react'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/admin/appointments')({
   component: AdminAppointments,
@@ -41,9 +41,13 @@ type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 
 function AdminAppointments() {
   // Filters state
-  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'ALL'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'ALL'>(
+    'ALL',
+  )
   const [centerFilter, setCenterFilter] = useState<string>('')
-  const [donationFilter, setDonationFilter] = useState<'ALL' | 'DONATION' | 'SELF_PAY'>('ALL')
+  const [donationFilter, setDonationFilter] = useState<
+    'ALL' | 'DONATION' | 'SELF_PAY'
+  >('ALL')
   const [dateFromFilter, setDateFromFilter] = useState<string>('')
   const [dateToFilter, setDateToFilter] = useState<string>('')
   const [page, setPage] = useState(1)
@@ -61,34 +65,39 @@ function AdminAppointments() {
   }
 
   // Fetch appointments data
-  const { 
-    data: appointmentsData, 
-    isLoading, 
+  const {
+    data: appointmentsData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useAdminAppointments(queryParams)
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'SCHEDULED': return 'default'
-      case 'IN_PROGRESS': return 'secondary'
-      case 'COMPLETED': return 'default'
-      case 'CANCELLED': return 'destructive'
-      default: return 'outline'
+      case 'SCHEDULED':
+        return 'default'
+      case 'IN_PROGRESS':
+        return 'secondary'
+      case 'COMPLETED':
+        return 'default'
+      case 'CANCELLED':
+        return 'destructive'
+      default:
+        return 'outline'
     }
   }
 
-  const formatDateTime = (date: string, time: string) => {
+  const formatDateTime = (dateTime: string) => {
     try {
-      const dateTime = new Date(`${date}T${time}`)
+      const date = new Date(dateTime)
       return {
-        date: format(dateTime, 'MMM dd, yyyy'),
-        time: format(dateTime, 'hh:mm a')
+        date: format(date, 'MMM dd, yyyy'),
+        time: format(date, 'hh:mm a'),
       }
     } catch (error) {
       return {
-        date: date,
-        time: time
+        date: dateTime,
+        // time: time,
       }
     }
   }
@@ -122,7 +131,9 @@ function AdminAppointments() {
           <CardContent className="flex items-center p-6">
             <Calendar className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Appointments</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Appointments
+              </p>
               <p className="text-2xl font-bold">{total}</p>
             </div>
           </CardContent>
@@ -131,9 +142,11 @@ function AdminAppointments() {
           <CardContent className="flex items-center p-6">
             <Activity className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Scheduled</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Scheduled
+              </p>
               <p className="text-2xl font-bold">
-                {appointments.filter(a => a.status === 'SCHEDULED').length}
+                {appointments.filter((a) => a.status === 'SCHEDULED').length}
               </p>
             </div>
           </CardContent>
@@ -142,9 +155,11 @@ function AdminAppointments() {
           <CardContent className="flex items-center p-6">
             <Heart className="h-8 w-8 text-red-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Donations</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Donations
+              </p>
               <p className="text-2xl font-bold">
-                {appointments.filter(a => a.isDonation).length}
+                {appointments.filter((a) => a.isDonation).length}
               </p>
             </div>
           </CardContent>
@@ -153,9 +168,11 @@ function AdminAppointments() {
           <CardContent className="flex items-center p-6">
             <Building2 className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Centers</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Centers
+              </p>
               <p className="text-2xl font-bold">
-                {new Set(appointments.map(a => a.centerId)).size}
+                {new Set(appointments.map((a) => a.centerId)).size}
               </p>
             </div>
           </CardContent>
@@ -174,7 +191,9 @@ function AdminAppointments() {
               <Label htmlFor="status-filter">Status</Label>
               <Select
                 value={statusFilter}
-                onValueChange={(value) => setStatusFilter(value as AppointmentStatus | 'ALL')}
+                onValueChange={(value) =>
+                  setStatusFilter(value as AppointmentStatus | 'ALL')
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
@@ -205,7 +224,9 @@ function AdminAppointments() {
               <Label htmlFor="donation-filter">Type</Label>
               <Select
                 value={donationFilter}
-                onValueChange={(value) => setDonationFilter(value as 'ALL' | 'DONATION' | 'SELF_PAY')}
+                onValueChange={(value) =>
+                  setDonationFilter(value as 'ALL' | 'DONATION' | 'SELF_PAY')
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
@@ -253,9 +274,7 @@ function AdminAppointments() {
       {/* Appointments Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Appointments ({total})
-          </CardTitle>
+          <CardTitle className="text-lg">Appointments ({total})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -268,7 +287,9 @@ function AdminAppointments() {
           ) : error ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <p className="text-destructive mb-4">Failed to load appointments</p>
+                <p className="text-destructive mb-4">
+                  Failed to load appointments
+                </p>
                 <Button onClick={() => refetch()} variant="outline">
                   Try Again
                 </Button>
@@ -298,17 +319,18 @@ function AdminAppointments() {
                 <TableBody>
                   {appointments.map((appointment) => {
                     const dateTime = formatDateTime(
-                      appointment.appointmentDate, 
-                      appointment.appointmentTime
+                      appointment.appointmentDateTime,
                     )
-                    
+
                     return (
                       <TableRow key={appointment.id}>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <User className="h-4 w-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">{appointment.patient.fullName}</p>
+                              <p className="font-medium">
+                                {appointment.patient.fullName}
+                              </p>
                               <p className="text-sm text-muted-foreground">
                                 {appointment.patient.email}
                               </p>
@@ -319,21 +341,28 @@ function AdminAppointments() {
                           <div className="flex items-center space-x-2">
                             <Building2 className="h-4 w-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">{appointment.center.centerName}</p>
+                              <p className="font-medium">
+                                {appointment.center.centerName}
+                              </p>
                               <p className="text-sm text-muted-foreground flex items-center">
                                 <MapPin className="h-3 w-3 mr-1" />
-                                {appointment.center.state}, {appointment.center.lga}
+                                {appointment.center.state},{' '}
+                                {appointment.center.lga}
                               </p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">{appointment.screeningType.name}</p>
+                          <p className="font-medium">
+                            {appointment.screeningType.name}
+                          </p>
                         </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{dateTime.date}</p>
-                            <p className="text-sm text-muted-foreground">{dateTime.time}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {dateTime.time}
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -349,13 +378,18 @@ function AdminAppointments() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeVariant(appointment.status)}>
+                          <Badge
+                            variant={getStatusBadgeVariant(appointment.status)}
+                          >
                             {appointment.status.replace('_', ' ')}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <p className="text-sm text-muted-foreground">
-                            {format(new Date(appointment.createdAt), 'MMM dd, yyyy')}
+                            {format(
+                              new Date(appointment.createdAt),
+                              'MMM dd, yyyy',
+                            )}
                           </p>
                         </TableCell>
                       </TableRow>
@@ -398,4 +432,4 @@ function AdminAppointments() {
       </Card>
     </div>
   )
-} 
+}

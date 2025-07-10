@@ -1,13 +1,6 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, useCallback } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -17,6 +10,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -32,22 +27,33 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { 
-  Upload, 
-  FileText, 
+import { Textarea } from '@/components/ui/textarea'
+import {
+  centerAppointments,
+  useUploadResults,
+} from '@/services/providers/center.provider'
+import {
+  FileUploadService,
+  type UploadProgress,
+} from '@/services/upload.service'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
   Calendar,
   CheckCircle,
-  Search,
   Clock,
-  X,
   File,
-  Loader2
+  FileText,
+  Loader2,
+  Search,
+  Upload,
+  X,
 } from 'lucide-react'
-import { centerAppointments, useUploadResults } from '@/services/providers/center.provider'
-import { FileUploadService, type UploadProgress } from '@/services/upload.service'
+import { useCallback, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 // Schema for upload result form
 const uploadResultSchema = z.object({
@@ -71,10 +77,10 @@ function CenterUploadResults() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  
+
   const uploadResultsMutation = useUploadResults()
   const fileUploadService = FileUploadService.getInstance()
-  
+
   const form = useForm<UploadResultFormData>({
     resolver: zodResolver(uploadResultSchema),
     defaultValues: {
@@ -89,51 +95,67 @@ function CenterUploadResults() {
     centerAppointments({
       page: 1,
       pageSize: 50,
-    })
+    }),
   )
 
   const appointments = appointmentsData?.data?.appointments || []
-  
+
   // Filter appointments that are completed and don't have results yet
   const eligibleAppointments = appointments.filter((apt: any) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       apt.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       apt.screeningType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const isCompleted = apt.status === 'COMPLETED'
     const isInProgress = apt.status === 'IN_PROGRESS'
     const needsResults = !(apt as any).result?.id
-    
-    return matchesSearch && (isCompleted || isInProgress) && (statusFilter === 'all' || needsResults)
+
+    return (
+      matchesSearch &&
+      (isCompleted || isInProgress) &&
+      (statusFilter === 'all' || needsResults)
+    )
   })
 
-  const selectedAppointmentData = appointments.find((apt: any) => apt.id === selectedAppointment)
+  const selectedAppointmentData = appointments.find(
+    (apt: any) => apt.id === selectedAppointment,
+  )
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    
-    // Validate file types
-    const allowedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
-    const invalidFiles = files.filter(file => {
-      const extension = file.name.split('.').pop()?.toLowerCase()
-      return !allowedTypes.includes(extension || '')
-    })
-    
-    if (invalidFiles.length > 0) {
-      toast.error(`Invalid file types: ${invalidFiles.map(f => f.name).join(', ')}. Allowed: PDF, Images, DOC, DOCX`)
-      return
-    }
-    
-    // Validate file sizes (max 10MB each)
-    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024)
-    if (oversizedFiles.length > 0) {
-      toast.error(`Files too large: ${oversizedFiles.map(f => f.name).join(', ')}. Max size: 10MB`)
-      return
-    }
-    
-    setSelectedFiles(prev => [...prev, ...files])
-    form.setValue('files', [...selectedFiles, ...files])
-  }, [selectedFiles, form])
+  const handleFileSelect = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || [])
+
+      // Validate file types
+      const allowedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
+      const invalidFiles = files.filter((file) => {
+        const extension = file.name.split('.').pop()?.toLowerCase()
+        return !allowedTypes.includes(extension || '')
+      })
+
+      if (invalidFiles.length > 0) {
+        toast.error(
+          `Invalid file types: ${invalidFiles.map((f) => f.name).join(', ')}. Allowed: PDF, Images, DOC, DOCX`,
+        )
+        return
+      }
+
+      // Validate file sizes (max 10MB each)
+      const oversizedFiles = files.filter(
+        (file) => file.size > 10 * 1024 * 1024,
+      )
+      if (oversizedFiles.length > 0) {
+        toast.error(
+          `Files too large: ${oversizedFiles.map((f) => f.name).join(', ')}. Max size: 10MB`,
+        )
+        return
+      }
+
+      setSelectedFiles((prev) => [...prev, ...files])
+      form.setValue('files', [...selectedFiles, ...files])
+    },
+    [selectedFiles, form],
+  )
 
   const removeFile = (index: number) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index)
@@ -146,9 +168,9 @@ function CenterUploadResults() {
       toast.error('Please select at least one file')
       return
     }
-    
+
     setIsUploading(true)
-    
+
     try {
       // Upload files to Cloudinary first
       const uploadResults = await fileUploadService.uploadFiles(
@@ -156,50 +178,56 @@ function CenterUploadResults() {
         {
           folder: `screening-results/${selectedAppointment}`,
           maxFileSize: 10,
-          allowedTypes: ['pdf', 'image', 'application']
+          allowedTypes: ['pdf', 'image', 'application'],
         },
         (progresses) => {
           setUploadProgress(progresses)
-        }
+        },
       )
-      
+
       // Check if all uploads succeeded
-      const failedUploads = uploadResults.filter(result => result.status === 'error')
+      const failedUploads = uploadResults.filter(
+        (result) => result.status === 'error',
+      )
       if (failedUploads.length > 0) {
-        toast.error(`Failed to upload: ${failedUploads.map(f => f.fileName).join(', ')}`)
+        toast.error(
+          `Failed to upload: ${failedUploads.map((f) => f.fileName).join(', ')}`,
+        )
         setIsUploading(false)
         return
       }
-      
+
       // Prepare file data for backend
-      const fileData = uploadResults.map(result => ({
+      const fileData = uploadResults.map((result) => ({
         fileName: result.fileName,
         originalName: result.fileName,
         filePath: result.filePath || result.fileName,
-        fileType: selectedFiles.find(f => f.name === result.fileName)?.type || 'application/octet-stream',
-        fileSize: selectedFiles.find(f => f.name === result.fileName)?.size || 0,
+        fileType:
+          selectedFiles.find((f) => f.name === result.fileName)?.type ||
+          'application/octet-stream',
+        fileSize:
+          selectedFiles.find((f) => f.name === result.fileName)?.size || 0,
         url: result.url!,
         cloudinaryId: result.url!.split('/').pop()?.split('.')[0] || '',
       }))
-      
+
       // Submit to backend
       await uploadResultsMutation.mutateAsync({
         appointmentId: selectedAppointment,
         files: fileData,
         notes: values.notes || undefined,
       })
-      
+
       toast.success('Results uploaded successfully!')
-      
+
       // Reset form and state
       form.reset()
       setSelectedAppointment('')
       setSelectedFiles([])
       setUploadProgress([])
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['centerAppointments'] })
-      
     } catch (error: any) {
       console.error('Upload error:', error)
       toast.error(error.response?.data?.error || 'Failed to upload results')
@@ -222,7 +250,7 @@ function CenterUploadResults() {
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       })
     } catch {
       return dateString
@@ -266,7 +294,7 @@ function CenterUploadResults() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium">Status</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -274,7 +302,9 @@ function CenterUploadResults() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="completed">Need Results Upload</SelectItem>
+                    <SelectItem value="completed">
+                      Need Results Upload
+                    </SelectItem>
                     <SelectItem value="all">All Appointments</SelectItem>
                   </SelectContent>
                 </Select>
@@ -286,7 +316,10 @@ function CenterUploadResults() {
               {isLoading ? (
                 <div className="space-y-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+                    <div
+                      key={i}
+                      className="h-16 bg-muted animate-pulse rounded"
+                    />
                   ))}
                 </div>
               ) : eligibleAppointments.length === 0 ? (
@@ -294,7 +327,9 @@ function CenterUploadResults() {
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No appointments found</p>
                   <p className="text-xs">
-                    {searchTerm ? 'Try adjusting your search' : 'No appointments need results upload'}
+                    {searchTerm
+                      ? 'Try adjusting your search'
+                      : 'No appointments need results upload'}
                   </p>
                 </div>
               ) : (
@@ -302,8 +337,8 @@ function CenterUploadResults() {
                   <div
                     key={appointment.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
-                      selectedAppointment === appointment.id 
-                        ? 'border-primary bg-primary/5' 
+                      selectedAppointment === appointment.id
+                        ? 'border-primary bg-primary/5'
                         : 'border-border'
                     }`}
                     onClick={() => handleSelectAppointment(appointment.id)}
@@ -317,7 +352,9 @@ function CenterUploadResults() {
                           {appointment.screeningType?.name || 'Unknown Type'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {formatDate((appointment as any).date || (appointment as any).appointmentDate)} • {formatTime((appointment as any).timeSlot || (appointment as any).appointmentTime)}
+                          {formatDate((appointment as any).appointmentDateTime)}{' '}
+                          •{' '}
+                          {formatTime((appointment as any).appointmentDateTime)}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -355,18 +392,39 @@ function CenterUploadResults() {
               <div className="space-y-4">
                 {/* Selected Appointment Info */}
                 <div className="bg-muted p-3 rounded-lg">
-                  <h4 className="font-medium text-sm mb-2">Selected Appointment</h4>
+                  <h4 className="font-medium text-sm mb-2">
+                    Selected Appointment
+                  </h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Patient:</span> {selectedAppointmentData?.patient?.fullName}</p>
-                    <p><span className="font-medium">Screening:</span> {selectedAppointmentData?.screeningType?.name}</p>
-                    <p><span className="font-medium">Date:</span> {formatDate((selectedAppointmentData as any)?.date || (selectedAppointmentData as any)?.appointmentDate)}</p>
-                    <p><span className="font-medium">ID:</span> <span className="font-mono text-xs">{selectedAppointment}</span></p>
+                    <p>
+                      <span className="font-medium">Patient:</span>{' '}
+                      {selectedAppointmentData?.patient?.fullName}
+                    </p>
+                    <p>
+                      <span className="font-medium">Screening:</span>{' '}
+                      {selectedAppointmentData?.screeningType?.name}
+                    </p>
+                    <p>
+                      <span className="font-medium">Date:</span>{' '}
+                      {formatDate(
+                        (selectedAppointmentData as any)?.appointmentDateTime,
+                      )}
+                    </p>
+                    <p>
+                      <span className="font-medium">ID:</span>{' '}
+                      <span className="font-mono text-xs">
+                        {selectedAppointment}
+                      </span>
+                    </p>
                   </div>
                 </div>
 
                 {/* Upload Form */}
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
                       name="notes"
@@ -390,7 +448,9 @@ function CenterUploadResults() {
 
                     {/* File Upload */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Result Files *</label>
+                      <label className="text-sm font-medium">
+                        Result Files *
+                      </label>
                       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground mb-2">
@@ -404,11 +464,13 @@ function CenterUploadResults() {
                           className="hidden"
                           id="file-upload"
                         />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           size="sm"
-                          onClick={() => document.getElementById('file-upload')?.click()}
+                          onClick={() =>
+                            document.getElementById('file-upload')?.click()
+                          }
                         >
                           Select Files
                         </Button>
@@ -421,13 +483,20 @@ function CenterUploadResults() {
                     {/* Selected Files */}
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Selected Files ({selectedFiles.length})</label>
+                        <label className="text-sm font-medium">
+                          Selected Files ({selectedFiles.length})
+                        </label>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {selectedFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-2 bg-muted rounded"
+                            >
                               <div className="flex items-center gap-2">
                                 <File className="h-4 w-4" />
-                                <span className="text-sm truncate">{file.name}</span>
+                                <span className="text-sm truncate">
+                                  {file.name}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
                                   ({(file.size / 1024 / 1024).toFixed(1)}MB)
                                 </span>
@@ -450,14 +519,19 @@ function CenterUploadResults() {
                     {/* Upload Progress */}
                     {uploadProgress.length > 0 && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Upload Progress</label>
+                        <label className="text-sm font-medium">
+                          Upload Progress
+                        </label>
                         {uploadProgress.map((progress) => (
                           <div key={progress.id} className="space-y-1">
                             <div className="flex justify-between text-sm">
                               <span>{progress.fileName}</span>
                               <span>{progress.progress}%</span>
                             </div>
-                            <Progress value={progress.progress} className="h-2" />
+                            <Progress
+                              value={progress.progress}
+                              className="h-2"
+                            />
                           </div>
                         ))}
                       </div>
@@ -466,7 +540,11 @@ function CenterUploadResults() {
                     <div className="flex gap-2 pt-4">
                       <Button
                         type="submit"
-                        disabled={isUploading || selectedFiles.length === 0 || uploadResultsMutation.isPending}
+                        disabled={
+                          isUploading ||
+                          selectedFiles.length === 0 ||
+                          uploadResultsMutation.isPending
+                        }
                         className="flex-1"
                       >
                         {isUploading || uploadResultsMutation.isPending ? (
@@ -516,13 +594,15 @@ function CenterUploadResults() {
             <div>
               <h4 className="font-medium mb-2">For Center Staff:</h4>
               <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Upload results for completed or in-progress appointments</li>
+                <li>
+                  • Upload results for completed or in-progress appointments
+                </li>
                 <li>• Ensure all screening procedures are finished</li>
                 <li>• Include all relevant test results and reports</li>
                 <li>• Double-check patient identity before submitting</li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-2">File Requirements:</h4>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -533,15 +613,16 @@ function CenterUploadResults() {
               </ul>
             </div>
           </div>
-          
+
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Once uploaded, results will be automatically made available to patients 
-              through their patient portal. Ensure accuracy before submission.
+              <strong>Note:</strong> Once uploaded, results will be
+              automatically made available to patients through their patient
+              portal. Ensure accuracy before submission.
             </p>
           </div>
         </CardContent>
       </Card>
     </div>
   )
-} 
+}

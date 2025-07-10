@@ -274,7 +274,7 @@ export class PayoutService {
               transactionId: tx.id,
               amount: tx.amount,
               description: `${appointment?.screeningType.name} for ${appointment?.patient.fullName}`,
-              serviceDate: appointment?.appointmentDate || tx.createdAt,
+              serviceDate: appointment?.appointmentDateTime || tx.createdAt,
               appointmentId: appointment?.id,
             };
           }),
@@ -425,7 +425,7 @@ export class PayoutService {
                   transactionId: tx.id,
                   amount: tx.amount,
                   description: `${appointment?.screeningType.name} for ${appointment?.patient.fullName}`,
-                  serviceDate: appointment?.appointmentDate || tx.createdAt,
+                  serviceDate: appointment?.appointmentDateTime || tx.createdAt,
                   appointmentId: appointment?.id,
                 };
               }),

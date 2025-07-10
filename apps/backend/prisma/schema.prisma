@@ -240,8 +240,7 @@ model Appointment {
   screeningTypeId         String
   donationId              String?
   isDonation              Boolean  @default(false)
-  appointmentDate         DateTime
-  appointmentTime         DateTime
+  appointmentDateTime     DateTime
   transactionId           String? 
   status                  AppointmentStatus
   createdAt               DateTime @default(now())

@@ -1,28 +1,41 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { 
-  Users, 
-  Building2, 
-  HeartHandshake, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Store,
+import { createFileRoute, Link } from '@tanstack/react-router'
+import {
   Activity,
-  Eye,
+  AlertTriangle,
   ArrowUpRight,
-  Stethoscope,
+  Bell,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Eye,
   FileText,
-  Bell
+  HeartHandshake,
+  Stethoscope,
+  Store,
+  TrendingUp,
+  Users,
 } from 'lucide-react'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { adminUsers, adminCenters, adminCampaigns, adminAppointments, adminTransactions, adminStoreProducts } from '@/services/providers/admin.provider'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  adminAppointments,
+  adminCampaigns,
+  adminCenters,
+  adminStoreProducts,
+  adminTransactions,
+  adminUsers,
+} from '@/services/providers/admin.provider'
 
 export const Route = createFileRoute('/admin/')({
   component: AdminDashboard,
@@ -39,20 +52,34 @@ function AdminDashboard() {
   // Calculate key metrics
   const totalUsers = users?.data?.users?.length || 0
   const totalCenters = centers?.data?.centers?.length || 0
-  const activeCenters = centers?.data?.centers?.filter(center => center.status === 'ACTIVE').length || 0
+  const activeCenters =
+    centers?.data?.centers?.filter((center) => center.status === 'ACTIVE')
+      .length || 0
   const totalCampaigns = campaigns?.data?.campaigns?.length || 0
-  const activeCampaigns = campaigns?.data?.campaigns?.filter(campaign => campaign.status === 'ACTIVE').length || 0
+  const activeCampaigns =
+    campaigns?.data?.campaigns?.filter(
+      (campaign) => campaign.status === 'ACTIVE',
+    ).length || 0
   const totalAppointments = appointments?.data?.appointments?.length || 0
-  const scheduledAppointments = appointments?.data?.appointments?.filter(apt => apt.status === 'SCHEDULED').length || 0
+  const scheduledAppointments =
+    appointments?.data?.appointments?.filter(
+      (apt) => apt.status === 'SCHEDULED',
+    ).length || 0
   const totalTransactions = transactions?.data?.transactions?.length || 0
-  const completedTransactions = transactions?.data?.transactions?.filter(txn => txn.status === 'COMPLETED').length || 0
+  const completedTransactions =
+    transactions?.data?.transactions?.filter(
+      (txn) => txn.status === 'COMPLETED',
+    ).length || 0
   const totalProducts = storeProducts?.data?.products?.length || 0
-  const lowStockProducts = storeProducts?.data?.products?.filter(product => product.stock <= 10).length || 0
+  const lowStockProducts =
+    storeProducts?.data?.products?.filter((product) => product.stock <= 10)
+      .length || 0
 
   // Calculate revenue
-  const totalRevenue = transactions?.data?.transactions
-    ?.filter(txn => txn.status === 'COMPLETED')
-    ?.reduce((sum, txn) => sum + (txn.amount || 0), 0) || 0
+  const totalRevenue =
+    transactions?.data?.transactions
+      ?.filter((txn) => txn.status === 'COMPLETED')
+      ?.reduce((sum, txn) => sum + (txn.amount || 0), 0) || 0
 
   // Recent activity items
   const recentAppointments = appointments?.data?.appointments?.slice(0, 5) || []
@@ -91,7 +118,9 @@ function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {totalUsers.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
               Patients, donors, and staff
             </p>
@@ -100,7 +129,9 @@ function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Centers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Centers
+            </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -113,7 +144,9 @@ function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Campaigns
+            </CardTitle>
             <HeartHandshake className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -130,7 +163,9 @@ function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              ₦{totalRevenue.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
               From {completedTransactions} transactions
             </p>
@@ -158,36 +193,64 @@ function AdminDashboard() {
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Transaction Success</span>
-                  <Badge variant={completedTransactions > totalTransactions * 0.8 ? "default" : "destructive"}>
-                    {totalTransactions > 0 ? Math.round((completedTransactions / totalTransactions) * 100) : 0}%
+                  <span className="text-sm font-medium">
+                    Transaction Success
+                  </span>
+                  <Badge
+                    variant={
+                      completedTransactions > totalTransactions * 0.8
+                        ? 'default'
+                        : 'destructive'
+                    }
+                  >
+                    {totalTransactions > 0
+                      ? Math.round(
+                          (completedTransactions / totalTransactions) * 100,
+                        )
+                      : 0}
+                    %
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Platform Utilization</span>
-                  <Badge variant={activeCenters > totalCenters * 0.7 ? "default" : "secondary"}>
-                    {totalCenters > 0 ? Math.round((activeCenters / totalCenters) * 100) : 0}%
+                  <span className="text-sm font-medium">
+                    Platform Utilization
+                  </span>
+                  <Badge
+                    variant={
+                      activeCenters > totalCenters * 0.7
+                        ? 'default'
+                        : 'secondary'
+                    }
+                  >
+                    {totalCenters > 0
+                      ? Math.round((activeCenters / totalCenters) * 100)
+                      : 0}
+                    %
                   </Badge>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Campaign Funding</span>
-                  <Badge variant={activeCampaigns > 0 ? "default" : "secondary"}>
+                  <Badge
+                    variant={activeCampaigns > 0 ? 'default' : 'secondary'}
+                  >
                     {activeCampaigns} active
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Store Inventory</span>
-                  <Badge variant={lowStockProducts > 0 ? "destructive" : "default"}>
-                    {lowStockProducts > 0 ? `${lowStockProducts} low stock` : 'Healthy'}
+                  <Badge
+                    variant={lowStockProducts > 0 ? 'destructive' : 'default'}
+                  >
+                    {lowStockProducts > 0
+                      ? `${lowStockProducts} low stock`
+                      : 'Healthy'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Center Network</span>
-                  <Badge variant="default">
-                    {totalCenters} locations
-                  </Badge>
+                  <Badge variant="default">{totalCenters} locations</Badge>
                 </div>
               </div>
             </div>
@@ -261,26 +324,40 @@ function AdminDashboard() {
             <div className="space-y-3">
               {recentAppointments.length > 0 ? (
                 recentAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between">
+                  <div
+                    key={appointment.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="space-y-1">
                       <p className="text-sm font-medium">
                         {appointment.patient?.fullName}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {appointment.center?.centerName} • {new Date(appointment.appointmentDate).toLocaleDateString()}
+                        {appointment.center?.centerName} •{' '}
+                        {new Date(
+                          appointment.appointmentDateTime,
+                        ).toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge variant={
-                      appointment.status === 'SCHEDULED' ? 'secondary' :
-                      appointment.status === 'COMPLETED' ? 'default' :
-                      appointment.status === 'CANCELLED' ? 'destructive' : 'outline'
-                    }>
+                    <Badge
+                      variant={
+                        appointment.status === 'SCHEDULED'
+                          ? 'secondary'
+                          : appointment.status === 'COMPLETED'
+                            ? 'default'
+                            : appointment.status === 'CANCELLED'
+                              ? 'destructive'
+                              : 'outline'
+                      }
+                    >
                       {appointment.status}
                     </Badge>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No recent appointments</p>
+                <p className="text-sm text-muted-foreground">
+                  No recent appointments
+                </p>
               )}
             </div>
           </CardContent>
@@ -304,26 +381,38 @@ function AdminDashboard() {
             <div className="space-y-3">
               {recentTransactions.length > 0 ? (
                 recentTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between">
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="space-y-1">
                       <p className="text-sm font-medium">
                         {transaction.type.replace('_', ' ')}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        ₦{transaction.amount?.toLocaleString()} • {transaction.paymentChannel || 'N/A'}
+                        ₦{transaction.amount?.toLocaleString()} •{' '}
+                        {transaction.paymentChannel || 'N/A'}
                       </p>
                     </div>
-                    <Badge variant={
-                      transaction.status === 'COMPLETED' ? 'default' :
-                      transaction.status === 'PENDING' ? 'secondary' :
-                      transaction.status === 'FAILED' ? 'destructive' : 'outline'
-                    }>
+                    <Badge
+                      variant={
+                        transaction.status === 'COMPLETED'
+                          ? 'default'
+                          : transaction.status === 'PENDING'
+                            ? 'secondary'
+                            : transaction.status === 'FAILED'
+                              ? 'destructive'
+                              : 'outline'
+                      }
+                    >
                       {transaction.status}
                     </Badge>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No recent transactions</p>
+                <p className="text-sm text-muted-foreground">
+                  No recent transactions
+                </p>
               )}
             </div>
           </CardContent>
@@ -341,7 +430,8 @@ function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-orange-700 mb-3">
-              {lowStockProducts} products are running low on stock and need restocking.
+              {lowStockProducts} products are running low on stock and need
+              restocking.
             </p>
             <Button variant="outline" size="sm" asChild>
               <Link to="/admin/store">
@@ -355,4 +445,4 @@ function AdminDashboard() {
       )}
     </div>
   )
-} 
+}

@@ -25,7 +25,7 @@ export const ReceiptDataSchema = z.object({
   // For appointments
   centerName: z.string().optional(),
   centerAddress: z.string().optional(),
-  appointmentDate: z.string().datetime().optional(),
+  appointmentDateTime: z.string().datetime().optional(), // Combined date and time
   serviceType: z.string().optional(),
 
   // Organization details

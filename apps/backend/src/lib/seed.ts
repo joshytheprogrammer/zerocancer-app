@@ -350,11 +350,11 @@ async function main() {
           bankName: faker.company.name(),
           bankAccount: faker.finance.accountNumber(),
           status: "ACTIVE",
-          screeningTypes: {
-            create: screeningTypes.map((type) => ({
-              screeningTypeId: type.id,
-            })),
-          },
+          // screeningTypes: {
+          //   create: screeningTypes.map((type) => ({
+          //     screeningTypeId: type.id,
+          //   })),
+          // },
         },
       });
 

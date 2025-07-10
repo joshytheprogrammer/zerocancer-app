@@ -1,3 +1,4 @@
+import appointment from '@/assets/images/appointment.png'
 import AppointmentCard from '@/components/shared/AppointmentCard'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -6,7 +7,6 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import appointment from '@/assets/images/appointment.png'
 
 export const Route = createFileRoute('/patient/appointments')({
   component: PatientAppointments,
@@ -35,11 +35,12 @@ function PatientAppointments() {
 
   const upcomingAppointments = appointments.filter(
     (appt: any) =>
-      new Date(appt.appointmentDate) >= today && appt.status === 'SCHEDULED',
+      new Date(appt.appointmentDateTime) >= today &&
+      appt.status === 'SCHEDULED',
   )
   const pastAppointments = appointments.filter(
     (appt: any) =>
-      new Date(appt.appointmentDate) < today && appt.status === 'COMPLETED',
+      new Date(appt.appointmentDateTime) < today && appt.status === 'COMPLETED',
   )
   const cancelledAppointments = appointments.filter(
     (appt: any) => appt.status === 'CANCELLED',

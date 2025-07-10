@@ -52,7 +52,7 @@ export class ReceiptService {
         recipientPhone: appointment.patient.phone || undefined,
         centerName: appointment.center.centerName,
         centerAddress: appointment.center.address,
-        appointmentDate: appointment.appointmentDate.toISOString(),
+        appointmentDateTime: appointment.appointmentDateTime.toISOString(),
         serviceType: appointment.screeningType.name,
         campaignName: undefined,
         campaignDescription: undefined,
@@ -87,7 +87,7 @@ export class ReceiptService {
         taxDeductible: true,
         centerName: undefined,
         centerAddress: undefined,
-        appointmentDate: undefined,
+        appointmentDateTime: undefined,
         serviceType: undefined,
         organizationName: "Zero Cancer Initiative",
         organizationAddress: "123 Health Street, Medical City, State 12345",
@@ -113,7 +113,7 @@ export class ReceiptService {
         taxDeductible: false,
         centerName: undefined,
         centerAddress: undefined,
-        appointmentDate: undefined,
+        appointmentDateTime: undefined,
         serviceType: undefined,
         organizationName: "Zero Cancer Initiative",
         organizationAddress: "123 Health Street, Medical City, State 12345",
@@ -198,9 +198,11 @@ export class ReceiptService {
       yPosition += 15;
       doc.text(`Center: ${receiptData.centerName || "N/A"}`, 50, yPosition);
       yPosition += 15;
-      if (receiptData.appointmentDate) {
+      if (receiptData.appointmentDateTime) {
         doc.text(
-          `Date: ${new Date(receiptData.appointmentDate).toLocaleDateString()}`,
+          `Date: ${new Date(
+            receiptData.appointmentDateTime
+          ).toLocaleDateString()}`,
           50,
           yPosition
         );

@@ -1,17 +1,14 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -21,23 +18,30 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { 
-  Search, 
-  Calendar, 
-  Filter,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  centerAppointmentById,
+  centerAppointments,
+  useCancelCenterAppointment,
+} from '@/services/providers/center.provider'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  Calendar,
   ChevronLeft,
   ChevronRight,
   Eye,
-  X
+  Filter,
+  Search,
+  X,
 } from 'lucide-react'
-import { centerAppointments, centerAppointmentById, useCancelCenterAppointment } from '@/services/providers/center.provider'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 type SearchParams = {
@@ -59,22 +63,28 @@ function CenterAppointments() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { appointmentId, filter } = Route.useSearch()
-  
+
   // Local state for filters and pagination
   const [page, setPage] = useState(1)
   const [pageSize] = useState(20)
   const [statusFilter, setStatusFilter] = useState(filter || '')
   const [screeningTypeFilter, setScreeningTypeFilter] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedAppointment, setSelectedAppointment] = useState<string | null>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<string | null>(
+    null,
+  )
 
   // Fetch appointments with current filters
-  const { data: appointmentsData, isLoading, error } = useQuery(
+  const {
+    data: appointmentsData,
+    isLoading,
+    error,
+  } = useQuery(
     centerAppointments({
       page,
       pageSize,
       screeningType: screeningTypeFilter || undefined,
-    })
+    }),
   )
 
   // Fetch single appointment for dialog
@@ -92,12 +102,13 @@ function CenterAppointments() {
 
   // Filter appointments locally based on search term and status
   const filteredAppointments = appointments.filter((apt) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       apt.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       apt.screeningType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesStatus = !statusFilter || apt.status === statusFilter
-    
+
     return matchesSearch && matchesStatus
   })
 
@@ -108,17 +119,17 @@ function CenterAppointments() {
 
   const handleViewAppointment = (id: string) => {
     setSelectedAppointment(id)
-    navigate({ 
-      to: '/center/appointments', 
-      search: { appointmentId: id } 
+    navigate({
+      to: '/center/appointments',
+      search: { appointmentId: id },
     })
   }
 
   const handleCloseDialog = () => {
     setSelectedAppointment(null)
-    navigate({ 
-      to: '/center/appointments', 
-      search: {} 
+    navigate({
+      to: '/center/appointments',
+      search: {},
     })
   }
 
@@ -132,9 +143,11 @@ function CenterAppointments() {
           handleCloseDialog()
         },
         onError: (error: any) => {
-          toast.error(error.response?.data?.error || 'Failed to cancel appointment')
+          toast.error(
+            error.response?.data?.error || 'Failed to cancel appointment',
+          )
         },
-      }
+      },
     )
   }
 
@@ -158,7 +171,7 @@ function CenterAppointments() {
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       })
     } catch {
       return dateString
@@ -200,10 +213,15 @@ function CenterAppointments() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
+              <Select
+                value={statusFilter || 'all'}
+                onValueChange={(value) =>
+                  setStatusFilter(value === 'all' ? '' : value)
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
@@ -232,9 +250,7 @@ function CenterAppointments() {
       {/* Appointments Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
-            Appointments ({total} total)
-          </CardTitle>
+          <CardTitle>Appointments ({total} total)</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -282,10 +298,10 @@ function CenterAppointments() {
                         {appointment.screeningType?.name || 'Unknown Type'}
                       </TableCell>
                       <TableCell>
-                        {formatDate((appointment as any).date || (appointment as any).appointmentDate)}
+                        {formatDate((appointment as any).appointmentDateTime)}
                       </TableCell>
                       <TableCell>
-                        {formatTime((appointment as any).timeSlot || (appointment as any).appointmentTime)}
+                        {formatTime((appointment as any).appointmentDateTime)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(appointment.status)}>
@@ -317,7 +333,7 @@ function CenterAppointments() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -326,7 +342,9 @@ function CenterAppointments() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={page === totalPages}
                     >
                       Next
@@ -346,11 +364,7 @@ function CenterAppointments() {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               Appointment Details
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCloseDialog}
-              >
+              <Button variant="ghost" size="sm" onClick={handleCloseDialog}>
                 <X className="h-4 w-4" />
               </Button>
             </DialogTitle>
@@ -358,41 +372,75 @@ function CenterAppointments() {
               View and manage appointment information
             </DialogDescription>
           </DialogHeader>
-          
+
           {appointmentDetail ? (
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <h4 className="font-medium mb-2">Patient Information</h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Name:</span> {appointmentDetail.data.patient?.fullName}</p>
-                    <p><span className="font-medium">ID:</span> {appointmentDetail.data.patient?.id}</p>
+                    <p>
+                      <span className="font-medium">Name:</span>{' '}
+                      {appointmentDetail.data.patient?.fullName}
+                    </p>
+                    <p>
+                      <span className="font-medium">ID:</span>{' '}
+                      {appointmentDetail.data.patient?.id}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h4 className="font-medium mb-2">Appointment Details</h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Type:</span> {appointmentDetail.data.screeningType?.name}</p>
-                    <p><span className="font-medium">Date:</span> {formatDate((appointmentDetail.data as any).date || (appointmentDetail.data as any).appointmentDate)}</p>
-                    <p><span className="font-medium">Time:</span> {formatTime((appointmentDetail.data as any).timeSlot || (appointmentDetail.data as any).appointmentTime)}</p>
-                    <p><span className="font-medium">Status:</span> 
-                      <Badge variant={getStatusVariant(appointmentDetail.data.status)} className="ml-2">
-                        {appointmentDetail.data.status.replace('_', ' ').toUpperCase()}
+                    <p>
+                      <span className="font-medium">Type:</span>{' '}
+                      {appointmentDetail.data.screeningType?.name}
+                    </p>
+                    <p>
+                      <span className="font-medium">Date:</span>{' '}
+                      {formatDate(
+                        (appointmentDetail.data as any).appointmentDateTime,
+                      )}
+                    </p>
+                    <p>
+                      <span className="font-medium">Time:</span>{' '}
+                      {formatTime(
+                        (appointmentDetail.data as any).appointmentDateTime,
+                      )}
+                    </p>
+                    <p>
+                      <span className="font-medium">Status:</span>
+                      <Badge
+                        variant={getStatusVariant(
+                          appointmentDetail.data.status,
+                        )}
+                        className="ml-2"
+                      >
+                        {appointmentDetail.data.status
+                          .replace('_', ' ')
+                          .toUpperCase()}
                       </Badge>
                     </p>
                   </div>
                 </div>
               </div>
 
-              {appointmentDetail.data.status === 'scheduled' && (
+              {appointmentDetail.data.status === 'SCHEDULED' && (
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button
                     variant="destructive"
-                    onClick={() => handleCancelAppointment(appointmentDetail.data.id, 'Cancelled by center')}
+                    onClick={() =>
+                      handleCancelAppointment(
+                        appointmentDetail.data.id,
+                        'Cancelled by center',
+                      )
+                    }
                     disabled={cancelMutation.status === 'pending'}
                   >
-                    {cancelMutation.status === 'pending' ? 'Cancelling...' : 'Cancel Appointment'}
+                    {cancelMutation.status === 'pending'
+                      ? 'Cancelling...'
+                      : 'Cancel Appointment'}
                   </Button>
                 </div>
               )}

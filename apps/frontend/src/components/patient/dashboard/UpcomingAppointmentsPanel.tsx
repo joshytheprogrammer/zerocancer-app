@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import type { TPatientAppointment } from '@zerocancer/shared/types'
-import { Link, useNavigate } from '@tanstack/react-router'
 import calendarIcon from '@/assets/images/calendar.png'
 import stethoscopeIcon from '@/assets/images/stethoscope.png'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Link, useNavigate } from '@tanstack/react-router'
+import type { TPatientAppointment } from '@zerocancer/shared/types'
 import { Loader2 } from 'lucide-react'
 
 interface UpcomingAppointmentsPanelProps {
@@ -20,11 +20,7 @@ const AppointmentItem = ({
   return (
     <div className="bg-blue-50/50 p-4 rounded-xl space-y-3">
       <div className="flex items-start gap-3">
-        <img
-          src={stethoscopeIcon}
-          alt="screening"
-          className="w-8 h-8 mt-1"
-        />
+        <img src={stethoscopeIcon} alt="screening" className="w-8 h-8 mt-1" />
         <div className="flex-1">
           <h4 className="font-bold text-gray-800">
             {appointment.screeningType?.name}
@@ -36,7 +32,7 @@ const AppointmentItem = ({
             {appointment.center?.centerName}
           </p>
           <p className="text-sm text-gray-600">
-            {new Date(appointment.appointmentDate).toLocaleDateString(
+            {new Date(appointment.appointmentDateTime).toLocaleDateString(
               'en-US',
               {
                 weekday: 'short',
@@ -47,12 +43,12 @@ const AppointmentItem = ({
             )}
           </p>
         </div>
-        <p className="text-sm font-medium text-gray-700">
+        {/* <p className="text-sm font-medium text-gray-700">
           {new Date(appointment.appointmentTime).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           })}
-        </p>
+        </p> */}
       </div>
       <Button
         onClick={() => navigate({ to: '/patient/appointments' })}
@@ -103,4 +99,4 @@ export default function UpcomingAppointmentsPanel({
       </CardContent>
     </Card>
   )
-} 
+}

@@ -1,26 +1,26 @@
 import { zValidator } from "@hono/zod-validator";
 import {
-  cancelCenterAppointmentSchema,
-  completeAppointmentSchema,
-  deleteResultFileSchema,
-  getCenterAppointmentByIdSchema,
-  getCenterAppointmentsSchema,
-  rescheduleCenterAppointmentSchema,
-  restoreResultFileSchema,
-  uploadResultsSchema,
-  verifyCheckInCodeSchema,
+    cancelCenterAppointmentSchema,
+    completeAppointmentSchema,
+    deleteResultFileSchema,
+    getCenterAppointmentByIdSchema,
+    getCenterAppointmentsSchema,
+    rescheduleCenterAppointmentSchema,
+    restoreResultFileSchema,
+    uploadResultsSchema,
+    verifyCheckInCodeSchema,
 } from "@zerocancer/shared";
 import type {
-  TCancelCenterAppointmentResponse,
-  TCompleteAppointmentResponse,
-  TDataResponse,
-  TDeleteResultFileResponse,
-  TErrorResponse,
-  TGetCenterAppointmentByIdResponse,
-  TGetCenterAppointmentsResponse,
-  TRestoreResultFileResponse,
-  TUploadResultsResponse,
-  TVerifyCheckInCodeResponse,
+    TCancelCenterAppointmentResponse,
+    TCompleteAppointmentResponse,
+    TDataResponse,
+    TDeleteResultFileResponse,
+    TErrorResponse,
+    TGetCenterAppointmentByIdResponse,
+    TGetCenterAppointmentsResponse,
+    TRestoreResultFileResponse,
+    TUploadResultsResponse,
+    TVerifyCheckInCodeResponse,
 } from "@zerocancer/shared/types";
 import { stat } from "fs";
 import { Hono } from "hono";
@@ -76,8 +76,7 @@ centerAppointmentApp.get(
     // Transform the appointments to match the expected type
     const transformedAppointments = appointments.map((appointment) => ({
       ...appointment,
-      appointmentDate: appointment.appointmentDate.toISOString(),
-      appointmentTime: appointment.appointmentTime.toISOString(),
+      appointmentDateTime: appointment.appointmentDateTime.toISOString(),
       createdAt: appointment.createdAt.toISOString(),
       cancellationDate: appointment.cancellationDate?.toISOString() || null,
       checkInCodeExpiresAt:
@@ -127,8 +126,7 @@ centerAppointmentApp.get(
     // Transform the appointment to match the expected type
     const transformedAppointment = {
       ...appointment,
-      appointmentDate: appointment.appointmentDate.toISOString(),
-      appointmentTime: appointment.appointmentTime.toISOString(),
+      appointmentDateTime: appointment.appointmentDateTime.toISOString(),
       createdAt: appointment.createdAt.toISOString(),
       cancellationDate: appointment.cancellationDate?.toISOString() || null,
       checkInCodeExpiresAt:
@@ -197,7 +195,7 @@ centerAppointmentApp.post(
   async (c) => {
     const db = getDB();
     const id = c.req.param("id");
-    const { newDate, newTime, reason } = c.req.valid("json");
+    const { newDateTime, reason } = c.req.valid("json");
     const appointment = await db.appointment.findUnique({ where: { id } });
     if (!appointment) {
       return c.json<TErrorResponse>(
@@ -214,8 +212,7 @@ centerAppointmentApp.post(
     const updated = await db.appointment.update({
       where: { id },
       data: {
-        appointmentDate: new Date(newDate!),
-        appointmentTime: new Date(newTime!),
+        appointmentDateTime: new Date(newDateTime!),
         status: "SCHEDULED",
       },
     });
@@ -224,15 +221,13 @@ centerAppointmentApp.post(
     return c.json<
       TDataResponse<{
         id: string;
-        appointmentDate: string;
-        appointmentTime: string;
+        appointmentDateTime: string;
       }>
     >({
       ok: true,
       data: {
         id: updated.id!,
-        appointmentDate: updated.appointmentDate.toISOString(),
-        appointmentTime: updated.appointmentTime.toISOString(),
+        appointmentDateTime: updated.appointmentDateTime.toISOString(),
       },
     });
   }
@@ -303,21 +298,22 @@ centerAppointmentApp.post(
 
     // Check if appointment is scheduled for today (within reasonable time window)
     const today = new Date();
-    const appointmentDate = new Date(appointment.appointmentDate);
+    const appointmentDateTime = new Date(appointment.appointmentDateTime);
     const isToday =
-      appointmentDate.getDate() === today.getDate() &&
-      appointmentDate.getMonth() === today.getMonth() &&
-      appointmentDate.getFullYear() === today.getFullYear();
+      appointmentDateTime.getDate() === today.getDate() &&
+      appointmentDateTime.getMonth() === today.getMonth() &&
+      appointmentDateTime.getFullYear() === today.getFullYear();
+
+    console.log(
+      appointmentDateTime.getDate(),
+      today.getDate(),
+      appointmentDateTime.getMonth(),
+      today.getMonth(),
+      appointmentDateTime.getFullYear(),
+      today.getFullYear()
+    );
 
     if (!isToday) {
-      console.log(
-        appointmentDate.getDate(),
-        today.getDate(),
-        appointmentDate.getMonth(),
-        today.getMonth(),
-        appointmentDate.getFullYear(),
-        today.getFullYear()
-      );
       return c.json<TVerifyCheckInCodeResponse>({
         ok: true,
         data: {

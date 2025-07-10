@@ -18,8 +18,7 @@ export const cancelCenterAppointmentSchema = z.object({
 });
 
 export const rescheduleCenterAppointmentSchema = z.object({
-  newDate: z.string().min(1),
-  newTime: z.string().min(1),
+  newDateTime: z.string().min(1),
   reason: z.string().optional(),
 });
 
