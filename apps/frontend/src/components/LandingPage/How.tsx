@@ -25,13 +25,13 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Book a cancer screening or get sponsored.
             </p>
-           <Link href="sign-up">
-           <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
-              <ArrowRight />
-            </button> 
-           </Link>
+            <Link href="sign-up">
+              <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
+                <ArrowRight />
+              </button>
+            </Link>
           </div>
-          <div className="mt-auto"> 
+          <div className="mt-auto">
             <img src={patients} alt="Patients" className="w-64" />
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function How() {
         <div className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-3 bg-blue-100 rounded-2xl p-8">
           <h3 className="text-2xl font-bold">Vaccination Center</h3>
           <p className="text-muted-foreground mt-2">
-            Manage screenings, patients, and reporting.
+            Manage vaccinations, patients, and reporting.
           </p>
           <Link href="sign-up">
             <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
@@ -190,7 +190,7 @@ export default function How() {
             <p className="text-muted-foreground mt-2">
               Manage appointments and upload screening results.
             </p>
-              <Link href="sign-up">
+            <Link href="sign-up">
               <button className="mt-4 bg-secondary text-white p-2 rounded-full cursor-pointer hover:bg-secondary/90 transition-all duration-300">
                 <ArrowRight />
               </button>

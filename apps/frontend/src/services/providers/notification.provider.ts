@@ -12,6 +12,8 @@ export function useNotifications() {
   return queryOptions({
     queryKey: [QueryKeys.authUser, 'notifications'],
     queryFn: notificationService.getNotifications,
+    gcTime: 1000 * 60 * 5, // Garbage collection time for query cache
+    refetchInterval: 1000 * 60, // Refetch every minute
   })
 }
 

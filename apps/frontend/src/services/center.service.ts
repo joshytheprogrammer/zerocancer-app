@@ -15,6 +15,7 @@ import {
   centerStaffLoginSchema,
   centerStaffResetPasswordSchema,
   createCenterStaffPasswordSchema,
+  validateStaffInviteSchema,
 } from '@zerocancer/shared/schemas/centerStaff.schema'
 import {
   completeAppointmentSchema,
@@ -37,6 +38,7 @@ import type {
   TInviteStaffResponse,
   TRestoreResultFileResponse,
   TUploadResultsResponse,
+  TValidateStaffInviteResponse,
   TVerifyCheckInCodeResponse,
 } from '@zerocancer/shared/types'
 import type { z } from 'zod'
@@ -116,6 +118,18 @@ export const inviteStaff = async (
 ): Promise<TInviteStaffResponse> => {
   const res = await request.post(endpoints.inviteStaff(), params)
   return res as TInviteStaffResponse
+}
+
+export const validateStaffInvite = async (
+  token: string,
+): Promise<TValidateStaffInviteResponse> => {
+  // Validate token parameter using shared Zod schema
+  const parsed = validateStaffInviteSchema.safeParse({ token })
+  if (!parsed.success) {
+    throw new Error('Invalid token for validateStaffInvite')
+  }
+  const res = await request.get(endpoints.validateStaffInvite(token))
+  return res as TValidateStaffInviteResponse
 }
 
 export const createCenterStaffPassword = async (

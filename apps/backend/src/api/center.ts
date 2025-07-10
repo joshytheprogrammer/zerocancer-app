@@ -7,6 +7,7 @@ import {
   getCenterByIdSchema,
   getCentersQuerySchema,
   inviteStaffSchema,
+  validateStaffInviteSchema,
 } from "@zerocancer/shared";
 import type {
   TCenterStaffForgotPasswordResponse,
@@ -17,6 +18,7 @@ import type {
   TGetCenterByIdResponse,
   TGetCentersResponse,
   TInviteStaffResponse,
+  TValidateStaffInviteResponse,
 } from "@zerocancer/shared/types";
 import crypto from "crypto";
 import { Hono } from "hono";
@@ -456,5 +458,85 @@ centerApp.post(
         },
       },
     });
+  }
+);
+
+// GET /api/center/staff/invite/validate/:token - Validate staff invitation token
+centerApp.get(
+  "/staff/invite/validate/:token",
+  zValidator("param", validateStaffInviteSchema, (result, c) => {
+    if (!result.success)
+      return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
+  }),
+  async (c) => {
+    const db = getDB();
+    const { token } = c.req.valid("param");
+
+    try {
+      // Find the invitation by token and include center details
+      const invitation = await db.centerStaffInvite.findUnique({
+        where: { token },
+        include: {
+          center: {
+            select: {
+              centerName: true,
+              address: true,
+            },
+          },
+        },
+      });
+
+      if (!invitation) {
+        return c.json<TValidateStaffInviteResponse>({
+          ok: true,
+          data: {
+            isValid: false,
+            centerName: "",
+            centerAddress: "",
+            email: "",
+            expiresAt: null,
+            isExpired: false,
+          },
+        });
+      }
+
+      // Check if invitation has already been accepted
+      if (invitation.acceptedAt) {
+        return c.json<TValidateStaffInviteResponse>({
+          ok: true,
+          data: {
+            isValid: false,
+            centerName: invitation.center.centerName,
+            centerAddress: invitation.center.address,
+            email: invitation.email,
+            expiresAt: invitation.expiresAt?.toISOString() || null,
+            isExpired: false,
+          },
+        });
+      }
+
+      // Check if invitation has expired
+      const isExpired = invitation.expiresAt
+        ? new Date() > invitation.expiresAt
+        : false;
+
+      return c.json<TValidateStaffInviteResponse>({
+        ok: true,
+        data: {
+          isValid: !isExpired,
+          centerName: invitation.center.centerName,
+          centerAddress: invitation.center.address,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt?.toISOString() || null,
+          isExpired,
+        },
+      });
+    } catch (error) {
+      console.error("Error validating staff invite:", error);
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Internal server error" },
+        500
+      );
+    }
   }
 );

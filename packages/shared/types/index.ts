@@ -891,3 +891,12 @@ export type TPaymentContext =
       campaign: TDonationCampaign | null;
       fundingAmount: number;
     };
+
+export type TValidateStaffInviteResponse = TDataResponse<{
+  isValid: boolean;
+  centerName: string;
+  centerAddress: string;
+  email: string;
+  expiresAt: string | null;
+  isExpired: boolean;
+}>;

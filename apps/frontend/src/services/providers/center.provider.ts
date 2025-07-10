@@ -56,6 +56,14 @@ export const staffInvites = () =>
     queryFn: () => centerService.getStaffInvites(),
   })
 
+export const validateStaffInvite = (token: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.validateStaffInvite, token],
+    queryFn: () => centerService.validateStaffInvite(token),
+    enabled: !!token && token.length > 10,
+    retry: false, // Don't retry failed validation attempts
+  })
+
 // --- Staff Management Mutations ---
 
 export const useInviteStaff = () => {

@@ -20,7 +20,10 @@ function PatientAppointments() {
     data: appointmentsData,
     isLoading,
     error,
-  } = useQuery(usePatientAppointments({}))
+  } = useQuery({
+    ...usePatientAppointments({}),
+    refetchInterval: 1000 * 15, // If scanning for QRcode, refresh every 15 seconds
+  })
 
   const handleCancelAppointment = (appointmentId: string) => {
     toast.info('Cancelling appointment...')

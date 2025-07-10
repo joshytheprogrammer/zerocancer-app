@@ -322,6 +322,8 @@ export const getStaffInvites = () => '/api/center/staff/invite'
 export const createCenterStaffPassword = () =>
   '/api/center/staff/create-new-password'
 export const centerStaffLogin = () => '/api/center/staff/login'
+export const validateStaffInvite = (token: string) =>
+  `/api/center/staff/invite/validate/${token}`
 
 // Analytics endpoints
 export const getDashboardMetrics = () => '/api/analytics/dashboard'
