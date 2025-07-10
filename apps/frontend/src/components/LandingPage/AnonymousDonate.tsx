@@ -10,7 +10,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { useDonateAnonymous } from '@/services/providers/donor.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { anonymousDonationObject } from '@zerocancer/shared/schemas/donation.schema'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import heroImage from '@/assets/images/hero.png'
@@ -18,10 +17,27 @@ import { Checkbox } from '../ui/checkbox'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
-const formSchema = anonymousDonationObject.extend({
-  // Override to make it a simple boolean for the form
-  wantsReceipt: z.boolean(),
-})
+// This local form schema resolves the type conflicts with react-hook-form
+// by using a simple boolean for `wantsReceipt` and handling validation locally.
+const formSchema = z
+  .object({
+    amount: z.number().min(100, 'Minimum donation is ₦100'),
+    message: z.string().optional(),
+    wantsReceipt: z.boolean(),
+    email: z.string().email().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.wantsReceipt && !data.email) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Email is required when requesting receipt',
+      path: ['email'],
+    },
+  )
 
 type TFormSchema = z.infer<typeof formSchema>
 
