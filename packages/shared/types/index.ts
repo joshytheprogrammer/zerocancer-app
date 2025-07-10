@@ -567,7 +567,7 @@ export type TGetScreeningTypeResponse = {
 };
 
 export type TInviteStaffResponse = TDataResponse<{
-  invites: Array<{ email: string; token: string }>;
+  invites: Array<{ email: string; token: string; expiresAt: string | null }>;
 }>;
 
 export type TCreateCenterStaffPasswordResponse = TDataResponse<{

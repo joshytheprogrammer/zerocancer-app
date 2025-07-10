@@ -1,22 +1,23 @@
+import calendar from '@/assets/images/calendar.png'
+import cross from '@/assets/images/cross.png'
 import NotificationsPanel from '@/components/patient/dashboard/NotificationsPanel'
 import UpcomingAppointmentsPanel from '@/components/patient/dashboard/UpcomingAppointmentsPanel'
 import ScreeningCard from '@/components/shared/ScreeningCard'
 import StatusCard from '@/components/shared/StatusCard'
 import { Button } from '@/components/ui/button'
-import request from '@/lib/request'
 import { useAuthUser } from '@/services/providers/auth.provider'
+import { useNotifications } from '@/services/providers/notification.provider'
 import {
   useCheckWaitlistStatus,
   useJoinWaitlist,
   useLeaveWaitlist,
+  usePatientAppointments,
 } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import type { TScreeningType } from '@zerocancer/shared/types'
 import { toast } from 'sonner'
-import cross from '@/assets/images/cross.png'
-import calendar from '@/assets/images/calendar.png'
 
 export const Route = createFileRoute('/patient/')({
   component: PatientDashboard,
@@ -35,14 +36,15 @@ function PatientDashboard() {
     data: appointmentsData,
     isLoading: appointmentsLoading,
     error: appointmentsError,
-  } = useQuery({
-    queryKey: ['patient-appointments', 'dashboard'],
-    queryFn: async () => request.get('/api/appointment/patient'),
-  })
+  } = useQuery(usePatientAppointments({}))
 
-  // TODO: Add notification fetching logic
-  const notifications: any[] = []
-  const notificationsLoading = false
+  const {
+    data: notificationsData,
+    isLoading: notificationsLoading,
+    error: notificationsError,
+  } = useQuery(useNotifications())
+
+  const notifications = notificationsData?.data || []
 
   const handlePayAndBook = (screeningId: string) => {
     navigate({
@@ -52,7 +54,7 @@ function PatientDashboard() {
   }
 
   const userName = authData?.data?.user?.fullName?.split(' ')[0] || 'Patient'
-  const allAppointments = (appointmentsData as any)?.data?.appointments || []
+  const allAppointments = appointmentsData?.data?.appointments || []
   const today = new Date()
   today.setHours(0, 0, 0, 0) // Set to the beginning of the day
 

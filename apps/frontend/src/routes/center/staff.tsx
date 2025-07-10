@@ -1,11 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { useForm, useFieldArray, type FieldValues } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -15,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -23,29 +27,29 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { useAuthUser } from '@/services/providers/auth.provider'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { 
-  UserPlus, 
-  Users, 
-  Mail,
-  Plus,
-  X,
+  centerById,
+  staffInvites,
+  useInviteStaff,
+} from '@/services/providers/center.provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { inviteStaffSchema } from '@zerocancer/shared/schemas/center.schema'
+import {
+  AlertCircle,
   CheckCircle,
   Clock,
-  AlertCircle
+  Mail,
+  Plus,
+  UserPlus,
+  Users,
+  X,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useFieldArray, useForm, type FieldValues } from 'react-hook-form'
 import { toast } from 'sonner'
-import { inviteStaffSchema } from '@zerocancer/shared/schemas/center.schema'
-import { centerById, useInviteStaff } from '@/services/providers/center.provider'
-import { useAuthUser } from '@/services/providers/auth.provider'
 import type { z } from 'zod'
 
 export const Route = createFileRoute('/center/staff')({
@@ -57,23 +61,30 @@ type InviteStaffForm = z.infer<typeof inviteStaffSchema> & FieldValues
 function CenterStaff() {
   const queryClient = useQueryClient()
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
-  
+
   // Get current authenticated center info
   const authUserQuery = useQuery(useAuthUser())
   const centerId = authUserQuery.data?.data?.user?.id
-  
+
   // Get center details including staff
   const { data: centerData, isLoading: centerLoading } = useQuery({
     ...centerById(centerId!),
     enabled: !!centerId,
   })
-  
+
+  // Get pending staff invites
+  const { data: staffInvitesData, isLoading: invitesLoading } = useQuery({
+    ...staffInvites(),
+    enabled: !!centerId,
+  })
+
   const center = centerData?.data
   const staff = center?.staff || []
-  
+  const pendingInvites = staffInvitesData?.data?.invites || []
+
   // Invite staff mutation
   const inviteStaffMutation = useInviteStaff()
-  
+
   const form = useForm<InviteStaffForm>({
     resolver: zodResolver(inviteStaffSchema),
     defaultValues: {
@@ -81,78 +92,73 @@ function CenterStaff() {
       emails: [''],
     },
   })
-  
-  const { fields, append, remove } = useFieldArray<InviteStaffForm, "emails">({
+
+  const { fields, append, remove } = useFieldArray<InviteStaffForm, 'emails'>({
     control: form.control,
     name: 'emails',
   })
-  
+
   // Update centerId when auth loads
   useEffect(() => {
     if (centerId) {
       form.setValue('centerId', centerId)
     }
   }, [centerId, form])
-  
+
   const onInviteStaff = async (data: InviteStaffForm) => {
     try {
       // Filter out empty emails
-      const validEmails = data.emails.filter(email => email.trim())
-      
+      const validEmails = data.emails.filter((email) => email.trim())
+
       if (validEmails.length === 0) {
         toast.error('Please add at least one email address')
         return
       }
-      
+
       await inviteStaffMutation.mutateAsync({
         centerId: data.centerId,
         emails: validEmails,
       })
-      
+
       toast.success(`Successfully sent ${validEmails.length} invitation(s)`)
-      
+
       // Reset form and close dialog
       form.reset({ centerId: data.centerId, emails: [''] })
       setInviteDialogOpen(false)
-      
+
       // Refresh center data to get updated staff list
       queryClient.invalidateQueries({ queryKey: ['centerById', centerId] })
-      
     } catch (error: any) {
       console.error('Invite staff error:', error)
       toast.error(error?.response?.data?.error || 'Failed to send invitations')
     }
   }
-  
+
   const addEmailField = () => {
     append('')
   }
-  
+
   const removeEmailField = (index: number) => {
     if (fields.length > 1) {
       remove(index)
     }
   }
-  
-  const getStaffStatusDisplay = (email: string) => {
-    // In a real implementation, you'd check invite status from backend
-    // For now, showing all as active since they're in the staff array
-    return { status: 'active', label: 'Active', variant: 'default' as const }
-  }
-  
-  if (centerLoading) {
+
+  if (centerLoading || invitesLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Manage Staff</h1>
         </div>
         <div className="flex items-center justify-center py-8">
-          <div className="text-muted-foreground">Loading staff information...</div>
+          <div className="text-muted-foreground">
+            Loading staff information...
+          </div>
         </div>
       </div>
     )
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -163,10 +169,11 @@ function CenterStaff() {
             Manage Staff
           </h1>
           <p className="text-muted-foreground mt-1">
-            Invite and manage staff members for {center?.centerName || 'your center'}
+            Invite and manage staff members for{' '}
+            {center?.centerName || 'your center'}
           </p>
         </div>
-        
+
         <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -178,13 +185,17 @@ function CenterStaff() {
             <DialogHeader>
               <DialogTitle>Invite Staff Members</DialogTitle>
               <DialogDescription>
-                Enter email addresses to invite new staff members to your center. 
-                They'll receive an email with instructions to set up their account.
+                Enter email addresses to invite new staff members to your
+                center. They'll receive an email with instructions to set up
+                their account.
               </DialogDescription>
             </DialogHeader>
-            
+
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onInviteStaff)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onInviteStaff)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="centerId"
@@ -196,7 +207,7 @@ function CenterStaff() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <FormLabel>Email Addresses</FormLabel>
@@ -210,7 +221,7 @@ function CenterStaff() {
                       Add Email
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {fields.map((field, index) => (
                       <div key={field.id} className="flex items-start gap-2">
@@ -244,13 +255,13 @@ function CenterStaff() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <FormDescription>
-                    Staff members will be able to verify check-ins, upload results, 
-                    and access center management features.
+                    Staff members will be able to verify check-ins, upload
+                    results, and access center management features.
                   </FormDescription>
                 </div>
-                
+
                 <div className="flex justify-end gap-3">
                   <Button
                     type="button"
@@ -281,7 +292,7 @@ function CenterStaff() {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -296,7 +307,7 @@ function CenterStaff() {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
@@ -309,31 +320,31 @@ function CenterStaff() {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Invites</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Invites
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Waiting for setup
-            </p>
+            <div className="text-2xl font-bold">{pendingInvites.length}</div>
+            <p className="text-xs text-muted-foreground">Waiting for setup</p>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Staff List */}
       <Card>
         <CardHeader>
           <CardTitle>Staff Members</CardTitle>
           <p className="text-sm text-muted-foreground">
-            All staff members who have access to your center's features
+            All staff members and pending invitations for your center
           </p>
         </CardHeader>
         <CardContent>
-          {staff.length === 0 ? (
+          {staff.length === 0 && pendingInvites.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No staff members yet</h3>
@@ -350,39 +361,74 @@ function CenterStaff() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
-                  <TableHead>Staff ID</TableHead>
+                  <TableHead>ID / Token</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {staff.map((member) => {
-                  const { status, label, variant } = getStaffStatusDisplay(member.email)
-                  
+                {/* Active Staff Members */}
+                {staff.map((member) => (
+                  <TableRow key={member.id}>
+                    <TableCell className="font-medium">
+                      {member.email}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {member.id.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="default">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Recently
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" disabled>
+                        Manage
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* Pending Invites */}
+                {pendingInvites.map((invite) => {
+                  const isExpired = invite.expiresAt
+                    ? new Date(invite.expiresAt) < new Date()
+                    : false
+
                   return (
-                    <TableRow key={member.id}>
+                    <TableRow key={invite.token}>
                       <TableCell className="font-medium">
-                        {member.email}
+                        {invite.email}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {member.id.slice(0, 8)}...
+                        {invite.token.slice(0, 8)}...
                       </TableCell>
                       <TableCell>
-                        <Badge variant={variant}>
-                          {label}
+                        <Badge
+                          variant={isExpired ? 'destructive' : 'secondary'}
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          {isExpired ? 'Expired' : 'Pending'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        Recently
+                        {invite.expiresAt ? (
+                          <>
+                            Expires{' '}
+                            {new Date(invite.expiresAt).toLocaleDateString()}
+                          </>
+                        ) : (
+                          'No expiry'
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                        >
-                          Manage
+                        <Button variant="outline" size="sm" disabled>
+                          Resend
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -393,7 +439,7 @@ function CenterStaff() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Information Card */}
       <Card>
         <CardHeader>
@@ -407,25 +453,29 @@ function CenterStaff() {
             <div className="flex items-start gap-3">
               <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
               <div>
-                <strong>Verify Check-ins:</strong> Staff can scan QR codes and verify patient check-in codes
+                <strong>Verify Check-ins:</strong> Staff can scan QR codes and
+                verify patient check-in codes
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
               <div>
-                <strong>Upload Results:</strong> Staff can upload screening results and manage patient records
+                <strong>Upload Results:</strong> Staff can upload screening
+                results and manage patient records
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
               <div>
-                <strong>View Appointments:</strong> Staff can see all center appointments and patient information
+                <strong>View Appointments:</strong> Staff can see all center
+                appointments and patient information
               </div>
             </div>
             <div className="flex items-start gap-3">
               <X className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <strong>Staff Management:</strong> Only center owners can invite and manage staff members
+                <strong>Staff Management:</strong> Only center owners can invite
+                and manage staff members
               </div>
             </div>
           </div>
@@ -433,4 +483,4 @@ function CenterStaff() {
       </Card>
     </div>
   )
-} 
+}

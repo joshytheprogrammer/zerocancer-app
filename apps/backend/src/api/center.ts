@@ -176,6 +176,37 @@ centerApp.get(
   }
 );
 
+// GET /api/center/staff/invite
+centerApp.get("/staff/invite", authMiddleware(["center"]), async (c) => {
+  const db = getDB();
+  const centerId = c.get("jwtPayload")?.id;
+
+  if (!centerId) {
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Center ID not found in token" },
+      400
+    );
+  }
+
+  // Fetch pending invites for the center
+  const invites = await db.centerStaffInvite.findMany({
+    where: { centerId: centerId!, acceptedAt: null },
+    select: { email: true, token: true, expiresAt: true },
+  });
+
+  // Transform Date objects to strings for JSON serialization
+  const transformedInvites = invites.map((invite) => ({
+    email: invite.email,
+    token: invite.token,
+    expiresAt: invite.expiresAt?.toISOString() || null,
+  }));
+
+  return c.json<TInviteStaffResponse>({
+    ok: true,
+    data: { invites: transformedInvites },
+  });
+});
+
 // POST /api/center/staff/invite - Invite staff by email
 centerApp.post(
   "/staff/invite",
@@ -187,29 +218,41 @@ centerApp.post(
   async (c) => {
     const db = getDB();
     const { centerId, emails } = c.req.valid("json");
-    const invites = [];
+    const invites: Array<{
+      email: string;
+      token: string;
+      expiresAt: string | null;
+    }> = [];
     for (const email of emails!) {
       // Generate a unique token
       const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
       // Store invite in DB (pseudo-code, adjust to your schema)
       await db.centerStaffInvite.create({
         data: {
           centerId: centerId!,
           email,
           token,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+          expiresAt,
         },
       });
       // Send invite email
       const inviteUrl = `${
         env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
       }/staff/create-new-password?token=${token}`;
+
       await sendEmail({
         to: email!,
         subject: "You're invited to join a center on Zerocancer",
         html: `<p>You have been invited to join a center. <a href="${inviteUrl}">Click here to set your password and join.</a></p>`,
       });
-      invites.push({ email: email!, token: token! });
+
+      invites.push({
+        email: email!,
+        token: token!,
+        expiresAt: expiresAt.toISOString(),
+      });
     }
     return c.json<TInviteStaffResponse>({ ok: true, data: { invites } });
   }

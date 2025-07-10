@@ -3,6 +3,7 @@ import {
   infiniteQueryOptions,
   queryOptions,
   useMutation,
+  useQueryClient,
 } from '@tanstack/react-query'
 import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
 import { getCentersQuerySchema } from '@zerocancer/shared/schemas/center.schema'
@@ -47,19 +48,41 @@ export const centerById = (id: string) =>
     enabled: !!id,
   })
 
+// --- Staff Management Queries ---
+
+export const staffInvites = () =>
+  queryOptions({
+    queryKey: [QueryKeys.centerStaffInvites],
+    queryFn: () => centerService.getStaffInvites(),
+  })
+
 // --- Staff Management Mutations ---
 
-export const useInviteStaff = () =>
-  useMutation({
+export const useInviteStaff = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
     mutationKey: [MutationKeys.inviteStaff],
     mutationFn: centerService.inviteStaff,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.centerStaffInvites],
+      })
+    },
   })
+}
 
-export const useCreateCenterStaffPassword = () =>
-  useMutation({
+export const useCreateCenterStaffPassword = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
     mutationKey: [MutationKeys.createCenterStaffPassword],
     mutationFn: centerService.createCenterStaffPassword,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.centerStaffInvites],
+      })
+    },
   })
+}
 
 export const useCenterStaffForgotPassword = () =>
   useMutation({
