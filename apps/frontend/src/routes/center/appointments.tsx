@@ -298,10 +298,10 @@ function CenterAppointments() {
                         {appointment.screeningType?.name || 'Unknown Type'}
                       </TableCell>
                       <TableCell>
-                        {formatDate((appointment as any).appointmentDateTime)}
+                        {formatDate(appointment.appointmentDateTime)}
                       </TableCell>
                       <TableCell>
-                        {formatTime((appointment as any).appointmentDateTime)}
+                        {formatTime(appointment.appointmentDateTime)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(appointment.status)}>

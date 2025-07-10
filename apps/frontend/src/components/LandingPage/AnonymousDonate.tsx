@@ -1,3 +1,4 @@
+import heroImage from '@/assets/images/hero.png'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -10,12 +11,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { useDonateAnonymous } from '@/services/providers/donor.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import heroImage from '@/assets/images/hero.png'
-import { Checkbox } from '../ui/checkbox'
-import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { Checkbox } from '../ui/checkbox'
 
 // This local form schema resolves the type conflicts with react-hook-form
 // by using a simple boolean for `wantsReceipt` and handling validation locally.
@@ -50,7 +50,6 @@ export default function AnonymousDonate() {
       amount: 20000,
       wantsReceipt: false,
       message: '',
-      email: '',
     },
   })
 
@@ -95,7 +94,9 @@ export default function AnonymousDonate() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Amount (NGN)</FormLabel>
+                    <FormLabel className="text-gray-300">
+                      Amount (NGN)
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -135,7 +136,9 @@ export default function AnonymousDonate() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-300">Email Address</FormLabel>
+                      <FormLabel className="text-gray-300">
+                        Email Address
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="email"

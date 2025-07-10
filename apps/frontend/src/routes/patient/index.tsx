@@ -62,12 +62,13 @@ function PatientDashboard() {
     allAppointments
       .filter(
         (apt: any) =>
-          new Date(apt.appointmentDate) >= today && apt.status === 'SCHEDULED',
+          new Date(apt.appointmentDateTime) >= today &&
+          apt.status === 'SCHEDULED',
       )
       .sort(
         (a: any, b: any) =>
-          new Date(a.appointmentDate).getTime() -
-          new Date(b.appointmentDate).getTime(),
+          new Date(a.appointmentDateTime).getTime() -
+          new Date(b.appointmentDateTime).getTime(),
       )[0] || null
 
   return (

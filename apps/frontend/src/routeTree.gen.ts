@@ -26,7 +26,6 @@ import { Route as StaffLoginRouteImport } from './routes/staff/login'
 import { Route as PatientProfileRouteImport } from './routes/patient/profile'
 import { Route as PatientNotificationsRouteImport } from './routes/patient/notifications'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
-import { Route as PatientResultsRouteImport } from './routes/patient/_results'
 import { Route as DonationPaymentStatusRouteImport } from './routes/donation/payment-status'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as CenterVerifyCodeRouteImport } from './routes/center/verify-code'
@@ -146,10 +145,6 @@ const PatientNotificationsRoute = PatientNotificationsRouteImport.update({
 const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
-  getParentRoute: () => PatientRoute,
-} as any)
-const PatientResultsRoute = PatientResultsRouteImport.update({
-  id: '/_results',
   getParentRoute: () => PatientRoute,
 } as any)
 const DonationPaymentStatusRoute = DonationPaymentStatusRouteImport.update({
@@ -358,7 +353,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/center': typeof CenterRouteWithChildren
   '/donor': typeof DonorRouteWithChildren
-  '/patient': typeof PatientResultsRoute
+  '/patient': typeof PatientRouteWithChildren
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
   '/verify-email': typeof authVerifyEmailRoute
@@ -435,7 +430,6 @@ export interface FileRoutesByTo {
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/donation/payment-status': typeof DonationPaymentStatusRoute
-  '/patient': typeof PatientIndexRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/profile': typeof PatientProfileRoute
@@ -443,6 +437,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/center': typeof CenterIndexRoute
   '/donor': typeof DonorIndexRoute
+  '/patient': typeof PatientIndexRoute
   '/sign-up': typeof authSignUpLayoutIndexRoute
   '/staff/create-new-password': typeof authStaffCreateNewPasswordRoute
   '/donor/campaigns/$campaignId': typeof DonorCampaignsCampaignIdRouteWithChildren
@@ -490,7 +485,6 @@ export interface FileRoutesById {
   '/center/verify-code': typeof CenterVerifyCodeRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/donation/payment-status': typeof DonationPaymentStatusRoute
-  '/patient/_results': typeof PatientResultsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/profile': typeof PatientProfileRoute
@@ -601,7 +595,6 @@ export interface FileRouteTypes {
     | '/center/verify-code'
     | '/demo/tanstack-query'
     | '/donation/payment-status'
-    | '/patient'
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/profile'
@@ -609,6 +602,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/center'
     | '/donor'
+    | '/patient'
     | '/sign-up'
     | '/staff/create-new-password'
     | '/donor/campaigns/$campaignId'
@@ -655,7 +649,6 @@ export interface FileRouteTypes {
     | '/center/verify-code'
     | '/demo/tanstack-query'
     | '/donation/payment-status'
-    | '/patient/_results'
     | '/patient/appointments'
     | '/patient/notifications'
     | '/patient/profile'
@@ -807,13 +800,6 @@ declare module '@tanstack/react-router' {
       path: '/appointments'
       fullPath: '/patient/appointments'
       preLoaderRoute: typeof PatientAppointmentsRouteImport
-      parentRoute: typeof PatientRoute
-    }
-    '/patient/_results': {
-      id: '/patient/_results'
-      path: ''
-      fullPath: '/patient'
-      preLoaderRoute: typeof PatientResultsRouteImport
       parentRoute: typeof PatientRoute
     }
     '/donation/payment-status': {
@@ -1238,7 +1224,6 @@ const DonorRouteChildren: DonorRouteChildren = {
 const DonorRouteWithChildren = DonorRoute._addFileChildren(DonorRouteChildren)
 
 interface PatientRouteChildren {
-  PatientResultsRoute: typeof PatientResultsRoute
   PatientAppointmentsRoute: typeof PatientAppointmentsRoute
   PatientNotificationsRoute: typeof PatientNotificationsRoute
   PatientProfileRoute: typeof PatientProfileRoute
@@ -1249,7 +1234,6 @@ interface PatientRouteChildren {
 }
 
 const PatientRouteChildren: PatientRouteChildren = {
-  PatientResultsRoute: PatientResultsRoute,
   PatientAppointmentsRoute: PatientAppointmentsRoute,
   PatientNotificationsRoute: PatientNotificationsRoute,
   PatientProfileRoute: PatientProfileRoute,

@@ -1,14 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Users,
-  Calendar,
-  Upload,
-  CircleDollarSign,
-  QrCode,
-  FileText,
-} from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -17,38 +9,68 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { centerAppointments } from '@/services/providers/center.provider'
 import { useAuthUser } from '@/services/providers/auth.provider'
+import { centerAppointments } from '@/services/providers/center.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+  Calendar,
+  CircleDollarSign,
+  FileText,
+  QrCode,
+  Upload,
+  Users,
+} from 'lucide-react'
 
 export const Route = createFileRoute('/center/')({
   component: CenterDashboard,
 })
 
+const formatDate = (dateString: string) => {
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  } catch {
+    return dateString
+  }
+}
+
+const formatTime = (timeString: string) => {
+  return timeString || 'Not specified'
+}
+
 function CenterDashboard() {
   const authUserQuery = useQuery(useAuthUser())
-  
+
   // Get recent appointments
   const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery(
-    centerAppointments({ 
+    centerAppointments({
       page: 1,
-      pageSize: 5
-    })
+      pageSize: 5,
+    }),
   )
 
   // TODO: Add these service functions to center.service.ts
   // const { data: dashboardStats } = useQuery(centerDashboardStats())
   // For now, using calculated stats from appointments data
-  
+
   const appointments = appointmentsData?.data?.appointments || []
-  
+
   // Calculate stats from available data
-  const upcomingCount = appointments.filter((apt: any) => apt.status === 'scheduled').length
-  const completedCount = appointments.filter((apt: any) => apt.status === 'completed').length
-  const inProgressCount = appointments.filter((apt: any) => apt.status === 'in_progress').length
-  const pendingResultsCount = appointments.filter((apt: any) => 
-    apt.status === 'completed' && !(apt as any).resultUploaded
+  const upcomingCount = appointments.filter(
+    (apt: any) => apt.status === 'scheduled',
+  ).length
+  const completedCount = appointments.filter(
+    (apt: any) => apt.status === 'completed',
+  ).length
+  const inProgressCount = appointments.filter(
+    (apt: any) => apt.status === 'in_progress',
+  ).length
+  const pendingResultsCount = appointments.filter(
+    (apt: any) => apt.status === 'completed' && !(apt as any).resultUploaded,
   ).length
 
   const stats = [
@@ -89,7 +111,8 @@ function CenterDashboard() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {centerName}. Here's an overview of your center's activity.
+          Welcome back, {centerName}. Here's an overview of your center's
+          activity.
         </p>
       </div>
 
@@ -120,14 +143,21 @@ function CenterDashboard() {
         {stats.map((stat) => (
           <Card key={stat.title} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
               {stat.icon}
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">{stat.change}</p>
               {stat.link && (
-                <Button variant="link" size="sm" className="p-0 h-auto mt-2" asChild>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 h-auto mt-2"
+                  asChild
+                >
                   <Link to={stat.link}>View all →</Link>
                 </Button>
               )}
@@ -169,25 +199,28 @@ function CenterDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {appointments.map((appt: any) => (
+                {appointments.map((appt) => (
                   <TableRow key={appt.id}>
                     <TableCell className="font-medium">
                       {appt.patient?.fullName || 'Unknown Patient'}
                     </TableCell>
-                    <TableCell>{appt.screeningType?.name || 'Unknown Type'}</TableCell>
                     <TableCell>
-                      {new Date(appt.date).toLocaleDateString()} at {appt.timeSlot}
+                      {appt.screeningType?.name || 'Unknown Type'}
+                    </TableCell>
+                    <TableCell>
+                      {formatDate(appt.appointmentDateTime)} at{' '}
+                      {formatTime(appt.appointmentDateTime)}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          appt.status === 'scheduled' 
-                            ? 'default' 
-                            : appt.status === 'in_progress'
-                            ? 'secondary'
-                            : appt.status === 'completed'
-                            ? 'outline'
-                            : 'destructive'
+                          appt.status === 'SCHEDULED'
+                            ? 'default'
+                            : appt.status === 'IN_PROGRESS'
+                              ? 'secondary'
+                              : appt.status === 'COMPLETED'
+                                ? 'outline'
+                                : 'destructive'
                         }
                       >
                         {appt.status.replace('_', ' ').toUpperCase()}
@@ -195,7 +228,10 @@ function CenterDashboard() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" asChild>
-                        <Link to="/center/appointments" search={{ appointmentId: appt.id }}>
+                        <Link
+                          to="/center/appointments"
+                          search={{ appointmentId: appt.id }}
+                        >
                           View
                         </Link>
                       </Button>
@@ -209,4 +245,4 @@ function CenterDashboard() {
       </Card>
     </div>
   )
-} 
+}

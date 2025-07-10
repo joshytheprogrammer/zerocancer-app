@@ -9,6 +9,9 @@ import notification from '@/assets/images/notification.png'
 import stethoscope from '@/assets/images/stethoscope.png'
 import { Button } from '@/components/ui/button'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
+import { useNotifications } from '@/services/providers/notification.provider'
+import { usePatientAppointments } from '@/services/providers/patient.provider'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
@@ -27,6 +30,11 @@ export const Route = createFileRoute('/patient')({
     }
 
     return null
+  },
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(usePatientAppointments({}))
+    context.queryClient.prefetchQuery(useAllScreeningTypes())
+    context.queryClient.prefetchQuery(useNotifications())
   },
 })
 
@@ -111,7 +119,6 @@ function PatientLayout() {
           <Outlet />
         </main>
       </div>
-
 
       {/* Bottom Navigation for Mobile */}
       <div className="fixed bottom-2 inset-x-2 md:hidden bg-white z-50 shadow-lg rounded-xl">
