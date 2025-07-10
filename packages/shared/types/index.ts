@@ -126,7 +126,7 @@ export type TPatientAppointment = {
   screeningTypeId: string;
   appointmentDateTime: string; // Combined date and time
   isDonation: boolean;
-  status: string;
+  status: "PENDING" | "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   transactionId?: string;
   checkInCode?: string;
   checkInCodeExpiresAt?: string | null;

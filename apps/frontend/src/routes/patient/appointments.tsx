@@ -27,23 +27,26 @@ function PatientAppointments() {
   }
 
   const appointments = (appointmentsData?.data?.appointments || []).filter(
-    (appt: any) => appt.status !== 'PENDING',
+    (appt) => appt.status !== 'PENDING',
   )
 
   const today = new Date()
   today.setHours(0, 0, 0, 0) // Set to beginning of today
 
   const upcomingAppointments = appointments.filter(
-    (appt: any) =>
+    (appt) =>
       new Date(appt.appointmentDateTime) >= today &&
       appt.status === 'SCHEDULED',
   )
+  const ongoingAppointments = appointments.filter(
+    (appt) => appt.status === 'IN_PROGRESS',
+  )
   const pastAppointments = appointments.filter(
-    (appt: any) =>
+    (appt) =>
       new Date(appt.appointmentDateTime) < today && appt.status === 'COMPLETED',
   )
   const cancelledAppointments = appointments.filter(
-    (appt: any) => appt.status === 'CANCELLED',
+    (appt) => appt.status === 'CANCELLED',
   )
 
   if (isLoading) {
@@ -111,7 +114,10 @@ function PatientAppointments() {
       </div>
 
       <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 sm:max-w-md">
+        <TabsList className="grid w-full grid-cols-4 sm:max-w-lg">
+          <TabsTrigger value="ongoing">
+            Ongoing ({ongoingAppointments.length})
+          </TabsTrigger>
           <TabsTrigger value="upcoming">
             Upcoming ({upcomingAppointments.length})
           </TabsTrigger>
@@ -136,16 +142,36 @@ function PatientAppointments() {
             </div>
           ) : (
             renderEmptyState(
-              'No Appointment',
+              'No Upcoming Appointments',
               'Click the button below to book an appointment',
               true,
+            )
+          )}
+        </TabsContent>
+        <TabsContent value="ongoing">
+          {ongoingAppointments.length > 0 ? (
+            <div className="grid sm:grid-cols-2 gap-6 mt-4">
+              {ongoingAppointments.map((appt: any) => (
+                <AppointmentCard
+                  key={appt.id}
+                  appointment={appt}
+                  onCancel={handleCancelAppointment}
+                  isCancelling={false}
+                />
+              ))}
+            </div>
+          ) : (
+            renderEmptyState(
+              'No Ongoing Appointments',
+              'Appointments that are currently in progress will appear here.',
+              false,
             )
           )}
         </TabsContent>
         <TabsContent value="past">
           {pastAppointments.length > 0 ? (
             <div className="grid sm:grid-cols-2 gap-6 mt-4">
-              {pastAppointments.map((appt: any) => (
+              {pastAppointments.map((appt) => (
                 <AppointmentCard
                   key={appt.id}
                   appointment={appt}
