@@ -87,7 +87,7 @@ patientAppointmentApp.post(
       data: {
         type: "APPOINTMENT",
         status: "PENDING",
-        amount: result?.amount, // TODO: set actual amount
+        amount: result?.amount,
         paymentReference, // store actual paystack payment reference
         paymentChannel: "PAYSTACK",
       },

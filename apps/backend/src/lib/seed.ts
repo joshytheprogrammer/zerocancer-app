@@ -350,10 +350,28 @@ async function main() {
           bankName: faker.company.name(),
           bankAccount: faker.finance.accountNumber(),
           status: "ACTIVE",
-          // screeningTypes: {
-          //   create: screeningTypes.map((type) => ({
-          //     screeningTypeId: type.id,
-          // })),
+          screeningTypes: {
+            create: screeningTypes.map((type) => ({
+              screeningTypeId: type.id,
+            })),
+          },
+        },
+      });
+
+      await prisma.centerStaff.upsert({
+        where: {
+          centerId_email: {
+            centerId: center.id,
+            email: `center${i + 1}@zerocancer.org`,
+          },
+        },
+        update: {},
+        create: {
+          id: center.id,
+          email: `center${i + 1}@zerocancer.org`,
+          passwordHash: hashedPassword,
+          role: "admin",
+          centerId: center.id,
         },
       });
 

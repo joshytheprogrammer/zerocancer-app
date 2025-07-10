@@ -448,7 +448,7 @@ donationApp.post(
               status: "SCHEDULED",
               checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
               checkInCodeExpiresAt: new Date(
-                Date.now() + 7 * 24 * 60 * 60 * 1000
+                Date.now() + 365 * 24 * 60 * 60 * 1000 // 1 year expiry - since you paid, it shouldn't expire
               ),
               // paymentReference: reference,
             },

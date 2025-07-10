@@ -334,12 +334,13 @@ centerAppointmentApp.post(
 
     // Create verification record and update appointment status
     const staffId = payload.id; // Center staff ID from JWT
+
     await db.$transaction(async (tx) => {
       // Create verification record
       await tx.appointmentVerification.create({
         data: {
           appointmentId: appointment.id, // Link to appointment ID
-          verifiedBy: staffId!,
+          verifiedBy: staffId!, // Center staff ID from JWT or in case of admin - the id of the center is the same with the id of a n admin ceenter staff
           verifiedAt: new Date(),
         },
       });

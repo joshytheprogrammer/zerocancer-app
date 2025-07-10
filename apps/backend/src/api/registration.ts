@@ -345,13 +345,23 @@ registerApp.post(
         address: data.address!,
         state: data.state!,
         lga: data.localGovernment!,
+        bankAccount: "",
         services: {
           connect: (data.services || []).map((id: string) => ({ id })),
         },
-        bankAccount: "",
       },
       include: { services: { select: { id: true } } },
     });
+
+    await db.centerStaff.create({
+      data: {
+        centerId: center.id,
+        email: data.email!,
+        passwordHash: hashedPassword,
+        role: "ADMIN", // Default role for the center admin
+      },
+    });
+
     return c.json<TScreeningCenterRegisterResponse>(
       {
         ok: true,
