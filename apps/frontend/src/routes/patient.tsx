@@ -12,6 +12,7 @@ import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
 import { useNotifications } from '@/services/providers/notification.provider'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import { useQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
@@ -52,6 +53,10 @@ function PatientLayout() {
     },
   ]
 
+  const { data } = useQuery(useNotifications())
+
+  const hasUnreadNotifications = data?.data?.some((n) => !n.read)
+
   return (
     <div className="min-h-screen w-full">
       {/* Fixed Sidebar for Desktop */}
@@ -71,13 +76,20 @@ function PatientLayout() {
                 <Link
                   key={link.to}
                   to={link.to}
+                  preload="render"
                   className="flex items-center gap-4 rounded-lg px-3 py-3 text-white transition-all hover:bg-white/20"
                   activeOptions={
                     link.to === '/patient' ? { exact: true } : { exact: false }
                   }
                   activeProps={{ className: 'bg-white/30 font-semibold' }}
                 >
-                  <img src={link.icon} alt={link.label} className="h-6 w-6" />
+                  <div className="relative">
+                    <img src={link.icon} alt={link.label} className="h-6 w-6" />
+                    {link.to === '/patient/notifications' &&
+                      hasUnreadNotifications && (
+                        <span className="absolute top-0 right-0 block size-3 rounded-full bg-red-500 ring-1 ring-white"></span>
+                      )}
+                  </div>
                   {link.label}
                 </Link>
               ))}
