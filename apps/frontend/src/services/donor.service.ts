@@ -38,11 +38,16 @@ export const createCampaign = async (
 }
 
 // Get donor's campaigns (paginated, filterable)
-export const getCampaigns = async (
-  params: z.infer<typeof getCampaignsSchema>,
-): Promise<TGetCampaignsResponse> => {
-  const res = await request.get(endpoints.getCampaigns(params))
-  return res as TGetCampaignsResponse
+export const getCampaigns = async (params: {
+  page?: number
+  pageSize?: number
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED' | 'PENDING'
+  search?: string
+}) => {
+  const response = await request.get<TGetCampaignsResponse>(
+    endpoints.getCampaigns(params),
+  )
+  return response as TGetCampaignsResponse
 }
 
 // Get specific campaign details
