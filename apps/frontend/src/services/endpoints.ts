@@ -342,27 +342,38 @@ export const triggerWaitlistMatching = () => `/api/waitlist/manual-trigger`
 export const getWaitlistMatchingStats = () => `/api/waitlist/matching-stats`
 export const getWaitlistMatchingStatus = () => `/api/waitlist/matching-status`
 
-// PAYOUTS
-export const getAllCenterBalances = () => '/api/payouts/center-balances'
-export const getCenterBalance = (centerId: string) =>
-  `/api/payouts/center/${centerId}/balance`
-export const createManualPayout = () => '/api/payouts/manual'
-export const processPayout = (payoutId: string) =>
-  `/api/payouts/${payoutId}/process`
-export const retryPayout = (payoutId: string) =>
-  `/api/payouts/${payoutId}/retry`
-export const getPayouts = (params?: Record<string, unknown>) =>
-  `/api/payouts${buildQuery(params || {})}`
-export const getCenterPayouts = (
-  centerId: string,
-  params?: Record<string, unknown>,
-) => `/api/payouts/center/${centerId}${buildQuery(params || {})}`
-export const getCenterTransactions = (
-  centerId: string,
-  params?: Record<string, unknown>,
-) => `/api/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
-export const getBanks = () => '/api/payouts/banks'
-export const verifyAccount = () => '/api/payouts/verify-account'
+// WAITLIST MATCHING EXECUTION MANAGEMENT
+export const getMatchingExecutions = (params: Record<string, unknown>) =>
+  `/api/admin/matching/executions${buildQuery(params)}`
+
+export const getMatchingExecution = (executionId: string) =>
+  `/api/admin/matching/executions/${executionId}`
+
+export const triggerMatching = () => `/api/admin/matching/trigger`
+
+export const getExecutionLogs = (
+  executionId: string,
+  params: Record<string, unknown>,
+) => `/api/admin/matching/executions/${executionId}/logs${buildQuery(params)}`
+
+// ALLOCATION MANAGEMENT
+export const getAllocations = (params: Record<string, unknown>) =>
+  `/api/admin/allocations${buildQuery(params)}`
+
+export const getExpiredAllocations = () => `/api/admin/allocations/expired`
+
+export const expireAllocation = (allocationId: string) =>
+  `/api/admin/allocations/${allocationId}/expire`
+
+export const getPatientAllocations = (patientId: string) =>
+  `/api/admin/allocations/patient/${patientId}`
+
+// SYSTEM CONFIGURATION
+export const getMatchingConfig = () => `/api/admin/config/matching`
+
+export const updateMatchingConfig = () => `/api/admin/config/matching`
+
+export const getSystemHealth = () => `/api/admin/system/health`
 
 export const cancelPatientAppointment = (appointmentId: string) =>
   `/api/appointment/${appointmentId}/cancel`

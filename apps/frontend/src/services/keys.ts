@@ -60,6 +60,16 @@ export enum QueryKeys {
   // Waitlist admin keys
   waitlistMatchingStats = 'waitlist-matching-stats',
   waitlistMatchingStatus = 'waitlist-matching-status',
+
+  // Waitlist Matching System
+  matchingExecutions = 'matchingExecutions',
+  matchingExecution = 'matchingExecution',
+  executionLogs = 'executionLogs',
+  allocations = 'allocations',
+  expiredAllocations = 'expiredAllocations',
+  patientAllocations = 'patientAllocations',
+  matchingConfig = 'matchingConfig',
+  systemHealth = 'systemHealth',
 }
 
 export enum MutationKeys {
@@ -124,6 +134,11 @@ export enum MutationKeys {
 
   triggerWaitlistMatching = 'trigger-waitlist-matching',
   cancelAppointment = 'cancelAppointment',
+
+  // Waitlist Matching System
+  triggerMatching = 'triggerMatching',
+  expireAllocation = 'expireAllocation',
+  updateMatchingConfig = 'updateMatchingConfig',
 }
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
