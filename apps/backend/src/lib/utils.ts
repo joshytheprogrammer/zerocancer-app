@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { CampaignStatus, Gender, PrismaClient } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
 import bcrypt from "bcryptjs";
+import { TDonationCampaign } from "../../../../packages/shared/types";
 import { getDB } from "./db";
 import { sendEmail, sendNotificationEmail } from "./email";
 
@@ -13,6 +14,40 @@ interface BatchConfig {
   enableDemographicTargeting: boolean;
   enableGeographicTargeting: boolean;
   allocationExpiryDays: number;
+}
+
+// Extended campaign type for matching algorithm with database relations
+interface MatchingCampaign {
+  id: string;
+  donorId: string;
+  totalAmount: number;
+  availableAmount: number;
+  title: string;
+  purpose?: string | null;
+  targetGender?: Gender | null;
+  targetAgeRange?: string | null;
+  targetStates: string[];
+  targetLgas: string[];
+  status: CampaignStatus;
+  expiryDate?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Additional computed fields for targeting
+  targetAgeMin?: number;
+  targetAgeMax?: number;
+  targetIncomeMin?: number;
+  targetIncomeMax?: number;
+
+  // Relations
+  screeningTypes: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    screeningTypeCategoryId: string;
+    active: boolean;
+    agreedPrice: number;
+  }>;
 }
 
 interface MatchingMetrics {
@@ -81,21 +116,7 @@ interface PatientWithProfile {
     id: string;
     name: string;
     agreedPrice: number;
-    campaigns: Array<{
-      id: string;
-      title: string;
-      availableAmount: number;
-      targetGender?: string[];
-      targetAgeMin?: number;
-      targetAgeMax?: number;
-      targetStates?: string[];
-      targetLgas?: string[];
-      targetIncomeMin?: number;
-      targetIncomeMax?: number;
-      donorId: string;
-      createdAt: Date;
-      screeningTypes: Array<{ id: string; name: string }>;
-    }>;
+    campaigns: MatchingCampaign[];
   };
 }
 
@@ -130,18 +151,26 @@ function parseAgeRange(ageRange: string): [number, number] {
  */
 function doesPatientMatchCampaign(
   patient: PatientWithProfile,
-  campaign: any,
+  campaign: MatchingCampaign,
   config: BatchConfig
 ): boolean {
   if (!config.enableDemographicTargeting) {
     return true; // If targeting disabled, all patients match
   }
 
-  // Age targeting
-  if (campaign.targetAgeMin || campaign.targetAgeMax) {
-    const patientAge =
-      patient.patient.age ||
-      calculateAgeFromProfile(patient.patient.patientProfile?.dateOfBirth);
+  // Age targeting - handle both individual min/max and age range
+  const patientAge =
+    patient.patient.age ||
+    calculateAgeFromProfile(patient.patient.patientProfile?.dateOfBirth);
+
+  if (campaign.targetAgeRange) {
+    // Parse age range string (e.g., "18-65")
+    const [ageMin, ageMax] = parseAgeRange(campaign.targetAgeRange);
+    if (patientAge && (patientAge < ageMin || patientAge > ageMax)) {
+      return false;
+    }
+  } else if (campaign.targetAgeMin || campaign.targetAgeMax) {
+    // Use individual min/max values
     if (!patientAge) return true; // If age unknown, allow match
     if (campaign.targetAgeMin && patientAge < campaign.targetAgeMin)
       return false;
@@ -150,11 +179,10 @@ function doesPatientMatchCampaign(
   }
 
   // Gender targeting
-  if (campaign.targetGender && campaign.targetGender.length > 0) {
+  if (campaign.targetGender) {
     const patientGender =
       patient.patient.gender || patient.patient.patientProfile?.gender;
-    if (!patientGender || !campaign.targetGender.includes(patientGender))
-      return false;
+    if (!patientGender || campaign.targetGender !== patientGender) return false;
   }
 
   // State targeting
@@ -204,23 +232,31 @@ function doesPatientMatchCampaign(
  * @returns Numerical score (0-80) representing targeting quality
  */
 function calculateTargetingScore(
-  campaign: any,
+  campaign: MatchingCampaign,
   patient: PatientWithProfile
 ): number {
   let score = 0;
 
   // Higher score = better match
-  // Age match bonus
-  if (campaign.targetAgeMin || campaign.targetAgeMax) {
-    const patientAge =
-      patient.patient.age ||
-      calculateAgeFromProfile(patient.patient.patientProfile?.dateOfBirth);
-    if (
-      patientAge &&
-      patientAge >= (campaign.targetAgeMin || 0) &&
-      patientAge <= (campaign.targetAgeMax || 150)
-    ) {
-      score += 10;
+  // Age match bonus - handle both age range and individual min/max
+  const patientAge =
+    patient.patient.age ||
+    calculateAgeFromProfile(patient.patient.patientProfile?.dateOfBirth);
+
+  if (patientAge) {
+    if (campaign.targetAgeRange) {
+      // Parse age range string (e.g., "18-65")
+      const [ageMin, ageMax] = parseAgeRange(campaign.targetAgeRange);
+      if (patientAge >= ageMin && patientAge <= ageMax) {
+        score += 10;
+      }
+    } else if (campaign.targetAgeMin || campaign.targetAgeMax) {
+      // Use individual min/max values
+      const minAge = campaign.targetAgeMin || 0;
+      const maxAge = campaign.targetAgeMax || 150;
+      if (patientAge >= minAge && patientAge <= maxAge) {
+        score += 10;
+      }
     }
   }
 
@@ -230,7 +266,7 @@ function calculateTargetingScore(
   if (
     campaign.targetGender &&
     patientGender &&
-    campaign.targetGender.includes(patientGender)
+    campaign.targetGender === patientGender
   ) {
     score += 15;
   }
@@ -497,24 +533,33 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
 
   // STEP 1: Expire old allocations before processing new matches
   console.log(`🕐 Step 1: Checking for expired allocations...`);
-  const expiryResults = await expireOldAllocations(db, config.allocationExpiryDays, executionRecord.id);
-  
+  const expiryResults = await expireOldAllocations(
+    db,
+    config.allocationExpiryDays,
+    executionRecord.id
+  );
+
   if (expiryResults.expired > 0) {
-    console.log(`⏰ Expired ${expiryResults.expired} old allocations, returned ₦${expiryResults.fundsReturned.toLocaleString()} to campaigns`);
-    
+    console.log(
+      `⏰ Expired ${
+        expiryResults.expired
+      } old allocations, returned ₦${expiryResults.fundsReturned.toLocaleString()} to campaigns`
+    );
+
     // Update metrics with expiry results
     metrics.expiredAllocations = expiryResults.expired;
     metrics.fundsReturnedFromExpiry = expiryResults.fundsReturned;
     if (expiryResults.errors.length > 0) {
       metrics.warnings.push(...expiryResults.errors);
     }
-    
+
     // Update execution record with expiry metrics
     await db.matchingExecution.update({
       where: { id: executionRecord.id },
       data: {
-        warnings: expiryResults.errors.length > 0 ? expiryResults.errors : undefined
-      }
+        warnings:
+          expiryResults.errors.length > 0 ? expiryResults.errors : undefined,
+      },
     });
   }
 
@@ -540,14 +585,14 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
             },
             donationAllocations: {
               where: { claimedAt: null },
-              select: { 
-                id: true, 
-                campaignId: true, 
+              select: {
+                id: true,
+                campaignId: true,
                 claimedAt: true,
                 waitlist: {
-                  select: { status: true }
-                }
-              }
+                  select: { status: true },
+                },
+              },
             },
           },
         },
@@ -594,6 +639,8 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
       },
       include: { screeningTypes: true },
     });
+    const generalPoolCampaign: MatchingCampaign | null =
+      generalPoolQuery as MatchingCampaign | null;
     metrics.dbQueriesCount++;
 
     // Process screening types (with optional parallel processing)
@@ -618,7 +665,7 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
           processScreeningTypeBatch(
             screeningTypeId,
             waitlistsByScreening[screeningTypeId],
-            generalPoolQuery,
+            generalPoolCampaign,
             config,
             metrics,
             executionRecord.id,
@@ -638,7 +685,7 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
         await processScreeningTypeBatch(
           screeningTypeId,
           waitlistsByScreening[screeningTypeId],
-          generalPoolQuery,
+          generalPoolCampaign,
           config,
           metrics,
           executionRecord.id,
@@ -768,7 +815,7 @@ export async function waitlistMatcherAlg(customConfig?: Partial<BatchConfig>) {
 async function processScreeningTypeBatch(
   screeningTypeId: string,
   waitlists: PatientWithProfile[],
-  generalPoolCampaign: any,
+  generalPoolCampaign: MatchingCampaign | null,
   config: BatchConfig,
   metrics: MatchingMetrics,
   executionId: string,
@@ -1226,7 +1273,7 @@ function getEligiblePatientBatch(
 
     // Check eligibility criteria - count only active (unclaimed, non-expired) allocations
     const activeAllocations = waitlist.patient.donationAllocations.filter(
-      allocation => !isAllocationExpiredOrClaimed(allocation)
+      (allocation) => !isAllocationExpiredOrClaimed(allocation)
     );
     const unclaimedCount = activeAllocations.length;
 
@@ -1288,10 +1335,10 @@ function getEligiblePatientBatch(
  */
 function findBestCampaignForPatient(
   patient: PatientWithProfile,
-  campaigns: any[],
-  generalPoolCampaign: any,
+  campaigns: MatchingCampaign[],
+  generalPoolCampaign: MatchingCampaign | null,
   config: BatchConfig
-): any | null {
+): MatchingCampaign | null {
   // Filter campaigns by targeting criteria
   const eligibleCampaigns = campaigns.filter(
     (campaign) =>
@@ -1503,58 +1550,60 @@ function generateExecutionReference(): string {
 
 /**
  * Expires old MATCHED but unclaimed allocations based on configuration.
- * 
+ *
  * This function implements the allocation expiry business rule by:
  * 1. Finding MATCHED allocations older than the expiry threshold
  * 2. Transitioning waitlist status from MATCHED to EXPIRED
  * 3. Returning funds to the original campaigns
  * 4. Sending expiry notifications to affected patients
  * 5. Logging all expiry operations for audit trail
- * 
+ *
  * Business Rules:
  * - Only MATCHED allocations with claimedAt = null are eligible for expiry
  * - Expiry threshold is based on allocation creation date + expiryDays
  * - Funds are returned to campaign availableAmount
  * - EXPIRED allocations don't count toward 3-allocation limit
- * 
+ *
  * @param db - Database client for operations
  * @param expiryDays - Number of days after which unclaimed allocations expire
  * @param executionId - Current execution ID for tracking (optional)
  * @returns Promise<{expired: number, fundsReturned: number, errors: any[]}>
  */
 async function expireOldAllocations(
-  db: PrismaClient, 
-  expiryDays: number, 
+  db: PrismaClient,
+  expiryDays: number,
   executionId?: string
-): Promise<{expired: number, fundsReturned: number, errors: any[]}> {
+): Promise<{ expired: number; fundsReturned: number; errors: any[] }> {
   const startTime = Date.now();
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - expiryDays);
 
-  console.log(`🕐 Checking for allocations older than ${expiryDays} days (before ${cutoffDate.toISOString()})`);
+  console.log(
+    `🕐 Checking for allocations older than ${expiryDays} days (before ${cutoffDate.toISOString()})`
+  );
 
   const results = {
     expired: 0,
     fundsReturned: 0,
-    errors: [] as any[]
+    errors: [] as any[],
   };
 
   try {
     // Find MATCHED waitlists that have expired (check waitlist creation date, not allocation)
     const expiredWaitlists = await db.waitlist.findMany({
       where: {
-        status: 'MATCHED',
+        status: "MATCHED",
         joinedAt: { lt: cutoffDate }, // Check when patient joined waitlist
       },
       include: {
         allocation: true,
         screening: {
-          select: { name: true, agreedPrice: true, id: true }
+          select: { name: true, agreedPrice: true, id: true },
         },
         patient: {
-          select: { id: true, fullName: true, email: true }
-        }
-      }
+          select: { id: true, fullName: true, email: true },
+        },
+      },
     });
 
     if (expiredWaitlists.length === 0) {
@@ -1562,70 +1611,84 @@ async function expireOldAllocations(
       return results;
     }
 
-    console.log(`⏰ Found ${expiredWaitlists.length} expired allocations to process`);
+    console.log(
+      `⏰ Found ${expiredWaitlists.length} expired allocations to process`
+    );
 
     // Process each expired waitlist
     for (const waitlist of expiredWaitlists) {
       try {
         if (!waitlist.allocation) {
-          console.log(`⚠️ Skipping waitlist ${waitlist.id} - no allocation found`);
+          console.log(
+            `⚠️ Skipping waitlist ${waitlist.id} - no allocation found`
+          );
           continue;
         }
 
-        const amountToReturn = waitlist.allocation.amountAllocated || waitlist.screening.agreedPrice;
-        
+        const amountToReturn =
+          waitlist.allocation.amountAllocated || waitlist.screening.agreedPrice;
+
         // Get campaign details for logging
         const campaign = await db.donationCampaign.findUnique({
           where: { id: waitlist.allocation.campaignId },
-          select: { title: true, availableAmount: true }
+          select: { title: true, availableAmount: true },
         });
 
         if (!campaign) {
-          console.log(`⚠️ Skipping waitlist ${waitlist.id} - campaign not found`);
+          console.log(
+            `⚠️ Skipping waitlist ${waitlist.id} - campaign not found`
+          );
           continue;
         }
-        
+
         await db.$transaction(async (tx) => {
           // Update waitlist status to EXPIRED
           await tx.waitlist.update({
             where: { id: waitlist.id },
-            data: { 
-              status: 'EXPIRED'
-            }
+            data: {
+              status: "EXPIRED",
+            },
           });
 
           // Return funds to campaign
           await tx.donationCampaign.update({
             where: { id: waitlist.allocation!.campaignId },
             data: {
-              availableAmount: { increment: amountToReturn }
-            }
+              availableAmount: { increment: amountToReturn },
+            },
           });
 
-          console.log(`💰 Returned ₦${amountToReturn.toLocaleString()} to campaign "${campaign.title}"`);
+          console.log(
+            `💰 Returned ₦${amountToReturn.toLocaleString()} to campaign "${
+              campaign.title
+            }"`
+          );
         });
 
         // Send expiry notification to patient
-        await createNotificationForUsers({
-          type: 'ALLOCATION_EXPIRED',
-          title: 'Your screening allocation has expired',
-          message: `Your allocation for ${waitlist.screening.name} has expired due to inactivity. You can rejoin the waitlist if you're still interested.`,
-          userIds: [waitlist.patientId],
-          data: {
-            screeningTypeName: waitlist.screening.name,
-            screeningTypeId: waitlist.screening.id,
-            campaignTitle: campaign.title,
-            amountReturned: amountToReturn,
-            expiredAt: new Date().toISOString(),
-            executionRef: executionId
-          }
-        }, true); // Send email notification
+        await createNotificationForUsers(
+          {
+            type: "ALLOCATION_EXPIRED",
+            title: "Your screening allocation has expired",
+            message: `Your allocation for ${waitlist.screening.name} has expired due to inactivity. You can rejoin the waitlist if you're still interested.`,
+            userIds: [waitlist.patientId],
+            data: {
+              screeningTypeName: waitlist.screening.name,
+              screeningTypeId: waitlist.screening.id,
+              campaignTitle: campaign.title,
+              amountReturned: amountToReturn,
+              expiredAt: new Date().toISOString(),
+              executionRef: executionId,
+            },
+          },
+          true
+        ); // Send email notification
 
         // Log the expiry operation
         if (executionId) {
           await createExecutionLog(
             executionId,
-            'INFO',
+            "INFO",
             `Expired allocation for patient ${waitlist.patientId}`,
             {
               patientId: waitlist.patientId,
@@ -1633,8 +1696,11 @@ async function expireOldAllocations(
               waitlistId: waitlist.id,
               screeningTypeId: waitlist.screeningTypeId,
               amountReturned: amountToReturn,
-              allocationAge: Math.floor((Date.now() - waitlist.joinedAt.getTime()) / (1000 * 60 * 60 * 24)),
-              reason: 'Allocation expired due to inactivity'
+              allocationAge: Math.floor(
+                (Date.now() - waitlist.joinedAt.getTime()) /
+                  (1000 * 60 * 60 * 24)
+              ),
+              reason: "Allocation expired due to inactivity",
             },
             db
           );
@@ -1642,28 +1708,31 @@ async function expireOldAllocations(
 
         results.expired++;
         results.fundsReturned += amountToReturn;
-
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`❌ Error expiring waitlist ${waitlist.id}:`, errorMessage);
-        
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          `❌ Error expiring waitlist ${waitlist.id}:`,
+          errorMessage
+        );
+
         results.errors.push({
           waitlistId: waitlist.id,
           patientId: waitlist.patientId,
           error: errorMessage,
-          timestamp: new Date()
+          timestamp: new Date(),
         });
 
         // Log the error
         if (executionId) {
           await createExecutionLog(
             executionId,
-            'ERROR',
+            "ERROR",
             `Failed to expire waitlist ${waitlist.id}: ${errorMessage}`,
             {
               waitlistId: waitlist.id,
               patientId: waitlist.patientId,
-              error: errorMessage
+              error: errorMessage,
             },
             db
           );
@@ -1672,16 +1741,22 @@ async function expireOldAllocations(
     }
 
     const processingTime = Date.now() - startTime;
-    console.log(`✅ Allocation expiry completed: ${results.expired} expired, ₦${results.fundsReturned.toLocaleString()} returned (${processingTime}ms)`);
-
+    console.log(
+      `✅ Allocation expiry completed: ${
+        results.expired
+      } expired, ₦${results.fundsReturned.toLocaleString()} returned (${processingTime}ms)`
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`🚨 Critical error in allocation expiry process:`, errorMessage);
-    
+    console.error(
+      `🚨 Critical error in allocation expiry process:`,
+      errorMessage
+    );
+
     results.errors.push({
-      type: 'SYSTEM_ERROR',
+      type: "SYSTEM_ERROR",
       error: errorMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -1691,20 +1766,23 @@ async function expireOldAllocations(
 /**
  * Check if allocation should be excluded from patient limits due to expiry.
  * This helper function determines if an allocation counts toward the 3-allocation limit.
- * 
+ *
  * @param allocation - Allocation object with status information
  * @returns true if allocation should be excluded from limits
  */
-function isAllocationExpiredOrClaimed(allocation: {claimedAt: Date | null, waitlist?: {status: string}}): boolean {
+function isAllocationExpiredOrClaimed(allocation: {
+  claimedAt: Date | null;
+  waitlist?: { status: string };
+}): boolean {
   // If claimed, it doesn't count toward limit
   if (allocation.claimedAt !== null) {
     return true;
   }
-  
+
   // If waitlist status is EXPIRED, it doesn't count toward limit
-  if (allocation.waitlist?.status === 'EXPIRED') {
+  if (allocation.waitlist?.status === "EXPIRED") {
     return true;
   }
-  
+
   return false;
 }

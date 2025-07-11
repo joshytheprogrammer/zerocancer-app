@@ -207,7 +207,6 @@ model DonationCampaign {
   donorId         String
   totalAmount   Float // What is currently in bank
   availableAmount Float // Amount available for allocation
-  // reservedAmount  Float
   title           String
   purpose         String?
   targetGender    Gender? // format is "number-number"
