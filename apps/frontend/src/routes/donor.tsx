@@ -49,6 +49,7 @@ function DonorLayout() {
                 <Link
                   key={link.to}
                   to={link.to}
+                  preload="render"
                   className="flex items-center gap-4 rounded-lg px-3 py-3 text-white transition-all hover:bg-white/20"
                   activeOptions={
                     link.to === '/donor' ? { exact: true } : { exact: false }
