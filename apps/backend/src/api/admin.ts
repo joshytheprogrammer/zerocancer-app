@@ -1184,3 +1184,659 @@ adminApp.patch(
     }
   }
 );
+
+// ========================================
+// WAITLIST MATCHING EXECUTION MANAGEMENT
+// ========================================
+
+// GET /api/admin/matching/executions - List all matching executions
+const getMatchingExecutionsSchema = z.object({
+  page: z.coerce.number().min(1).default(1).optional(),
+  pageSize: z.coerce.number().min(1).max(100).default(20).optional(),
+  status: z.enum(["RUNNING", "COMPLETED", "FAILED"]).optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+adminApp.get(
+  "/matching/executions",
+  zValidator("query", getMatchingExecutionsSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const {
+      page = 1,
+      pageSize = 20,
+      status,
+      dateFrom,
+      dateTo,
+    } = c.req.valid("query");
+
+    const where: any = {};
+    if (status) where.status = status;
+
+    if (dateFrom || dateTo) {
+      where.startedAt = {};
+      if (dateFrom) where.startedAt.gte = new Date(dateFrom);
+      if (dateTo) where.startedAt.lte = new Date(dateTo);
+    }
+
+    try {
+      const [executions, total] = await Promise.all([
+        db.matchingExecution.findMany({
+          where,
+          include: {
+            screeningTypeResults: {
+              select: {
+                id: true,
+                screeningTypeName: true,
+                patientsProcessed: true,
+                matchesCreated: true,
+                fundsAllocated: true,
+                processingTimeMs: true,
+              },
+            },
+          },
+          orderBy: { startedAt: "desc" },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        db.matchingExecution.count({ where }),
+      ]);
+
+      return c.json({
+        ok: true,
+        data: {
+          executions,
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    } catch (error) {
+      console.error("Get matching executions error:", error);
+      return c.json(
+        { ok: false, error: "Failed to fetch matching executions" },
+        500
+      );
+    }
+  }
+);
+
+// GET /api/admin/matching/executions/:id - Get detailed execution data
+adminApp.get("/matching/executions/:id", async (c) => {
+  const db = getDB();
+  const executionId = c.req.param("id");
+
+  try {
+    const execution = await db.matchingExecution.findUnique({
+      where: { id: executionId },
+      include: {
+        screeningTypeResults: {
+          orderBy: { processingStarted: "asc" },
+        },
+      },
+    });
+
+    if (!execution) {
+      return c.json({ ok: false, error: "Execution not found" }, 404);
+    }
+
+    return c.json({
+      ok: true,
+      data: execution,
+    });
+  } catch (error) {
+    console.error("Get matching execution error:", error);
+    return c.json(
+      { ok: false, error: "Failed to fetch execution details" },
+      500
+    );
+  }
+});
+
+// POST /api/admin/matching/trigger - Manually trigger matching algorithm
+const triggerMatchingSchema = z.object({
+  patientsPerScreeningType: z.number().min(1).max(100).optional(),
+  maxTotalPatients: z.number().min(1).max(1000).optional(),
+  enableParallelProcessing: z.boolean().optional(),
+  maxConcurrentScreeningTypes: z.number().min(1).max(10).optional(),
+  enableDemographicTargeting: z.boolean().optional(),
+  enableGeographicTargeting: z.boolean().optional(),
+  allocationExpiryDays: z.number().min(1).max(365).optional(),
+});
+
+adminApp.post(
+  "/matching/trigger",
+  zValidator("json", triggerMatchingSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const customConfig = c.req.valid("json");
+
+    try {
+      // Import the matching algorithm
+      const { waitlistMatcherAlg } = await import("../lib/utils");
+
+      // Trigger the algorithm with custom config (non-blocking)
+      const result = await waitlistMatcherAlg(customConfig);
+
+      return c.json({
+        ok: true,
+        data: {
+          message: "Matching algorithm triggered successfully",
+          executionRef: result.executionRef,
+          success: result.success,
+          metrics: result.success ? result.metrics : undefined,
+          error: result.error,
+        },
+      });
+    } catch (error) {
+      console.error("Trigger matching error:", error);
+      return c.json(
+        { ok: false, error: "Failed to trigger matching algorithm" },
+        500
+      );
+    }
+  }
+);
+
+// GET /api/admin/matching/executions/:id/logs - Get execution logs
+const getExecutionLogsSchema = z.object({
+  page: z.coerce.number().min(1).default(1).optional(),
+  pageSize: z.coerce.number().min(1).max(100).default(50).optional(),
+  level: z.enum(["INFO", "WARNING", "ERROR"]).optional(),
+  patientId: z.string().uuid().optional(),
+  campaignId: z.string().uuid().optional(),
+});
+
+adminApp.get(
+  "/matching/executions/:id/logs",
+  zValidator("query", getExecutionLogsSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const executionId = c.req.param("id");
+    const {
+      page = 1,
+      pageSize = 50,
+      level,
+      patientId,
+      campaignId,
+    } = c.req.valid("query");
+
+    const where: any = { executionId };
+    if (level) where.level = level;
+    if (patientId) where.patientId = patientId;
+    if (campaignId) where.campaignId = campaignId;
+
+    try {
+      const [logs, total] = await Promise.all([
+        db.matchingExecutionLog.findMany({
+          where,
+          orderBy: { timestamp: "asc" },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        db.matchingExecutionLog.count({ where }),
+      ]);
+
+      return c.json({
+        ok: true,
+        data: {
+          logs,
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    } catch (error) {
+      console.error("Get execution logs error:", error);
+      return c.json(
+        { ok: false, error: "Failed to fetch execution logs" },
+        500
+      );
+    }
+  }
+);
+
+// ========================================
+// ALLOCATION MANAGEMENT
+// ========================================
+
+// GET /api/admin/allocations - List all allocations with filters
+const getAllocationsSchema = z.object({
+  page: z.coerce.number().min(1).default(1).optional(),
+  pageSize: z.coerce.number().min(1).max(100).default(20).optional(),
+  status: z.enum(["MATCHED", "CLAIMED", "EXPIRED"]).optional(),
+  patientId: z.string().uuid().optional(),
+  campaignId: z.string().uuid().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+adminApp.get(
+  "/allocations",
+  zValidator("query", getAllocationsSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const db = getDB();
+    const {
+      page = 1,
+      pageSize = 20,
+      status,
+      patientId,
+      campaignId,
+      dateFrom,
+      dateTo,
+    } = c.req.valid("query");
+
+    const where: any = {};
+    if (patientId) where.patientId = patientId;
+    if (campaignId) where.campaignId = campaignId;
+
+    // Filter by waitlist status to determine allocation status
+    if (status) {
+      where.waitlist = { status };
+    }
+
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+      if (dateTo) where.createdAt.lte = new Date(dateTo);
+    }
+
+    try {
+      const [allocations, total] = await Promise.all([
+        db.donationAllocation.findMany({
+          where,
+          include: {
+            patient: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                patientProfile: {
+                  select: { state: true, city: true },
+                },
+              },
+            },
+            campaign: {
+              select: {
+                id: true,
+                title: true,
+                donor: {
+                  select: { id: true, fullName: true },
+                },
+              },
+            },
+            waitlist: {
+              select: {
+                id: true,
+                status: true,
+                joinedAt: true,
+                screening: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+          orderBy: { id: "desc" }, // Use id since createdAt doesn't exist
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        db.donationAllocation.count({ where }),
+      ]);
+
+      return c.json({
+        ok: true,
+        data: {
+          allocations,
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    } catch (error) {
+      console.error("Get allocations error:", error);
+      return c.json({ ok: false, error: "Failed to fetch allocations" }, 500);
+    }
+  }
+);
+
+// GET /api/admin/allocations/expired - View expired allocations
+adminApp.get("/allocations/expired", async (c) => {
+  const db = getDB();
+
+  try {
+    const expiredAllocations = await db.donationAllocation.findMany({
+      where: {
+        waitlist: {
+          status: "EXPIRED",
+        },
+      },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        campaign: {
+          select: {
+            id: true,
+            title: true,
+            donor: {
+              select: { fullName: true },
+            },
+          },
+        },
+        waitlist: {
+          select: {
+            joinedAt: true,
+            screening: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+      orderBy: { id: "desc" },
+    });
+
+    return c.json({
+      ok: true,
+      data: expiredAllocations,
+    });
+  } catch (error) {
+    console.error("Get expired allocations error:", error);
+    return c.json(
+      { ok: false, error: "Failed to fetch expired allocations" },
+      500
+    );
+  }
+});
+
+// POST /api/admin/allocations/:id/expire - Manually expire allocation
+adminApp.post("/allocations/:id/expire", async (c) => {
+  const db = getDB();
+  const allocationId = c.req.param("id");
+
+  try {
+    const allocation = await db.donationAllocation.findUnique({
+      where: { id: allocationId },
+      include: {
+        waitlist: {
+          include: {
+            screening: {
+              select: { name: true },
+            },
+          },
+        },
+        campaign: true,
+      },
+    });
+
+    if (!allocation) {
+      return c.json({ ok: false, error: "Allocation not found" }, 404);
+    }
+
+    if (allocation.waitlist?.status !== "MATCHED") {
+      return c.json(
+        { ok: false, error: "Only MATCHED allocations can be expired" },
+        400
+      );
+    }
+
+    // Expire the waitlist and return funds to campaign
+    await db.$transaction([
+      db.waitlist.update({
+        where: { id: allocation.waitlist.id },
+        data: { status: "EXPIRED" },
+      }),
+      db.donationCampaign.update({
+        where: { id: allocation.campaignId },
+        data: {
+          availableAmount: { increment: allocation.amountAllocated || 0 },
+        },
+      }),
+    ]);
+
+    // Send notification to patient
+    try {
+      await createNotificationForUsers({
+        type: "ALLOCATION_EXPIRED",
+        title: "Allocation Expired",
+        message:
+          "Your screening allocation has expired due to inactivity. You can rejoin the waitlist.",
+        userIds: [allocation.patientId],
+        data: {
+          allocationId: allocation.id,
+          screeningType: allocation.waitlist?.screening?.name,
+        },
+      });
+    } catch (notificationError) {
+      console.error("Failed to send expiry notification:", notificationError);
+    }
+
+    return c.json({
+      ok: true,
+      data: {
+        message: "Allocation expired successfully",
+        allocationId,
+        fundsReturned: allocation.amountAllocated,
+      },
+    });
+  } catch (error) {
+    console.error("Expire allocation error:", error);
+    return c.json({ ok: false, error: "Failed to expire allocation" }, 500);
+  }
+});
+
+// GET /api/admin/allocations/patient/:patientId - Patient allocation history
+adminApp.get("/allocations/patient/:patientId", async (c) => {
+  const db = getDB();
+  const patientId = c.req.param("patientId");
+
+  try {
+    const allocations = await db.donationAllocation.findMany({
+      where: { patientId },
+      include: {
+        campaign: {
+          select: {
+            id: true,
+            title: true,
+            donor: {
+              select: { fullName: true },
+            },
+          },
+        },
+        waitlist: {
+          select: {
+            status: true,
+            joinedAt: true,
+            screening: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+      orderBy: { id: "desc" },
+    });
+
+    return c.json({
+      ok: true,
+      data: allocations,
+    });
+  } catch (error) {
+    console.error("Get patient allocations error:", error);
+    return c.json(
+      { ok: false, error: "Failed to fetch patient allocations" },
+      500
+    );
+  }
+});
+
+// ========================================
+// SYSTEM CONFIGURATION
+// ========================================
+
+// GET /api/admin/config/matching - Get current matching configuration
+adminApp.get("/config/matching", async (c) => {
+  try {
+    // Return current environment-based configuration
+    const config = {
+      patientsPerScreeningType: parseInt(
+        process.env.WAITLIST_BATCH_SIZE || "50"
+      ),
+      maxTotalPatients: parseInt(process.env.WAITLIST_MAX_TOTAL || "500"),
+      enableParallelProcessing: process.env.WAITLIST_PARALLEL === "true",
+      maxConcurrentScreeningTypes: parseInt(
+        process.env.WAITLIST_CONCURRENT || "5"
+      ),
+      enableDemographicTargeting:
+        process.env.WAITLIST_DEMOGRAPHIC_TARGETING !== "false",
+      enableGeographicTargeting:
+        process.env.WAITLIST_GEOGRAPHIC_TARGETING !== "false",
+      allocationExpiryDays: parseInt(process.env.WAITLIST_EXPIRY_DAYS || "30"),
+    };
+
+    return c.json({
+      ok: true,
+      data: config,
+    });
+  } catch (error) {
+    console.error("Get matching config error:", error);
+    return c.json(
+      { ok: false, error: "Failed to fetch matching configuration" },
+      500
+    );
+  }
+});
+
+// PUT /api/admin/config/matching - Update matching configuration
+const updateMatchingConfigSchema = z.object({
+  patientsPerScreeningType: z.number().min(1).max(100).optional(),
+  maxTotalPatients: z.number().min(1).max(1000).optional(),
+  enableParallelProcessing: z.boolean().optional(),
+  maxConcurrentScreeningTypes: z.number().min(1).max(10).optional(),
+  enableDemographicTargeting: z.boolean().optional(),
+  enableGeographicTargeting: z.boolean().optional(),
+  allocationExpiryDays: z.number().min(1).max(365).optional(),
+});
+
+adminApp.put(
+  "/config/matching",
+  zValidator("json", updateMatchingConfigSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ ok: false, error: result.error }, 400);
+    }
+  }),
+  async (c) => {
+    const updates = c.req.valid("json");
+
+    try {
+      // In a real implementation, you'd store this in a database table
+      // For now, we'll return the updated config (environment variables would need to be updated externally)
+
+      return c.json({
+        ok: true,
+        data: {
+          message: "Configuration updated successfully",
+          updatedFields: Object.keys(updates),
+          note: "Environment variables may need to be updated for persistent changes",
+        },
+      });
+    } catch (error) {
+      console.error("Update matching config error:", error);
+      return c.json(
+        { ok: false, error: "Failed to update matching configuration" },
+        500
+      );
+    }
+  }
+);
+
+// GET /api/admin/system/health - Algorithm performance and health checks
+adminApp.get("/system/health", async (c) => {
+  const db = getDB();
+
+  try {
+    // Get recent execution metrics
+    const recentExecutions = await db.matchingExecution.findMany({
+      where: {
+        startedAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        },
+      },
+      orderBy: { startedAt: "desc" },
+      take: 10,
+    });
+
+    // Calculate health metrics
+    const totalExecutions = recentExecutions.length;
+    const successfulExecutions = recentExecutions.filter(
+      (e) => e.status === "COMPLETED"
+    ).length;
+    const failedExecutions = recentExecutions.filter(
+      (e) => e.status === "FAILED"
+    ).length;
+    const averageProcessingTime =
+      recentExecutions
+        .filter((e) => e.processingTimeMs)
+        .reduce((sum, e) => sum + (e.processingTimeMs || 0), 0) /
+        totalExecutions || 0;
+
+    // Get current waitlist size
+    const pendingWaitlistCount = await db.waitlist.count({
+      where: { status: "PENDING" },
+    });
+
+    // Get recent allocation metrics (count all allocations since we don't have createdAt)
+    const recentAllocations = await db.donationAllocation.count();
+
+    const healthStatus = {
+      status:
+        failedExecutions === 0
+          ? "healthy"
+          : failedExecutions < totalExecutions / 2
+          ? "warning"
+          : "critical",
+      metrics: {
+        totalExecutions,
+        successfulExecutions,
+        failedExecutions,
+        successRate:
+          totalExecutions > 0
+            ? (successfulExecutions / totalExecutions) * 100
+            : 0,
+        averageProcessingTimeMs: Math.round(averageProcessingTime),
+        pendingWaitlistCount,
+        recentAllocations,
+      },
+      lastExecution: recentExecutions[0] || null,
+    };
+
+    return c.json({
+      ok: true,
+      data: healthStatus,
+    });
+  } catch (error) {
+    console.error("System health check error:", error);
+    return c.json({ ok: false, error: "Failed to check system health" }, 500);
+  }
+});

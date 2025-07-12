@@ -166,13 +166,15 @@ model ScreeningType {
   description             String?
   screeningTypeCategoryId String
   active                  Boolean  @default(true)
+  agreedPrice            Float    @default(10000.0) // This is the general price agreed on by all centers
 
   category                ScreeningTypeCategory @relation(fields: [screeningTypeCategoryId], references: [id], onDelete: Restrict)
   appointments            Appointment[]
   waitlists               Waitlist[]
   campaigns               DonationCampaign[] @relation("DonationCampaignScreeningTypes")
-  centers                 ServiceCenter[] // to be replaced with a relation to ServiceCenterScreeningType
+  centers                 ServiceCenter[] // to be replaced with a relation to ServiceCenterScreeningType - Tell AI
   serviceCenters         ServiceCenterScreeningType[] @relation("ScreeningTypeToServiceCenters")
+  matchingResults        MatchingScreeningTypeResult[]
 }
 
 model ScreeningTypeCategory {
@@ -190,10 +192,14 @@ model Waitlist {
   status          AllocationStatus
   joinedAt        DateTime         @default(now())
   claimedAt       DateTime?
+  expiredAt       DateTime?
 
   screening       ScreeningType    @relation(fields: [screeningTypeId], references: [id], onDelete: Restrict)
   patient         User             @relation("UserWaitlists", fields: [patientId], references: [id], onDelete: Cascade)
   allocation      DonationAllocation?
+  
+  @@index([status, screeningTypeId, joinedAt])
+  @@index([patientId, status])
 }
 
 model DonationCampaign {
@@ -201,7 +207,6 @@ model DonationCampaign {
   donorId         String
   totalAmount   Float // What is currently in bank
   availableAmount Float // Amount available for allocation
-  // reservedAmount  Float
   title           String
   purpose         String?
   targetGender    Gender? // format is "number-number"
@@ -217,6 +222,9 @@ model DonationCampaign {
   allocations     DonationAllocation[]
   transactions    Transaction[]    @relation("DonationTransactions")
   screeningTypes  ScreeningType[]  @relation("DonationCampaignScreeningTypes")
+  
+  @@index([status, availableAmount])
+  @@index([status, createdAt])
 }
 
 model DonationAllocation {
@@ -226,11 +234,17 @@ model DonationAllocation {
   patientId     String
   campaignId    String
   claimedAt     DateTime?
+  
+  // Tracking fields
+  matchingExecutionId   String?
+  amountAllocated       Float?   // Track actual amount allocated
+  createdViaMatching    Boolean  @default(false)
 
   waitlist      Waitlist    @relation(fields: [waitlistId], references: [id], onDelete: Cascade)
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   patient       User        @relation("UserDonationAllocations", fields: [patientId], references: [id], onDelete: Cascade)
   campaign      DonationCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  matchingExecution MatchingExecution? @relation("MatchingExecutionAllocations", fields: [matchingExecutionId], references: [id])
 }
 
 model Appointment {
@@ -537,4 +551,114 @@ model CenterStaffResetToken {
   expiresAt DateTime
 
   staff     CenterStaff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+}
+
+enum MatchingExecutionStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  PARTIALLY_COMPLETED
+}
+
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+}
+
+model MatchingExecution {
+  id                    String   @id @default(uuid())
+  executionReference    String   @unique // E.g., "MATCH-20250711-001"
+  startedAt             DateTime @default(now())
+  completedAt           DateTime?
+  status                MatchingExecutionStatus @default(RUNNING)
+  
+  // Summary metrics
+  screeningTypesProcessed Int      @default(0)
+  patientsEvaluated      Int      @default(0)
+  successfulMatches      Int      @default(0)
+  skippedDueToLimits     Int      @default(0)
+  skippedDueToNoFunding  Int      @default(0)
+  skippedDueToExistingMatch Int   @default(0)
+  
+  // Financial summary
+  totalFundsAllocated    Float    @default(0)
+  generalPoolFundsUsed   Float    @default(0)
+  campaignsUsedCount     Int      @default(0)
+  
+  // Performance metrics
+  processingTimeMs       Int?
+  dbQueriesCount         Int      @default(0)
+  notificationsSent      Int      @default(0)
+  
+  // Error tracking
+  errors                 Json?    // Array of error objects
+  warnings               Json?    // Array of warning objects
+  
+  // Configuration used
+  batchConfig            Json?    // Configuration used for this execution
+  
+  // Relations
+  executionLogs          MatchingExecutionLog[]
+  screeningTypeResults   MatchingScreeningTypeResult[]
+  allocations            DonationAllocation[] @relation("MatchingExecutionAllocations")
+  
+  @@map("matching_executions")
+}
+
+model MatchingExecutionLog {
+  id                String   @id @default(uuid())
+  executionId       String
+  timestamp         DateTime @default(now())
+  level             LogLevel
+  message           String
+  context           Json?    // Additional context data
+  
+  // Entity references for traceability
+  patientId         String?
+  campaignId        String?
+  waitlistId        String?
+  screeningTypeId   String?
+  allocationId      String?
+  
+  execution         MatchingExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  
+  @@index([executionId, timestamp])
+  @@map("matching_execution_logs")
+}
+
+model MatchingScreeningTypeResult {
+  id                    String   @id @default(uuid())
+  executionId           String
+  screeningTypeId       String
+  screeningTypeName     String
+  
+  // Processing stats
+  patientsFound         Int
+  patientsProcessed     Int
+  matchesCreated        Int
+  skippedDueToLimits    Int
+  skippedDueToNoFunding Int
+  skippedDueToExisting  Int
+  
+  // Financial stats
+  fundsAllocated        Float    @default(0)
+  campaignsUsed         Json     // Array of campaign IDs used
+  generalPoolUsed       Boolean  @default(false)
+  generalPoolAmount     Float    @default(0)
+  
+  // Targeting stats
+  targetingMatches      Int      @default(0)
+  targetingMismatches   Int      @default(0)
+  
+  // Timing
+  processingStarted     DateTime @default(now())
+  processingCompleted   DateTime?
+  processingTimeMs      Int?
+  
+  execution             MatchingExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  screeningType         ScreeningType @relation(fields: [screeningTypeId], references: [id])
+  
+  @@unique([executionId, screeningTypeId])
+  @@map("matching_screening_type_results")
 }

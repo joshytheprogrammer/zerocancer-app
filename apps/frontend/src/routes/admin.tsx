@@ -1,17 +1,23 @@
-import { Outlet, createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import {
   Bell,
-  Home,
-  LineChart,
-  Users,
   Briefcase,
+  Clock,
   FileText,
   HeartHandshake,
-  Stethoscope,
-  Ticket,
-  Store,
+  Home,
+  LineChart,
   LogOut,
-  Clock,
+  Stethoscope,
+  Store,
+  Ticket,
+  Users,
 } from 'lucide-react'
 
 import logo from '@/assets/images/logo-blue.svg'
@@ -19,9 +25,16 @@ import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
 
 export const Route = createFileRoute('/admin')({
   component: AdminLayout,
-  beforeLoad: async ({ context, location }): Promise<void | ReturnType<typeof redirect>> => {
+  beforeLoad: async ({
+    context,
+    location,
+  }): Promise<void | ReturnType<typeof redirect>> => {
     // Don't protect admin auth routes
-    const adminAuthRoutes = ['/admin/login', '/admin/forgot-password', '/admin/reset-password']
+    const adminAuthRoutes = [
+      '/admin/login',
+      '/admin/forgot-password',
+      '/admin/reset-password',
+    ]
     if (adminAuthRoutes.includes(location.pathname)) {
       return
     }
@@ -37,8 +50,9 @@ export const Route = createFileRoute('/admin')({
     if (!isAuthorized) {
       if (profile === 'PATIENT') return redirect({ to: '/patient' })
       if (profile === 'DONOR') return redirect({ to: '/donor' })
-      if (profile === 'CENTER' || profile === 'CENTER_STAFF') return redirect({ to: '/center' })
-      
+      if (profile === 'CENTER' || profile === 'CENTER_STAFF')
+        return redirect({ to: '/center' })
+
       // If unknown profile, redirect to login
       return redirect({ to: '/admin/login' })
     }
@@ -58,7 +72,9 @@ function AdminLayout() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[70px] lg:px-6 flex-shrink-0">
             <Link to="/admin" className="flex items-center gap-2 font-semibold">
               <img src={logo} alt="ZeroCancer" className="h-12" />
-              <span className="text-sm text-muted-foreground ml-2">Admin Portal</span>
+              <span className="text-sm text-muted-foreground ml-2">
+                Admin Portal
+              </span>
             </Link>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -76,6 +92,7 @@ function AdminLayout() {
                 to="/admin/notifications"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
+                preload="render"
               >
                 <Bell className="h-4 w-4" />
                 Notifications
@@ -148,6 +165,7 @@ function AdminLayout() {
                 to="/admin/analytics"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                 activeProps={{ className: 'bg-muted text-primary' }}
+                preload="render"
               >
                 <LineChart className="h-4 w-4" />
                 Analytics
@@ -174,7 +192,11 @@ function AdminLayout() {
             <button
               onClick={() => {
                 logout()
-                navigate({ to: '/admin/login', replace: true, reloadDocument: true })
+                navigate({
+                  to: '/admin/login',
+                  replace: true,
+                  reloadDocument: true,
+                })
               }}
               className="cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-primary"
             >
@@ -191,4 +213,4 @@ function AdminLayout() {
       </div>
     </div>
   )
-} 
+}

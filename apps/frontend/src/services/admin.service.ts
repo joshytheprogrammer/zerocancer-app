@@ -86,6 +86,55 @@ const getWaitlistSchema = z.object({
   groupBy: z.enum(['state', 'screening_type', 'status']).optional(),
 })
 
+// Waitlist Matching Management
+const getMatchingExecutionsSchema = z.object({
+  page: z.number().min(1).default(1).optional(),
+  pageSize: z.number().min(1).max(100).default(20).optional(),
+  status: z.enum(['RUNNING', 'COMPLETED', 'FAILED']).optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+})
+
+const triggerMatchingSchema = z.object({
+  patientsPerScreeningType: z.number().min(1).max(100).optional(),
+  maxTotalPatients: z.number().min(1).max(1000).optional(),
+  enableParallelProcessing: z.boolean().optional(),
+  maxConcurrentScreeningTypes: z.number().min(1).max(10).optional(),
+  enableDemographicTargeting: z.boolean().optional(),
+  enableGeographicTargeting: z.boolean().optional(),
+  allocationExpiryDays: z.number().min(1).max(365).optional(),
+})
+
+const getExecutionLogsSchema = z.object({
+  page: z.number().min(1).default(1).optional(),
+  pageSize: z.number().min(1).max(100).default(50).optional(),
+  level: z.enum(['INFO', 'WARNING', 'ERROR']).optional(),
+  patientId: z.string().uuid().optional(),
+  campaignId: z.string().uuid().optional(),
+})
+
+// Allocation Management
+const getAllocationsSchema = z.object({
+  page: z.number().min(1).default(1).optional(),
+  pageSize: z.number().min(1).max(100).default(20).optional(),
+  status: z.enum(['MATCHED', 'CLAIMED', 'EXPIRED']).optional(),
+  patientId: z.string().uuid().optional(),
+  campaignId: z.string().uuid().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+})
+
+// System Configuration
+const updateMatchingConfigSchema = z.object({
+  patientsPerScreeningType: z.number().min(1).max(100).optional(),
+  maxTotalPatients: z.number().min(1).max(1000).optional(),
+  enableParallelProcessing: z.boolean().optional(),
+  maxConcurrentScreeningTypes: z.number().min(1).max(10).optional(),
+  enableDemographicTargeting: z.boolean().optional(),
+  enableGeographicTargeting: z.boolean().optional(),
+  allocationExpiryDays: z.number().min(1).max(365).optional(),
+})
+
 // Store Management
 const getProductsSchema = z.object({
   page: z.number().min(1).default(1).optional(),
@@ -514,4 +563,86 @@ export const createAdmin = async (
 export const logoutAdmin = () => {
   localStorage.removeItem('authToken')
   // Clear any other admin-specific data if needed
+}
+
+// ========================================
+// WAITLIST MATCHING EXECUTION MANAGEMENT
+// ========================================
+
+export const getMatchingExecutions = async (
+  params: z.infer<typeof getMatchingExecutionsSchema>,
+): Promise<any> => {
+  const res = await request.get(endpoints.getMatchingExecutions(params))
+  return res
+}
+
+export const getMatchingExecution = async (
+  executionId: string,
+): Promise<any> => {
+  const res = await request.get(endpoints.getMatchingExecution(executionId))
+  return res
+}
+
+export const triggerMatching = async (
+  config: z.infer<typeof triggerMatchingSchema>,
+): Promise<any> => {
+  const res = await request.post(endpoints.triggerMatching(), config)
+  return res
+}
+
+export const getExecutionLogs = async (
+  executionId: string,
+  params: z.infer<typeof getExecutionLogsSchema>,
+): Promise<any> => {
+  const res = await request.get(endpoints.getExecutionLogs(executionId, params))
+  return res
+}
+
+// ========================================
+// ALLOCATION MANAGEMENT
+// ========================================
+
+export const getAllocations = async (
+  params: z.infer<typeof getAllocationsSchema>,
+): Promise<any> => {
+  const res = await request.get(endpoints.getAllocations(params))
+  return res
+}
+
+export const getExpiredAllocations = async (): Promise<any> => {
+  const res = await request.get(endpoints.getExpiredAllocations())
+  return res
+}
+
+export const expireAllocation = async (allocationId: string): Promise<any> => {
+  const res = await request.post(endpoints.expireAllocation(allocationId), {})
+  return res
+}
+
+export const getPatientAllocations = async (
+  patientId: string,
+): Promise<any> => {
+  const res = await request.get(endpoints.getPatientAllocations(patientId))
+  return res
+}
+
+// ========================================
+// SYSTEM CONFIGURATION
+// ========================================
+
+export const getMatchingConfig = async (): Promise<any> => {
+  const res = await request.get(endpoints.getMatchingConfig())
+  return res
+}
+
+export const updateMatchingConfig = async (
+  config: z.infer<typeof updateMatchingConfigSchema>,
+): Promise<any> => {
+  const res = await request.put(endpoints.updateMatchingConfig(), config)
+  return res
+}
+
+export const getSystemHealth = async (): Promise<any> => {
+  const res = await request.get(endpoints.getSystemHealth())
+  return res
 }
