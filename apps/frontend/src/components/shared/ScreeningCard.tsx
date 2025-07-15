@@ -41,7 +41,14 @@ export default function ScreeningCard({
   isBookingWithDonation,
 }: ScreeningCardProps) {
   return (
-    <div className="bg-white rounded-xl p-6 flex items-center justify-between shadow-sm border border-gray-100">
+    <div className="bg-white relative rounded-xl p-6 flex items-center justify-between shadow-sm border border-gray-100">
+      {hasDonation && (
+        <div className="absolute -top-3 -right-3">
+          <span className="inline-block rounded-full bg-pink-100 text-pink-700 text-xs font-semibold px-4 py-2 shadow border border-pink-200">
+            Allocated
+          </span>
+        </div>
+      )}
       <div>
         <h3 className="text-xl font-bold text-gray-900">{name}</h3>
         <p className="text-gray-500 mt-1">{description}</p>
@@ -49,7 +56,7 @@ export default function ScreeningCard({
           {hasDonation ? (
             <Button
               onClick={onBookWithDonation}
-              className="bg-green-600 hover:bg-green-700 text-white cursor-pointer  py-2 px-6 rounded-lg flex items-center gap-2"
+              className="bg-pink-600 hover:bg-pink-700 text-white cursor-pointer  py-2 px-6 rounded-lg flex items-center gap-2"
               disabled={isBookingWithDonation || isBooking}
             >
               {isBookingWithDonation ? 'Booking...' : 'Book with Donation'}
@@ -74,7 +81,11 @@ export default function ScreeningCard({
                   className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600  py-2 px-6 rounded-lg cursor-pointer"
                   disabled={isLeavingWaitlist}
                 >
-                  {isLeavingWaitlist ? 'Leaving...' : 'Leave Waitlist'}
+                  {hasDonation
+                    ? 'Cancel'
+                    : isLeavingWaitlist
+                      ? 'Leaving...'
+                      : 'Leave Waitlist'}
                 </Button>
               </DialogTrigger>
               <DialogContent>

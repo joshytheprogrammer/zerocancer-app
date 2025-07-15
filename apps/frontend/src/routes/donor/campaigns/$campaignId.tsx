@@ -131,7 +131,9 @@ function CampaignDetails() {
     return (
       <div className="p-6 text-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-        <p className="mt-4 text-muted-foreground">Loading campaign details...</p>
+        <p className="mt-4 text-muted-foreground">
+          Loading campaign details...
+        </p>
       </div>
     )
   }
@@ -361,9 +363,16 @@ function CampaignDetails() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFundDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleFundCampaign} disabled={fundCampaignMutation.isPending || !fundAmount}>
-              {fundCampaignMutation.isPending ? 'Processing...' : 'Proceed to Fund'}
+            <Button variant="outline" onClick={() => setFundDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleFundCampaign}
+              disabled={fundCampaignMutation.isPending || !fundAmount}
+            >
+              {fundCampaignMutation.isPending
+                ? 'Processing...'
+                : 'Proceed to Fund'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -378,14 +387,26 @@ function CampaignDetails() {
               Delete Campaign
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{campaign.title}"? This action cannot be undone.
-              Any unused funds will be moved to the general donation pool.
+              Are you sure you want to delete "{campaign.title}"? This action
+              cannot be undone. Any unused funds will be moved to the general
+              donation pool.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleteCampaignMutation.isPending}>
-              {deleteCampaignMutation.isPending ? 'Deleting...' : 'Delete Campaign'}
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteCampaignMutation.isPending}
+            >
+              {deleteCampaignMutation.isPending
+                ? 'Deleting...'
+                : 'Delete Campaign'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -396,12 +417,18 @@ function CampaignDetails() {
 
 // --- Sub-components for cleaner structure ---
 
-function StatCard({ icon, title, value, description, color }: {
-  icon: string;
-  title: string;
-  value: string | number;
-  description: string;
-  color: string;
+function StatCard({
+  icon,
+  title,
+  value,
+  description,
+  color,
+}: {
+  icon: string
+  title: string
+  value: string | number
+  description: string
+  color: string
 }) {
   return (
     <Card className={`p-4 shadow-sm border-0 bg-gradient-to-br ${color}`}>
