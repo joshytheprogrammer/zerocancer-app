@@ -38,22 +38,35 @@ import {
   ChevronRight,
   Eye,
   Filter,
+  MoreHorizontal,
   Search,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
+import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
+import { z } from 'zod'
 
 type SearchParams = {
   appointmentId?: string
-  filter?: string
+  status?: z.infer<typeof getCenterAppointmentsSchema>['status']
 }
+
+type StatusFilter = z.infer<typeof getCenterAppointmentsSchema>['status'] | 'ALL'
 
 export const Route = createFileRoute('/center/appointments')({
   validateSearch: (search: Record<string, unknown>): SearchParams => {
     return {
       appointmentId: search.appointmentId as string,
-      filter: search.filter as string,
+      status: search.status as SearchParams['status'],
     }
   },
   component: CenterAppointments,
@@ -62,13 +75,14 @@ export const Route = createFileRoute('/center/appointments')({
 function CenterAppointments() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { appointmentId, filter } = Route.useSearch()
+  const { appointmentId, status } = Route.useSearch()
 
   // Local state for filters and pagination
   const [page, setPage] = useState(1)
   const [pageSize] = useState(20)
-  const [statusFilter, setStatusFilter] = useState(filter || '')
-  const [screeningTypeFilter, setScreeningTypeFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    status || 'ALL',
+  )
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedAppointment, setSelectedAppointment] = useState<string | null>(
     null,
@@ -83,7 +97,7 @@ function CenterAppointments() {
     centerAppointments({
       page,
       pageSize,
-      screeningType: screeningTypeFilter || undefined,
+      status: statusFilter === 'ALL' ? undefined : statusFilter,
     }),
   )
 
@@ -100,17 +114,14 @@ function CenterAppointments() {
   const totalPages = appointmentsData?.data?.totalPages || 1
   const total = appointmentsData?.data?.total || 0
 
-  // Filter appointments locally based on search term and status
-  const filteredAppointments = appointments.filter((apt) => {
-    const matchesSearch =
-      !searchTerm ||
-      apt.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      apt.screeningType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = !statusFilter || apt.status === statusFilter
-
-    return matchesSearch && matchesStatus
-  })
+  // Filter appointments locally based on search term
+  const filteredAppointments = searchTerm
+    ? appointments.filter((apt) =>
+        apt.patient?.fullName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()),
+      )
+    : appointments
 
   // Handle appointment selection from URL
   if (appointmentId && !selectedAppointment) {
@@ -151,19 +162,24 @@ function CenterAppointments() {
     )
   }
 
-  const getStatusVariant = (status: string) => {
+  const getStatusBadgeClasses = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return 'default'
-      case 'in_progress':
-        return 'secondary'
-      case 'completed':
-        return 'outline'
-      case 'cancelled':
-        return 'destructive'
+      case 'SCHEDULED':
+        return 'bg-orange-400'
+      case 'COMPLETED':
+        return 'bg-green-500'
+      case 'CANCELED':
+        return 'bg-gray-500'
+      case 'IN_PROGRESS':
+        return 'bg-blue-500'
       default:
-        return 'outline'
+        return 'bg-gray-400'
     }
+  }
+
+  const handleStatusChange = (newStatus: string) => {
+    const typedStatus = newStatus as StatusFilter
+    setStatusFilter(typedStatus)
   }
 
   const formatDate = (dateString: string) => {
@@ -178,8 +194,17 @@ function CenterAppointments() {
     }
   }
 
-  const formatTime = (timeString: string) => {
-    return timeString || 'Not specified'
+  const formatTime = (dateString: string) => {
+    if (!dateString) return 'N/A'
+    try {
+      return new Date(dateString).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    } catch {
+      return 'Invalid Time'
+    }
   }
 
   return (
@@ -191,61 +216,26 @@ function CenterAppointments() {
         </p>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by patient name or screening type..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select
-                value={statusFilter || 'all'}
-                onValueChange={(value) =>
-                  setStatusFilter(value === 'all' ? '' : value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Screening Type</label>
-              <Input
-                placeholder="Filter by screening type..."
-                value={screeningTypeFilter}
-                onChange={(e) => setScreeningTypeFilter(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-between items-center">
+        <Tabs value={statusFilter} onValueChange={handleStatusChange}>
+          <TabsList>
+            <TabsTrigger value="ALL">All</TabsTrigger>
+            <TabsTrigger value="SCHEDULED">Scheduled</TabsTrigger>
+            <TabsTrigger value="IN_PROGRESS">In Progress</TabsTrigger>
+            <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
+            <TabsTrigger value="CANCELED">Cancelled</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by patient name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
 
       {/* Appointments Table */}
       <Card>
@@ -270,7 +260,7 @@ function CenterAppointments() {
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No appointments found</p>
               <p className="text-sm">
-                {searchTerm || statusFilter || screeningTypeFilter
+                {searchTerm || statusFilter === 'ALL'
                   ? 'Try adjusting your filters'
                   : 'New appointments will appear here'}
               </p>
@@ -279,13 +269,12 @@ function CenterAppointments() {
             <>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Screening Type</TableHead>
-                    <TableHead>Date</TableHead>
+                  <TableRow className="bg-blue-50 hover:bg-blue-100">
+                    <TableHead>Patient Name</TableHead>
                     <TableHead>Time</TableHead>
+                    <TableHead>Service</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -295,28 +284,40 @@ function CenterAppointments() {
                         {appointment.patient?.fullName || 'Unknown Patient'}
                       </TableCell>
                       <TableCell>
-                        {appointment.screeningType?.name || 'Unknown Type'}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(appointment.appointmentDateTime)}
-                      </TableCell>
-                      <TableCell>
                         {formatTime(appointment.appointmentDateTime)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(appointment.status)}>
-                          {appointment.status.replace('_', ' ').toUpperCase()}
+                        {appointment.screeningType?.name || 'Unknown Type'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(
+                            'text-white border-transparent',
+                            getStatusBadgeClasses(appointment.status),
+                          )}
+                        >
+                          {appointment.status
+                            .replace('_', ' ')
+                            .replace('SCHEDULED', 'PENDING')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewAppointment(appointment.id)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleViewAppointment(appointment.id)
+                              }
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -364,9 +365,6 @@ function CenterAppointments() {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               Appointment Details
-              <Button variant="ghost" size="sm" onClick={handleCloseDialog}>
-                <X className="h-4 w-4" />
-              </Button>
             </DialogTitle>
             <DialogDescription>
               View and manage appointment information
@@ -412,14 +410,14 @@ function CenterAppointments() {
                     <p>
                       <span className="font-medium">Status:</span>
                       <Badge
-                        variant={getStatusVariant(
-                          appointmentDetail.data.status,
+                        className={cn(
+                          'text-white border-transparent ml-2',
+                          getStatusBadgeClasses(appointmentDetail.data.status),
                         )}
-                        className="ml-2"
                       >
                         {appointmentDetail.data.status
                           .replace('_', ' ')
-                          .toUpperCase()}
+                          .replace('SCHEDULED', 'PENDING')}
                       </Badge>
                     </p>
                   </div>

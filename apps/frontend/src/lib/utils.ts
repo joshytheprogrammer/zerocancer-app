@@ -1,10 +1,31 @@
 // import * as t from '@zerocancer/shared/types'
 import axios from 'axios'
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function formatCurrency(
+  amount: number,
+  currency = 'NGN',
+  notation: 'standard' | 'compact' = 'standard'
+) {
+  const options: Intl.NumberFormatOptions = {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  };
+
+  if (notation === 'compact' && amount >= 1000) {
+    options.notation = 'compact';
+    options.minimumFractionDigits = 0;
+    options.maximumFractionDigits = 1;
+  }
+  
+  return new Intl.NumberFormat('en-NG', options).format(amount);
 }
 
 // export async function paginate<T>(
