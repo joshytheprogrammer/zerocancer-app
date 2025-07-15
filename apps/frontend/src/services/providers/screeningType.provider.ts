@@ -44,6 +44,7 @@ export const useAllScreeningTypes = (search?: string) =>
   queryOptions({
     queryKey: [QueryKeys.screeningTypesAll, search],
     queryFn: () => fetchAllScreeningTypes({ search }),
+    staleTime: Infinity, // Keep this data fresh indefinitely
   })
 
 export const useScreeningTypeCategories = () =>
