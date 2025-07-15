@@ -34,25 +34,21 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import {
-  Activity,
   AlertTriangle,
   ArrowLeft,
-  Calendar,
   CheckCircle,
   Clock,
-  DollarSign,   
   Edit,
   MoreHorizontal,
   Plus,
   Target,
   Trash2,
-  Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import sponsored from '@/assets/images/sponsored.png'
 import health from '@/assets/images/health.png'
+import sponsored from '@/assets/images/sponsored.png'
 import treatment from '@/assets/images/treatment.png'
 import vaccinated from '@/assets/images/vaccinated.png'
 
@@ -122,11 +118,23 @@ function CampaignDetails() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 border border-green-200">Active</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-700 border border-green-200">
+            Active
+          </Badge>
+        )
       case 'COMPLETED':
-        return <Badge className="bg-blue-100 text-blue-700 border border-blue-200">Completed</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-700 border border-blue-200">
+            Completed
+          </Badge>
+        )
       case 'DELETED':
-        return <Badge className="bg-red-100 text-red-700 border border-red-200">Deleted</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-700 border border-red-200">
+            Deleted
+          </Badge>
+        )
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -141,7 +149,9 @@ function CampaignDetails() {
     return (
       <div className="p-6 text-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-        <p className="mt-4 text-muted-foreground">Loading campaign details...</p>
+        <p className="mt-4 text-muted-foreground">
+          Loading campaign details...
+        </p>
       </div>
     )
   }
@@ -263,9 +273,20 @@ function CampaignDetails() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-medium">
                   <span>Funds Utilized</span>
-                  <span>{getUsagePercentage(campaign.usedAmount, campaign.fundingAmount)}%</span>
+                  <span>
+                    {getUsagePercentage(
+                      campaign.usedAmount,
+                      campaign.fundingAmount,
+                    )}
+                    %
+                  </span>
                 </div>
-                <Progress value={getUsagePercentage(campaign.usedAmount, campaign.fundingAmount)} />
+                <Progress
+                  value={getUsagePercentage(
+                    campaign.usedAmount,
+                    campaign.fundingAmount,
+                  )}
+                />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>₦{campaign.usedAmount.toLocaleString()} used</span>
                   <span>₦{availableAmount.toLocaleString()} remaining</span>
@@ -278,9 +299,15 @@ function CampaignDetails() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Successful Allocations</p>
-                    <p className="text-2xl font-bold">{campaign.patientAllocations.patientsHelped}</p>
-                    <p className="text-xs text-muted-foreground">Patients screened</p>
+                    <p className="text-sm text-muted-foreground">
+                      Successful Allocations
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {campaign.patientAllocations.patientsHelped}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Patients screened
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -288,9 +315,15 @@ function CampaignDetails() {
                     <Clock className="h-5 w-5 text-yellow-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Pending Allocations</p>
-                    <p className="text-2xl font-bold">{Math.floor(availableAmount / 2500)}</p>
-                    <p className="text-xs text-muted-foreground">Estimated capacity</p>
+                    <p className="text-sm text-muted-foreground">
+                      Pending Allocations
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {campaign.patientAllocations.allocationsCount}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Estimated capacity
+                    </p>
                   </div>
                 </div>
               </div>
@@ -307,19 +340,31 @@ function CampaignDetails() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Description</Label>
-                <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {campaign.description}
+                </p>
               </div>
               <Separator />
               <div>
                 <Label>Purpose</Label>
-                <p className="text-sm text-muted-foreground">{campaign.purpose}</p>
+                <p className="text-sm text-muted-foreground">
+                  {campaign.purpose}
+                </p>
               </div>
               <Separator />
               <div className="space-y-2">
-                <InfoRow label="Created" value={format(new Date(campaign.createdAt), 'MMM dd, yyyy')} />
-                <InfoRow label="Expires" value={format(new Date(campaign.expiryDate), 'MMM dd, yyyy')} />
+                <InfoRow
+                  label="Created"
+                  value={format(new Date(campaign.createdAt), 'MMM dd, yyyy')}
+                />
+                <InfoRow
+                  label="Expires"
+                  value={format(new Date(campaign.expiryDate), 'MMM dd, yyyy')}
+                />
                 <div className="flex justify-between items-center">
-                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </p>
                   {getStatusBadge(campaign.status)}
                 </div>
               </div>
@@ -333,22 +378,32 @@ function CampaignDetails() {
               <CriteriaRow label="Screening Types">
                 {campaign.screeningTypes?.length > 0 ? (
                   campaign.screeningTypes.map((type) => (
-                    <Badge key={type.id} variant="secondary">{type.name}</Badge>
+                    <Badge key={type.id} variant="secondary">
+                      {type.name}
+                    </Badge>
                   ))
-                ) : <Badge variant="secondary">All Types</Badge>}
+                ) : (
+                  <Badge variant="secondary">All Types</Badge>
+                )}
               </CriteriaRow>
               <CriteriaRow label="Gender">
-                <Badge variant="secondary">{campaign.targetGender || 'All'}</Badge>
+                <Badge variant="secondary">
+                  {campaign.targetGender || 'All'}
+                </Badge>
               </CriteriaRow>
               {campaign.targetAgeMin && campaign.targetAgeMax && (
                 <CriteriaRow label="Age Range">
-                  <Badge variant="secondary">{campaign.targetAgeMin} - {campaign.targetAgeMax} years</Badge>
+                  <Badge variant="secondary">
+                    {campaign.targetAgeMin} - {campaign.targetAgeMax} years
+                  </Badge>
                 </CriteriaRow>
               )}
               {campaign.targetStates && campaign.targetStates.length > 0 && (
-                 <CriteriaRow label="States">
+                <CriteriaRow label="States">
                   {campaign.targetStates.map((state) => (
-                    <Badge key={state} variant="secondary">{state}</Badge>
+                    <Badge key={state} variant="secondary">
+                      {state}
+                    </Badge>
                   ))}
                 </CriteriaRow>
               )}
@@ -378,9 +433,16 @@ function CampaignDetails() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFundDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleFundCampaign} disabled={fundCampaignMutation.isPending || !fundAmount}>
-              {fundCampaignMutation.isPending ? 'Processing...' : 'Proceed to Fund'}
+            <Button variant="outline" onClick={() => setFundDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleFundCampaign}
+              disabled={fundCampaignMutation.isPending || !fundAmount}
+            >
+              {fundCampaignMutation.isPending
+                ? 'Processing...'
+                : 'Proceed to Fund'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -395,14 +457,26 @@ function CampaignDetails() {
               Delete Campaign
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{campaign.title}"? This action cannot be undone.
-              Any unused funds will be moved to the general donation pool.
+              Are you sure you want to delete "{campaign.title}"? This action
+              cannot be undone. Any unused funds will be moved to the general
+              donation pool.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleteCampaignMutation.isPending}>
-              {deleteCampaignMutation.isPending ? 'Deleting...' : 'Delete Campaign'}
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteCampaignMutation.isPending}
+            >
+              {deleteCampaignMutation.isPending
+                ? 'Deleting...'
+                : 'Delete Campaign'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -413,16 +487,22 @@ function CampaignDetails() {
 
 // --- Sub-components for cleaner structure ---
 
-function StatCard({ icon, title, value, description, color }: {
-  icon: string;
-  title: string;
-  value: string | number;
-  description: string;
-  color: string;
+function StatCard({
+  icon,
+  title,
+  value,
+  description,
+  color,
+}: {
+  icon: string
+  title: string
+  value: string | number
+  description: string
+  color: string
 }) {
   return (
     <Card className={`p-5 ${color} border-0 shadow-sm`}>
-       <div className="flex justify-between items-center mb-1">
+      <div className="flex justify-between items-center mb-1">
         <p className="text-sm font-semibold">{title}</p>
         <img src={icon} alt={title} className="w-9 h-9 opacity-70" />
       </div>
@@ -441,7 +521,13 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function CriteriaRow({ label, children }: { label: string; children: React.ReactNode }) {
+function CriteriaRow({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div>
       <Label className="text-sm">{label}</Label>
