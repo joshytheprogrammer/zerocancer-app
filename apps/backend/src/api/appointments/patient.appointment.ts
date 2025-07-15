@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import {
   bookSelfPayAppointmentSchema,
+  getPatientAppointmentByIdSchema,
   getPatientAppointmentsSchema,
   getPatientReceiptsSchema,
   getPatientResultByIdSchema,
@@ -12,6 +13,7 @@ import type {
   TErrorResponse,
   TGetCheckInCodeResponse,
   TGetEligibleCentersResponse,
+  TGetPatientAppointmentByIdResponse,
   TGetPatientAppointmentsResponse,
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
@@ -738,6 +740,167 @@ patientAppointmentApp.get("/patient/receipts/:id", async (c) => {
     createdAt: receipt.createdAt ? receipt.createdAt.toISOString() : undefined,
   };
   return c.json<TGetPatientReceiptResponse>({ ok: true, data: safeReceipt });
+});
+
+// GET /api/appointment/patient/:id - Get appointment details by ID
+patientAppointmentApp.get("/:id", async (c) => {
+  const db = getDB();
+  const payload = c.get("jwtPayload");
+  if (!payload)
+    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+
+  const userId = payload.id!;
+  const id = c.req.param("id");
+
+  const appointment = await db.appointment.findUnique({
+    where: { id },
+    include: {
+      center: {
+        select: {
+          id: true,
+          centerName: true,
+          address: true,
+          state: true,
+          lga: true,
+          phone: true,
+          email: true,
+        },
+      },
+      screeningType: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+        },
+      },
+      transaction: true,
+      result: {
+        include: {
+          files: {
+            where: { deletedAt: null }, // Only get non-deleted files
+            select: {
+              id: true,
+              fileName: true,
+              fileType: true,
+              cloudinaryUrl: true,
+              uploadedAt: true,
+            },
+          },
+        },
+      },
+      verification: {
+        include: {
+          verifier: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!appointment || appointment.patientId !== userId) {
+    return c.json<TErrorResponse>(
+      { ok: false, error: "Appointment not found" },
+      404
+    );
+  }
+
+  const safeAppointment = {
+    id: appointment.id!,
+    patientId: appointment.patientId!,
+    centerId: appointment.centerId!,
+    screeningTypeId: appointment.screeningTypeId!,
+    appointmentDateTime: appointment.appointmentDateTime.toISOString(),
+    isDonation: appointment.isDonation!,
+    status: appointment.status!,
+    transactionId:
+      appointment.transactionId === null
+        ? undefined
+        : appointment.transactionId,
+    checkInCode: appointment.checkInCode!,
+    checkInCodeExpiresAt: appointment.checkInCodeExpiresAt
+      ? appointment.checkInCodeExpiresAt.toISOString()
+      : null,
+    donationId:
+      appointment.donationId === null ? undefined : appointment.donationId,
+    cancellationReason:
+      appointment.cancellationReason === null
+        ? undefined
+        : appointment.cancellationReason,
+    cancellationDate: appointment.cancellationDate
+      ? appointment.cancellationDate.toISOString()
+      : undefined,
+    createdAt: appointment.createdAt.toISOString(),
+    center: appointment.center
+      ? {
+          id: appointment.center.id!,
+          centerName: appointment.center.centerName!,
+          address: appointment.center.address!,
+          state: appointment.center.state!,
+          lga: appointment.center.lga!,
+          phoneNumber: appointment.center.phone!,
+          email: appointment.center.email!,
+        }
+      : undefined,
+    screeningType: appointment.screeningType
+      ? {
+          id: appointment.screeningType.id!,
+          name: appointment.screeningType.name!,
+          description:
+            appointment.screeningType.description === null
+              ? undefined
+              : appointment.screeningType.description,
+        }
+      : undefined,
+    transaction: appointment.transaction
+      ? {
+          id: appointment.transaction.id!,
+          type: appointment.transaction.type!,
+          status: appointment.transaction.status!,
+          amount: appointment.transaction.amount!,
+          paymentReference: appointment.transaction.paymentReference!,
+          paymentChannel: appointment.transaction.paymentChannel!,
+          createdAt: appointment.transaction.createdAt.toISOString(),
+        }
+      : undefined,
+    result: appointment.result
+      ? {
+          id: appointment.result.id!,
+          notes:
+            appointment.result.notes === null
+              ? undefined
+              : appointment.result.notes,
+          uploadedAt: appointment.result.uploadedAt.toISOString(),
+          files: appointment.result.files.map((file) => ({
+            id: file.id!,
+            fileName: file.fileName!,
+            fileType: file.fileType!,
+            cloudinaryUrl: file.cloudinaryUrl!,
+            uploadedAt: file.uploadedAt.toISOString(),
+          })),
+        }
+      : undefined,
+    verification: appointment.verification
+      ? {
+          id: appointment.verification.id!,
+          verifiedAt: appointment.verification.verifiedAt.toISOString(),
+          verifier: appointment.verification.verifier
+            ? {
+                id: appointment.verification.verifier.id!,
+                email: appointment.verification.verifier.email!,
+              }
+            : undefined,
+        }
+      : undefined,
+  };
+
+  return c.json<TGetPatientAppointmentByIdResponse>({
+    ok: true,
+    data: safeAppointment,
+  });
 });
 
 // GET /api/appointment/patient/:id/checkin-code - Get appointment check-in code

@@ -1,18 +1,15 @@
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Menu, User } from 'lucide-react'
-
 import calendar from '@/assets/images/calendar.png'
 import cross from '@/assets/images/cross.png'
 import logo from '@/assets/images/logo.svg'
 import logoutIcon from '@/assets/images/logout.png'
 import notification from '@/assets/images/notification.png'
 import stethoscope from '@/assets/images/stethoscope.png'
-import { Button } from '@/components/ui/button'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
 import { useNotifications } from '@/services/providers/notification.provider'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/patient')({
   component: PatientLayout,
@@ -87,7 +84,7 @@ function PatientLayout() {
                     <img src={link.icon} alt={link.label} className="h-6 w-6" />
                     {link.to === '/patient/notifications' &&
                       hasUnreadNotifications && (
-                        <span className="absolute top-0 right-0 block size-3 rounded-full bg-red-500 ring-1 ring-white"></span>
+                        <span className="absolute bottom-0 right-0 block size-3 rounded-full bg-red-500 ring-1 ring-white"></span>
                       )}
                   </div>
                   {link.label}

@@ -17,6 +17,7 @@ import type {
   TCheckWaitlistStatusResponse,
   TGetCheckInCodeResponse,
   TGetEligibleCentersResponse,
+  TGetPatientAppointmentByIdResponse,
   TGetPatientAppointmentsResponse,
   TGetPatientReceiptResponse,
   TGetPatientReceiptsResponse,
@@ -121,20 +122,15 @@ export const getCheckInCode = async (
   return res as TGetCheckInCodeResponse
 }
 
-// Get patient screening results (paginated)
-// export const getPatientResults = async (
-//   params: z.infer<typeof getPatientResultsSchema>,
-// ): Promise<TGetPatientResultsResponse> => {
-//   const validatedParams = getPatientResultsSchema.safeParse(params)
-//   if (!validatedParams.success) {
-//     throw new Error('Invalid results query parameters')
-//   }
-
-//   const res = await request.get(
-//     endpoints.getPatientResults(validatedParams.data),
-//   )
-//   return res as TGetPatientResultsResponse
-// }
+// Get appointment details by ID
+export const getPatientAppointmentById = async (
+  appointmentId: string,
+): Promise<TGetPatientAppointmentByIdResponse> => {
+  const res = await request.get(
+    endpoints.getPatientAppointmentById(appointmentId),
+  )
+  return res as TGetPatientAppointmentByIdResponse
+}
 
 // Get a specific screening result
 export const getPatientResult = async (

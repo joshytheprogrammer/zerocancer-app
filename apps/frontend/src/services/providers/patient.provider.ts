@@ -218,6 +218,19 @@ export function useCheckInCode(appointmentId: string) {
   })
 }
 
+// Get appointment details by ID
+export function usePatientAppointmentById(appointmentId: string) {
+  return queryOptions({
+    queryKey: [
+      QueryKeys.authUser,
+      QueryKeys.patientAppointments,
+      appointmentId,
+    ],
+    queryFn: () => patientService.getPatientAppointmentById(appointmentId),
+    enabled: !!appointmentId,
+  })
+}
+
 // Get patient screening results (paginated)
 // export function usePatientResults(params: { page?: number; size?: number }) {
 //   return queryOptions({

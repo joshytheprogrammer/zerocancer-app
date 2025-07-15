@@ -10,11 +10,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Link } from '@tanstack/react-router'
 import type {
   TAppointmentDetails,
   TPatientAppointment,
 } from '@zerocancer/shared/types'
-import { CalendarDays, Clock, FlaskConical, MapPin } from 'lucide-react'
+import {
+  CalendarDays,
+  Clock,
+  ExternalLinkIcon,
+  FlaskConical,
+  MapPin,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import CheckInQR from '../CheckInQR'
 
@@ -42,9 +49,18 @@ export default function AppointmentCard({
                 <FlaskConical className="h-6 w-6 text-primary" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-gray-800">
-                  {appointment.screeningType?.name || 'Unknown Screening'}
-                </h3>
+                <Link
+                  to="/patient/appointments/$id"
+                  params={{ id: appointment.id }}
+                  className="text-gray-800 underline "
+                >
+                  <h3 className="font-bold text-lg text-gray-800 flex gap-1">
+                    <span>
+                      {appointment.screeningType?.name || 'Unknown Screening'}
+                      <ExternalLinkIcon className="inline size-5 ml-0.5" />
+                    </span>
+                  </h3>
+                </Link>
                 <p className="text-sm">
                   Check-in code:{' '}
                   <span className="text-sm font-mono font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded w-fit">

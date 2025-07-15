@@ -99,6 +99,11 @@ export const getPatientResult = (id: string) =>
 // Get check-in code for an appointment
 export const getCheckInCode = (appointmentId: string) =>
   `/api/appointment/patient/${appointmentId}/checkin-code`
+
+// Get appointment details by ID
+export const getPatientAppointmentById = (appointmentId: string) =>
+  `/api/appointment/patient/${appointmentId}`
+
 // Center verifies a check-in code
 export const verifyCheckInCode = () => `/api/appointment/center/verify`
 

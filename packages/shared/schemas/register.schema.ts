@@ -87,3 +87,14 @@ export const getPatientReceiptsSchema = z.object({
   page: z.number().optional(),
   size: z.number().optional(),
 });
+
+// Get appointment by ID schema
+export const getPatientAppointmentByIdSchema = z.object({
+  id: z.string().uuid({
+    message: "Please provide a valid appointment ID.",
+  }),
+});
+
+// Export types
+export type TPatientRegister = z.infer<typeof patientSchema>;
+export type TDonorRegister = z.infer<typeof donorSchema>;

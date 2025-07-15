@@ -14,13 +14,6 @@ import {
 import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/ui/password-input'
 import PhoneInputComponent from '@/components/ui/phone-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useDonorRegistration } from '@/services/providers/register.provider'
 import { donorSchema } from '@zerocancer/shared/schemas/register.schema'
 import * as RPNInput from 'react-phone-number-input'
@@ -143,11 +136,31 @@ export default function DonorForm({ onSubmitSuccess }: DonorFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={mutation.isPending}>
+        <Button
+          type="submit"
+          className="w-full flex items-center justify-center gap-2"
+          disabled={mutation.isPending}
+        >
           {mutation.isPending && (
-            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
             </svg>
           )}
           Create Account

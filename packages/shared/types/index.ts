@@ -143,6 +143,73 @@ export type TPatientAppointment = {
   result?: any;
 };
 
+// Detailed appointment type with full information for appointment details page
+export type TPatientAppointmentDetails = {
+  id: string;
+  patientId: string;
+  centerId: string;
+  screeningTypeId: string;
+  appointmentDateTime: string;
+  isDonation: boolean;
+  status:
+    | "PENDING"
+    | "SCHEDULED"
+    | "IN_PROGRESS"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "NO_SHOW";
+  transactionId?: string;
+  checkInCode?: string;
+  checkInCodeExpiresAt?: string | null;
+  donationId?: string;
+  cancellationReason?: string;
+  cancellationDate?: string;
+  createdAt: string;
+  center?: {
+    id: string;
+    centerName: string;
+    address: string;
+    state: string;
+    lga: string;
+    phoneNumber: string;
+    email: string;
+  };
+  screeningType?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
+  transaction?: {
+    id: string;
+    type: "DONATION" | "APPOINTMENT" | "PAYOUT" | "REFUND";
+    status: "PENDING" | "COMPLETED" | "FAILED";
+    amount: number;
+    paymentReference: string;
+    paymentChannel: string;
+    createdAt: string;
+  };
+  result?: {
+    id: string;
+    notes?: string;
+    uploadedAt: string;
+    files: Array<{
+      id: string;
+      fileName: string;
+      fileType: string;
+      cloudinaryUrl: string;
+      uploadedAt: string;
+    }>;
+  };
+  verification?: {
+    id: string;
+    verifiedAt: string;
+    verifier?: {
+      id: string;
+      email: string;
+    };
+  };
+};
+
 export type TWaitlist = {
   id: string;
   screeningTypeId: string;
@@ -455,6 +522,11 @@ export type TGetCheckInCodeResponse = TDataResponse<{
   checkInCode: string;
   expiresAt: string | null;
 }>;
+
+// Get patient appointment by ID response
+export type TGetPatientAppointmentByIdResponse =
+  TDataResponse<TPatientAppointmentDetails>;
+
 export type TVerifyCheckInCodeResponse = TDataResponse<{
   valid: boolean;
   appointmentId?: string;
