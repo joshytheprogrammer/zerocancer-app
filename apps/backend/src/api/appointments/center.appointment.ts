@@ -1,26 +1,26 @@
 import { zValidator } from "@hono/zod-validator";
 import {
-    cancelCenterAppointmentSchema,
-    completeAppointmentSchema,
-    deleteResultFileSchema,
-    getCenterAppointmentByIdSchema,
-    getCenterAppointmentsSchema,
-    rescheduleCenterAppointmentSchema,
-    restoreResultFileSchema,
-    uploadResultsSchema,
-    verifyCheckInCodeSchema,
+  cancelCenterAppointmentSchema,
+  completeAppointmentSchema,
+  deleteResultFileSchema,
+  getCenterAppointmentByIdSchema,
+  getCenterAppointmentsSchema,
+  rescheduleCenterAppointmentSchema,
+  restoreResultFileSchema,
+  uploadResultsSchema,
+  verifyCheckInCodeSchema,
 } from "@zerocancer/shared";
 import type {
-    TCancelCenterAppointmentResponse,
-    TCompleteAppointmentResponse,
-    TDataResponse,
-    TDeleteResultFileResponse,
-    TErrorResponse,
-    TGetCenterAppointmentByIdResponse,
-    TGetCenterAppointmentsResponse,
-    TRestoreResultFileResponse,
-    TUploadResultsResponse,
-    TVerifyCheckInCodeResponse,
+  TCancelCenterAppointmentResponse,
+  TCompleteAppointmentResponse,
+  TDataResponse,
+  TDeleteResultFileResponse,
+  TErrorResponse,
+  TGetCenterAppointmentByIdResponse,
+  TGetCenterAppointmentsResponse,
+  TRestoreResultFileResponse,
+  TUploadResultsResponse,
+  TVerifyCheckInCodeResponse,
 } from "@zerocancer/shared/types";
 import { stat } from "fs";
 import { Hono } from "hono";
@@ -566,10 +566,19 @@ centerAppointmentApp.post(
           },
         },
         patient: { select: { id: true, fullName: true } },
+        // allocation: {
+        //   select: {
+        //     campaign: {
+        //       select: { donorId: true },
+        //     }
+        //   }
+        // },
         center: { select: { centerName: true } },
         screeningType: { select: { name: true } },
       },
     });
+
+    console.log(appointment, 98);
 
     if (!appointment) {
       return c.json<TErrorResponse>(

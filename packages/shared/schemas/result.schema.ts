@@ -52,8 +52,8 @@ export const restoreResultFileSchema = z.object({
 
 // Complete appointment schema
 export const completeAppointmentSchema = z.object({
-  appointmentId: z.string().uuid(),
-  completionNotes: z.string().min(1).max(1000).optional(),
+  appointmentId: z.string(),
+  completionNotes: z.string().optional(),
 });
 
 // For admin use (post-MVP)
@@ -68,7 +68,9 @@ export const getDeletedFilesSchema = z.object({
 export type TUploadResults = z.infer<typeof uploadResultsSchema>;
 export type TGetPatientResults = z.infer<typeof getPatientResultsSchema>;
 export type TGetPatientResultById = z.infer<typeof getPatientResultByIdSchema>;
-export type TGetAppointmentResults = z.infer<typeof getAppointmentResultsSchema>;
+export type TGetAppointmentResults = z.infer<
+  typeof getAppointmentResultsSchema
+>;
 export type TDownloadResultFile = z.infer<typeof downloadResultFileSchema>;
 export type TDeleteResultFile = z.infer<typeof deleteResultFileSchema>;
 export type TRestoreResultFile = z.infer<typeof restoreResultFileSchema>;

@@ -235,8 +235,9 @@ export const completeAppointment = async (
   if (!validatedData.success) {
     throw new Error('Invalid complete appointment data')
   }
-
+  console.log('crezy')
   const res = await request.post(endpoints.completeAppointment(appointmentId), {
+    appointmentId: validatedData.data.appointmentId,
     completionNotes: data.completionNotes,
   })
   return res as TCompleteAppointmentResponse

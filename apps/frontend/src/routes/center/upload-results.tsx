@@ -224,11 +224,11 @@ function CenterUploadResults() {
             />
 
             {/* Show existing results if any */}
-            <ResultViewer
+            {/* <ResultViewer
               appointmentId={selectedAppointment}
               showHeader={true}
               compact={false}
-            />
+            /> */}
           </div>
         )}
       </div>
