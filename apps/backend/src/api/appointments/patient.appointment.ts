@@ -633,7 +633,7 @@ patientAppointmentApp.get(
           filePath: file.filePath,
           fileType: file.fileType,
           fileSize: file.fileSize,
-          url: file.cloudinaryUrl,
+          cloudinaryUrl: file.cloudinaryUrl,
           uploadedAt: file.uploadedAt.toISOString(),
           isDeleted: file.isDeleted,
         })),

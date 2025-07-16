@@ -1,6 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import { getAppointmentResultsSchema } from "@zerocancer/shared";
-import type { TErrorResponse, TGetAppointmentResultsResponse } from "@zerocancer/shared/types";
+import type {
+  TErrorResponse,
+  TGetAppointmentResultsResponse,
+} from "@zerocancer/shared/types";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
@@ -33,7 +36,7 @@ appointmentApp.get(
     const appointment = await db.appointment.findFirst({
       where: {
         id: appointmentId,
-        // Access control based on user role 
+        // Access control based on user role
         // Admin can access all appointments
       },
       select: { id: true },
@@ -109,7 +112,7 @@ appointmentApp.get(
           filePath: file.filePath,
           fileType: file.fileType,
           fileSize: file.fileSize,
-          url: file.cloudinaryUrl,
+          cloudinaryUrl: file.cloudinaryUrl,
           uploadedAt: file.uploadedAt.toISOString(),
           isDeleted: file.isDeleted,
         })),
