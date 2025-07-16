@@ -19,6 +19,11 @@ enum AllocationStatus {
   EXPIRED
 }
 
+enum StaffStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 enum CampaignStatus {
   ACTIVE
   COMPLETED
@@ -522,6 +527,7 @@ model CenterStaff {
   email     String  
   passwordHash String
   role      String?
+  status    StaffStatus? @default(ACTIVE)
   createdAt DateTime @default(now())
 
   center    ServiceCenter @relation(fields: [centerId], references: [id], onDelete: Cascade)
