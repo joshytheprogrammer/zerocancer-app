@@ -9,7 +9,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { useAppointmentResults } from '@/services/providers/patient.provider'
+import { useAuthUser } from '@/services/providers/auth.provider'
+import {
+  useAppointmentResults,
+  usePatientAppointmentById,
+} from '@/services/providers/patient.provider'
 import { useQuery } from '@tanstack/react-query'
 import type { TResultFile } from '@zerocancer/shared/types'
 import { format } from 'date-fns'
@@ -38,11 +42,23 @@ export function ResultViewer({
   compact = false,
   className = '',
 }: ResultViewerProps) {
+  const { data: appointment } = useQuery(
+    usePatientAppointmentById(appointmentId),
+  )
+
+  const { data: auth } = useQuery(useAuthUser())
+  const profile = auth?.data?.user?.profile
+
   const {
     data: resultsData,
     isLoading,
     error,
-  } = useQuery(useAppointmentResults(appointmentId))
+  } = useQuery({
+    ...useAppointmentResults(appointmentId),
+    enabled:
+      appointment?.data.status === 'COMPLETED' ||
+      (profile !== 'PATIENT' && profile !== 'DONOR'),
+  })
 
   const results = resultsData?.data
 
@@ -116,7 +132,9 @@ export function ResultViewer({
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No results available</p>
-            <p className="text-sm">Results will appear here once uploaded</p>
+            <p className="text-sm">
+              Results will appear here once they're ready
+            </p>
           </div>
         </CardContent>
       </Card>
