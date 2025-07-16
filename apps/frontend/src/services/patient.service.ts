@@ -15,6 +15,8 @@ import {
 import type {
   TBookSelfPayAppointmentResponse,
   TCheckWaitlistStatusResponse,
+  // TGetPatientResultsResponse,
+  TGetAppointmentResultsResponse,
   TGetCheckInCodeResponse,
   TGetEligibleCentersResponse,
   TGetPatientAppointmentByIdResponse,
@@ -23,7 +25,6 @@ import type {
   TGetPatientReceiptsResponse,
   TGetPatientResultByIdResponse,
   TGetPatientWaitlistResponse,
-  // TGetPatientResultsResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
   TLeaveWaitlistResponse,
@@ -130,6 +131,14 @@ export const getPatientAppointmentById = async (
     endpoints.getPatientAppointmentById(appointmentId),
   )
   return res as TGetPatientAppointmentByIdResponse
+}
+
+// Get appointment results by ID (works for any role)
+export const getAppointmentResults = async (
+  appointmentId: string,
+): Promise<TGetAppointmentResultsResponse> => {
+  const res = await request.get(endpoints.getAppointmentResults(appointmentId))
+  return res as TGetAppointmentResultsResponse
 }
 
 // Get a specific screening result

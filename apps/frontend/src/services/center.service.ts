@@ -31,6 +31,7 @@ import type {
   TCompleteAppointmentResponse,
   TCreateCenterStaffPasswordResponse,
   TDeleteResultFileResponse,
+  TGetAppointmentResultsResponse,
   TGetCenterAppointmentByIdResponse,
   TGetCenterAppointmentsResponse,
   TGetCenterByIdResponse,
@@ -78,6 +79,16 @@ export const getCenterAppointments = async (
   const res = await request.get(endpoints.getCenterAppointments(params))
   return res as TGetCenterAppointmentsResponse
 }
+
+// Get appointment results by ID (works for any role)
+export const getAppointmentResults = async (
+  appointmentId: string,
+): Promise<TGetAppointmentResultsResponse> => {
+  const res = await request.get(endpoints.getAppointmentResults(appointmentId))
+  return res as TGetAppointmentResultsResponse
+}
+
+// --- Appointment Actions ---
 
 export const getCenterAppointmentById = async (
   id: string,

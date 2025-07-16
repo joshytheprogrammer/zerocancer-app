@@ -146,6 +146,14 @@ export const centerAppointmentById = (id: string) =>
     enabled: !!id,
   })
 
+// Get appointment results by ID (works for any role)
+export const useAppointmentResults = (appointmentId: string) =>
+  queryOptions({
+    queryKey: [QueryKeys.authUser, 'appointmentResults', appointmentId],
+    queryFn: () => centerService.getAppointmentResults(appointmentId),
+    enabled: !!appointmentId,
+  })
+
 export const useCancelCenterAppointment = () =>
   useMutation({
     mutationKey: [MutationKeys.cancelCenterAppointment],

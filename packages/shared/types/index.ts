@@ -301,6 +301,8 @@ export type TUploadResultsResponse = TDataResponse<{
 
 export type TGetPatientResultByIdResponse = TDataResponse<TPatientResult>;
 
+export type TGetAppointmentResultsResponse = TDataResponse<TPatientResult | null>;
+
 // Soft delete and completion response types
 export type TDeleteResultFileResponse = TDataResponse<{
   fileId: string;

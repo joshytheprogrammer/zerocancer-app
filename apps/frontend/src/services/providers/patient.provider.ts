@@ -231,6 +231,15 @@ export function usePatientAppointmentById(appointmentId: string) {
   })
 }
 
+// Get appointment results by ID (works for any role)
+export function useAppointmentResults(appointmentId: string) {
+  return queryOptions({
+    queryKey: [QueryKeys.authUser, 'appointmentResults', appointmentId],
+    queryFn: () => patientService.getAppointmentResults(appointmentId),
+    enabled: !!appointmentId,
+  })
+}
+
 // Get patient screening results (paginated)
 // export function usePatientResults(params: { page?: number; size?: number }) {
 //   return queryOptions({

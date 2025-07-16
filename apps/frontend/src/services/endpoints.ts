@@ -104,6 +104,10 @@ export const getCheckInCode = (appointmentId: string) =>
 export const getPatientAppointmentById = (appointmentId: string) =>
   `/api/appointment/patient/${appointmentId}`
 
+// Get appointment results by ID (works for any role)
+export const getAppointmentResults = (appointmentId: string) =>
+  `/api/appointment/${appointmentId}/results`
+
 // Center verifies a check-in code
 export const verifyCheckInCode = () => `/api/appointment/center/verify`
 

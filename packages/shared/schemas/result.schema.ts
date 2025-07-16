@@ -28,6 +28,11 @@ export const getPatientResultByIdSchema = z.object({
   id: z.string().uuid(),
 });
 
+// Get appointment results schema
+export const getAppointmentResultsSchema = z.object({
+  id: z.string().uuid(),
+});
+
 // Download result file schema
 export const downloadResultFileSchema = z.object({
   fileId: z.string().uuid(),
@@ -63,6 +68,7 @@ export const getDeletedFilesSchema = z.object({
 export type TUploadResults = z.infer<typeof uploadResultsSchema>;
 export type TGetPatientResults = z.infer<typeof getPatientResultsSchema>;
 export type TGetPatientResultById = z.infer<typeof getPatientResultByIdSchema>;
+export type TGetAppointmentResults = z.infer<typeof getAppointmentResultsSchema>;
 export type TDownloadResultFile = z.infer<typeof downloadResultFileSchema>;
 export type TDeleteResultFile = z.infer<typeof deleteResultFileSchema>;
 export type TRestoreResultFile = z.infer<typeof restoreResultFileSchema>;
