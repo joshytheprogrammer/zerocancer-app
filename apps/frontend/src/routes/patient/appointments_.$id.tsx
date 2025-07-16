@@ -1,4 +1,5 @@
 import CheckInQR from '@/components/CheckInQR'
+import { ResultViewer } from '@/components/ResultViewer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,8 +14,6 @@ import {
   CalendarIcon,
   ClockIcon,
   CreditCardIcon,
-  DownloadIcon,
-  FileTextIcon,
   MailIcon,
   MapPinIcon,
   PhoneIcon,
@@ -525,71 +524,7 @@ function RouteComponent() {
           )}
 
           {/* Results */}
-          {appointment.result && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileTextIcon className="h-5 w-5" />
-                  Screening Results
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium">Upload Date</p>
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(appointment.result.uploadedAt), 'PPp')}
-                  </p>
-                </div>
-
-                {appointment.result.notes && (
-                  <div>
-                    <p className="text-sm font-medium">Notes</p>
-                    <p className="text-sm text-muted-foreground">
-                      {appointment.result.notes}
-                    </p>
-                  </div>
-                )}
-
-                {appointment.result.files &&
-                  appointment.result.files.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Result Files</p>
-                      <div className="space-y-2">
-                        {appointment.result.files.map((file) => (
-                          <div
-                            key={file.id}
-                            className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {file.fileName}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {file.fileType} •{' '}
-                                  {format(new Date(file.uploadedAt), 'PPp')}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                window.open(file.cloudinaryUrl, '_blank')
-                              }
-                            >
-                              <DownloadIcon className="h-3 w-3 mr-1" />
-                              View
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-          )}
+          <ResultViewer appointmentId={id} showHeader={true} compact={false} />
         </div>
 
         {/* Sidebar */}

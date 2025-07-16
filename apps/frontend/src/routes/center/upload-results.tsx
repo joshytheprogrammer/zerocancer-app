@@ -1,4 +1,5 @@
 import { ResultUploadComponent } from '@/components/center/ResultUploadComponent'
+import { ResultViewer } from '@/components/ResultViewer'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -202,7 +203,7 @@ function CenterUploadResults() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-4">
             <ResultUploadComponent
               appointmentId={selectedAppointment}
               appointmentData={selectedAppointmentData}
@@ -220,6 +221,13 @@ function CenterUploadResults() {
                 setSelectedAppointment('')
                 toast.success('Appointment completed successfully!')
               }}
+            />
+
+            {/* Show existing results if any */}
+            <ResultViewer
+              appointmentId={selectedAppointment}
+              showHeader={true}
+              compact={false}
             />
           </div>
         )}

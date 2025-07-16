@@ -265,7 +265,7 @@ export type TResultFile = {
   filePath: string;
   fileType: string;
   fileSize: number;
-  url: string;
+  cloudinaryUrl: string;
   uploadedAt: string;
   // Soft delete fields
   isDeleted: boolean;

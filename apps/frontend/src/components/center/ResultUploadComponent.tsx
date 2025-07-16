@@ -489,7 +489,7 @@ export function ResultUploadComponent({
       )}
 
       {/* Instructions */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -519,7 +519,7 @@ export function ResultUploadComponent({
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }
