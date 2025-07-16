@@ -33,19 +33,17 @@ import {
   Download, 
   Eye, 
   MoreHorizontal,
-  DollarSign,
-  Receipt,
   Filter,
   FileText,
-  Clock,
-  CheckCircle,
-  TrendingUp,
-  Calendar,
-  Users
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+// Image assets
+import totalEarningsIcon from '@/assets/images/impact.png'
+import totalPayoutsIcon from '@/assets/images/sponsored.png'
+import outstandingBalanceIcon from '@/assets/images/calendar.png'
+
 
 export const Route = createFileRoute('/center/receipt-history')({
   component: CenterReceiptHistory,
@@ -162,62 +160,49 @@ function CenterReceiptHistory() {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="border-0 bg-green-100 relative overflow-hidden">
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-sm font-medium text-green-800">Total Earnings</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-green-900">
               ₦{((balance?.eligibleAmount || 0) + (balance?.totalPaidOut || 0)).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-green-700 mt-1">
               All time earnings
             </p>
           </CardContent>
+          <img src={totalEarningsIcon} alt="" className="absolute -right-4 -top-4 w-24 h-24 opacity-20" />
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payouts</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-0 bg-blue-100 relative overflow-hidden">
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-sm font-medium text-blue-800">Total Payouts Sent</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₦{(balance?.eligibleAmount || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              {balance?.transactionCount || 0} eligible transactions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Paid Out</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₦{(balance?.totalPaidOut || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-blue-900">₦{(balance?.totalPaidOut || 0).toLocaleString()}</div>
+            <p className="text-xs text-blue-700 mt-1">
               {balance?.lastPayoutDate 
-                ? `Last: ${format(new Date(balance.lastPayoutDate), 'MMM dd, yyyy')}`
+                ? `Last payout: ${format(new Date(balance.lastPayoutDate), 'MMM dd, yyyy')}`
                 : 'No payouts yet'
               }
             </p>
           </CardContent>
+          <img src={totalPayoutsIcon} alt="" className="absolute -right-4 -bottom-4 w-24 h-24 opacity-20" />
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-0 bg-purple-100 relative overflow-hidden">
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-sm font-medium text-purple-800">Outstanding Balance</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{transactions.length}</div>
-            <p className="text-xs text-muted-foreground">
-              From appointments
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-purple-900">₦{(balance?.eligibleAmount || 0).toLocaleString()}</div>
+            <p className="text-xs text-purple-700 mt-1">
+              {balance?.transactionCount || 0} eligible transactions
             </p>
           </CardContent>
+          <img src={outstandingBalanceIcon} alt="" className="absolute -right-2 -top-2 w-20 h-20 opacity-20" />
         </Card>
       </div>
 
@@ -238,7 +223,7 @@ function CenterReceiptHistory() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -288,7 +273,7 @@ function CenterReceiptHistory() {
             <CardHeader>
               <CardTitle>Transaction Records</CardTitle>
               <CardDescription>
-                All transactions from appointments at your center
+                All transactions from appointments at your center ({filteredTransactions.length})
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -301,67 +286,69 @@ function CenterReceiptHistory() {
                   <p className="text-muted-foreground">No transactions found</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Transaction ID</TableHead>
-                      <TableHead>Patient</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Payout Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.map((transaction: any) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell className="font-mono text-sm">
-                          {transaction.id.slice(0, 8)}...
-                        </TableCell>
-                        <TableCell>
-                          {transaction.appointments[0]?.patient.fullName || 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          {transaction.appointments[0]?.screeningType.name || 'N/A'}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          ₦{Number(transaction.amount).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(transaction.createdAt), 'MMM dd, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(transaction.status)}
-                        </TableCell>
-                        <TableCell>
-                          {getPayoutStatusBadge(transaction)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Download className="mr-2 h-4 w-4" />
-                                Download Receipt
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                <div className="relative w-full overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Transaction ID</TableHead>
+                        <TableHead>Patient</TableHead>
+                        <TableHead>Service</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Payout Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTransactions.map((transaction: any) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell className="font-mono text-sm">
+                            {transaction.id.slice(0, 8)}...
+                          </TableCell>
+                          <TableCell>
+                            {transaction.appointments[0]?.patient.fullName || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {transaction.appointments[0]?.screeningType.name || 'N/A'}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ₦{Number(transaction.amount).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(transaction.createdAt), 'MMM dd, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(transaction.status)}
+                          </TableCell>
+                          <TableCell>
+                            {getPayoutStatusBadge(transaction)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download Receipt
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -373,7 +360,7 @@ function CenterReceiptHistory() {
             <CardHeader>
               <CardTitle>Payout History</CardTitle>
               <CardDescription>
-                Record of all payouts sent to your account
+                Record of all payouts sent to your account ({payouts.length})
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -386,66 +373,68 @@ function CenterReceiptHistory() {
                   <p className="text-muted-foreground">No payouts yet</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Payout Number</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Net Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date Initiated</TableHead>
-                      <TableHead>Date Completed</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payouts.map((payout: any) => (
-                      <TableRow key={payout.id}>
-                        <TableCell className="font-mono">
-                          {payout.payoutNumber}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          ₦{Number(payout.amount).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          ₦{Number(payout.netAmount).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          {getPayoutStatusBadgeForPayout(payout.status)}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(payout.createdAt), 'MMM dd, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                          {payout.completedAt 
-                            ? format(new Date(payout.completedAt), 'MMM dd, yyyy')
-                            : '-'
-                          }
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <FileText className="mr-2 h-4 w-4" />
-                                Payout Breakdown
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                <div className="relative w-full overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Payout Number</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Net Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date Initiated</TableHead>
+                        <TableHead>Date Completed</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {payouts.map((payout: any) => (
+                        <TableRow key={payout.id}>
+                          <TableCell className="font-mono">
+                            {payout.payoutNumber}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ₦{Number(payout.amount).toLocaleString()}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ₦{Number(payout.netAmount).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            {getPayoutStatusBadgeForPayout(payout.status)}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(payout.createdAt), 'MMM dd, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            {payout.completedAt 
+                              ? format(new Date(payout.completedAt), 'MMM dd, yyyy')
+                              : '-'
+                            }
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <FileText className="mr-2 h-4 w-4" />
+                                  Payout Breakdown
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>

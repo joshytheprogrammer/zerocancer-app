@@ -245,6 +245,7 @@ export type TCenter = {
   staff: Array<{
     id: string;
     email: string;
+    status?: "ACTIVE" | "SUSPENDED" | "PENDING";
   }>;
 };
 
