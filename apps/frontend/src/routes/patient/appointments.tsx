@@ -36,17 +36,21 @@ function PatientAppointments() {
   const today = new Date()
   today.setHours(0, 0, 0, 0) // Set to beginning of today
 
+  // Correct filtering logic:
+  // - Past: All completed appointments (regardless of original date)
+  // - Upcoming: Only scheduled appointments in the future  
+  // - Ongoing: All in-progress appointments
+  // - Cancelled: All cancelled appointments
+  const pastAppointments = appointments.filter(
+    (appt) => appt.status === 'COMPLETED',
+  )
   const upcomingAppointments = appointments.filter(
     (appt) =>
-      new Date(appt.appointmentDateTime) >= today &&
-      appt.status === 'SCHEDULED',
+      appt.status === 'SCHEDULED' &&
+      new Date(appt.appointmentDateTime) >= today,
   )
   const ongoingAppointments = appointments.filter(
     (appt) => appt.status === 'IN_PROGRESS',
-  )
-  const pastAppointments = appointments.filter(
-    (appt) =>
-      new Date(appt.appointmentDateTime) < today && appt.status === 'COMPLETED',
   )
   const cancelledAppointments = appointments.filter(
     (appt) => appt.status === 'CANCELLED',
