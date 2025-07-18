@@ -114,9 +114,19 @@ function ScreeningItem({
   }
 
   const handleBookWithDonation = (screeningId: string) => {
+    const allocation = waitlistStatus?.data?.waitlist?.allocation
+    if (!allocation) {
+      toast.error('No allocation found. Please contact support.')
+      return
+    }
+    
+    // Navigate to dedicated center selection page for donation-based bookings
     navigate({
-      to: '/patient/book',
-      search: { screeningTypeId: screeningId, sponsored: true },
+      to: '/patient/book/centers',
+      search: { 
+        allocationId: allocation.id,
+        screeningTypeId: screeningId 
+      },
     })
   }
 

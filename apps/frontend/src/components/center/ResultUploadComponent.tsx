@@ -75,6 +75,8 @@ export function ResultUploadComponent({
   )
   const appointmentResults = resultsData?.data
 
+  console.log(appointmentResults)
+
   const form = useForm<ResultUploadFormData>({
     resolver: zodResolver(resultUploadSchema),
     defaultValues: {
