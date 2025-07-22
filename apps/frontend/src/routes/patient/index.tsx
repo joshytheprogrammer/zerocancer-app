@@ -166,6 +166,14 @@ function ScreeningItem({
     useCheckWaitlistStatus(screeningType.id),
   )
 
+  // Check if the user can use donation-based booking & it hasn't been claimed yet
+  if (screeningType.name == 'Breast Cancer Screening')
+    console.log('waitlistStatus of breast cacner', waitlistStatus)
+
+  const hasUsableDonation =
+    !!waitlistStatus?.data?.waitlist?.allocation?.id &&
+    !!waitlistStatus?.data?.waitlist?.allocation.claimedAt
+
   const handleJoinWaitlist = (screeningId: string) => {
     joinWaitlistMutation.mutate(
       { screeningTypeId: screeningId },
@@ -211,13 +219,13 @@ function ScreeningItem({
       toast.error('No allocation found. Please contact support.')
       return
     }
-    
+
     // Navigate to dedicated center selection page for donation-based bookings
     navigate({
       to: '/patient/book/centers',
-      search: { 
+      search: {
         allocationId: allocation.id,
-        screeningTypeId: screeningId 
+        screeningTypeId: screeningId,
       },
     })
   }
@@ -230,7 +238,7 @@ function ScreeningItem({
       onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
       onLeaveWaitlist={handleLeaveWaitlist}
       onBookWithDonation={() => handleBookWithDonation(screeningType.id)}
-      hasDonation={!!waitlistStatus?.data?.waitlist?.allocation}
+      hasUsableDonation={hasUsableDonation}
       isWaitlisted={waitlistStatus?.data?.inWaitlist}
       isJoiningWaitlist={joinWaitlistMutation.isPending}
       isLeavingWaitlist={leaveWaitlistMutation.isPending}

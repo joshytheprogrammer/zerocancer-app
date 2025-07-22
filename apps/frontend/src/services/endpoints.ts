@@ -71,7 +71,8 @@ export const getWaitlist = (waitlistId: string) =>
   `/api/waitlist/patient/${waitlistId}`
 export const checkWaitlistStatus = (screeningTypeId: string) =>
   `/api/waitlist/patient/status/${screeningTypeId}`
-export const selectCenter = () => '/api/appointment/patient/matches/select-center'
+export const selectCenter = () =>
+  '/api/appointment/patient/matches/select-center'
 export const getReceipt = (id: string) => `/api/patient/receipt/${id}`
 export const getEligibleCenters = (
   allocationId: string,
@@ -386,3 +387,26 @@ export const getSystemHealth = () => `/api/admin/system/health`
 
 export const cancelPatientAppointment = (appointmentId: string) =>
   `/api/appointment/${appointmentId}/cancel`
+
+// Payouts
+// PAYOUTS
+export const getAllCenterBalances = () => '/api/payouts/center-balances'
+export const getCenterBalance = (centerId: string) =>
+  `/api/payouts/center/${centerId}/balance`
+export const createManualPayout = () => '/api/payouts/manual'
+export const processPayout = (payoutId: string) =>
+  `/api/payouts/${payoutId}/process`
+export const retryPayout = (payoutId: string) =>
+  `/api/payouts/${payoutId}/retry`
+export const getPayouts = (params?: Record<string, unknown>) =>
+  `/api/payouts${buildQuery(params || {})}`
+export const getCenterPayouts = (
+  centerId: string,
+  params?: Record<string, unknown>,
+) => `/api/payouts/center/${centerId}${buildQuery(params || {})}`
+export const getCenterTransactions = (
+  centerId: string,
+  params?: Record<string, unknown>,
+) => `/api/payouts/center/${centerId}/transactions${buildQuery(params || {})}`
+export const getBanks = () => '/api/payouts/banks'
+export const verifyAccount = () => '/api/payouts/verify-account'

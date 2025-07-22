@@ -134,10 +134,11 @@ authApp.post(
         : user.profiles.includes(actor.toUpperCase())
         ? actor.toUpperCase()
         : user.profiles[0]; // Use first profile for non-center actors
+
     const payload = {
       id: id!,
       email: user.email!,
-      profile: authProfile, // Use first profile for non-center actors
+      profile: authProfile,
     };
 
     const token = await sign(
@@ -227,7 +228,7 @@ authApp.get(
     ) {
       const center = await db.serviceCenter.findUnique({
         where: { id: jwtPayload.id! },
-        select: { id: true, centerName: true, email: true },
+        select: { id: true, centerName: true, email: true, status: true },
       });
       if (!center) {
         return c.json<TErrorResponse>(

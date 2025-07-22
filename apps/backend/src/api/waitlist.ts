@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import type {
+  TCheckWaitlistStatusResponse,
   TErrorResponse,
   TGetAllWaitlistsResponse,
   TGetPatientWaitlistsResponse,
@@ -251,13 +252,19 @@ waitlistApp.get("/patient/status/:screeningTypeId", async (c) => {
         allocation: {
           select: {
             id: true,
+            campaign: {
+              select: {
+                title: true,
+                purpose: true,
+              },
+            },
             claimedAt: true,
           },
         },
       },
     });
 
-    return c.json({
+    return c.json<TCheckWaitlistStatusResponse>({
       ok: true,
       data: {
         inWaitlist: !!existingWaitlist,
@@ -276,7 +283,10 @@ waitlistApp.get("/patient/status/:screeningTypeId", async (c) => {
               allocation: existingWaitlist.allocation
                 ? {
                     id: existingWaitlist.allocation.id,
-                    campaign: null, // Simplified for status check
+                    claimedAt:
+                      existingWaitlist.allocation.claimedAt?.toISOString() ||
+                      null,
+                    campaign: existingWaitlist.allocation.campaign,
                   }
                 : null,
             }

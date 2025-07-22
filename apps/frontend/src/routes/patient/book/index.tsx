@@ -8,6 +8,7 @@ import { useAllScreeningTypes } from '@/services/providers/screeningType.provide
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { TScreeningType } from '@zerocancer/shared/types'
+import { RotateCwIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/patient/book/')({
@@ -23,6 +24,9 @@ function BookScreeningPage() {
     data: screeningTypesData,
     isLoading: screeningTypesLoading,
     error: screeningTypesError,
+    refetch,
+    isFetching,
+    isPending,
   } = useQuery(useAllScreeningTypes())
 
   const handlePayAndBook = (screeningId: string) => {
@@ -39,6 +43,17 @@ function BookScreeningPage() {
         <p className="text-muted-foreground mt-1 text-sm">
           Choose a screening type to book an appointment or join the waitlist.
         </p>
+        <button
+          type="button"
+          className={`flex items-center gap-2 px-3 py-2 rounded-md border bg-muted hover:bg-muted/80 transition`}
+          onClick={() => refetch()}
+        >
+          <RotateCwIcon
+            size={18}
+            className={`${isFetching ? 'animate-spin' : ''}`}
+          />
+          Reload (to be removed later)
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -73,6 +88,13 @@ function ScreeningItem({
   const { data: waitlistStatus, isLoading: isCheckingWaitlist } = useQuery(
     useCheckWaitlistStatus(screeningType.id),
   )
+
+  const hasUsableDonation =
+    !!waitlistStatus?.data?.waitlist?.allocation?.id &&
+    !!!waitlistStatus?.data?.waitlist?.allocation.claimedAt
+
+  if (screeningType.name == 'Colorectal Cancer Screening')
+    console.log('waitlistStatus of screening', waitlistStatus)
 
   const handleJoinWaitlist = (screeningId: string) => {
     joinWaitlistMutation.mutate(
@@ -119,13 +141,13 @@ function ScreeningItem({
       toast.error('No allocation found. Please contact support.')
       return
     }
-    
+
     // Navigate to dedicated center selection page for donation-based bookings
     navigate({
       to: '/patient/book/centers',
-      search: { 
+      search: {
         allocationId: allocation.id,
-        screeningTypeId: screeningId 
+        screeningTypeId: screeningId,
       },
     })
   }
@@ -138,7 +160,7 @@ function ScreeningItem({
       onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
       onLeaveWaitlist={handleLeaveWaitlist}
       onBookWithDonation={() => handleBookWithDonation(screeningType.id)}
-      hasDonation={!!waitlistStatus?.data?.waitlist?.allocation}
+      hasUsableDonation={hasUsableDonation}
       isWaitlisted={waitlistStatus?.data?.inWaitlist}
       isJoiningWaitlist={joinWaitlistMutation.isPending}
       isLeavingWaitlist={leaveWaitlistMutation.isPending}

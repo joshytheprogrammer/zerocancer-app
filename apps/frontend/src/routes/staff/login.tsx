@@ -32,8 +32,8 @@ import type { z } from 'zod'
 
 export const Route = createFileRoute('/staff/login')({
   component: RouteComponent,
-  loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(
       centers({
         page: 1,
         pageSize: 100, // Get a large number to show all available centers
@@ -63,7 +63,7 @@ function RouteComponent() {
   )
 
   const centersList = centersData?.data?.centers || []
-  const centerOptions = centersList.map(center => ({
+  const centerOptions = centersList.map((center) => ({
     value: center.id,
     label: center.centerName,
   }))

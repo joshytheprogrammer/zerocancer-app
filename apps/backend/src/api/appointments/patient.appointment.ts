@@ -276,11 +276,13 @@ patientAppointmentApp.post(
       return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
     const userId = payload.id!;
     const { allocationId, centerId, appointmentDateTime } = c.req.valid("json");
+
     // Validate allocation
     const allocation = await db.donationAllocation.findUnique({
       where: { id: allocationId },
       include: { waitlist: true },
     });
+
     if (
       !allocation ||
       allocation.patientId !== userId ||
@@ -291,6 +293,7 @@ patientAppointmentApp.post(
         400
       );
     }
+
     // Create appointment and link to allocation
     const appointment = await db.appointment.create({
       data: {
@@ -303,6 +306,9 @@ patientAppointmentApp.post(
         donationId: allocation.campaignId!,
         checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
         checkInCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        allocation: {
+          connect: { id: allocationId! },
+        },
       },
       include: {
         center: true,
@@ -311,10 +317,26 @@ patientAppointmentApp.post(
         result: true,
       },
     });
-    await db.donationAllocation.update({
-      where: { id: allocationId! },
-      data: { appointmentId: appointment.id! },
+
+    // Update allocation and waitlist status
+    await db.$transaction(async (tx) => {
+      const claimedAtDate = new Date();
+      await tx.donationAllocation.update({
+        where: { id: allocationId! },
+        data: {
+          appointmentId: appointment.id!,
+          claimedAt: claimedAtDate,
+        },
+      });
+
+      await tx.waitlist.update({
+        where: { id: allocation.waitlist.id! },
+        data: { status: "CLAIMED", claimedAt: claimedAtDate },
+      });
     });
+
+    console.log("I have updated allocations and waitlist statuses");
+
     const safeAppointment = {
       id: appointment.id!,
       patientId: appointment.patientId!,

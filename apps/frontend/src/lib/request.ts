@@ -185,7 +185,7 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
       ) {
         if (process.env.NODE_ENV !== 'production') {
           // Development: Frontend (3000) -> Backend (8000)
-          console.log('config.url', config)
+          // console.log('config.url', config)
 
           config.url = config.url.replace(
             '/api/',
