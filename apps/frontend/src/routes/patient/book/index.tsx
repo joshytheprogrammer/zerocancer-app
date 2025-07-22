@@ -63,7 +63,7 @@ function BookScreeningPage() {
           <p>Error loading screenings.</p>
         ) : (
           (screeningTypesData?.data || []).map((screeningType) => (
-            <ScreeningItem
+            <ScreeningCard
               key={screeningType.id}
               screeningType={screeningType}
               handlePayAndBook={handlePayAndBook}
@@ -72,99 +72,5 @@ function BookScreeningPage() {
         )}
       </div>
     </div>
-  )
-}
-
-function ScreeningItem({
-  screeningType,
-  handlePayAndBook,
-}: {
-  screeningType: TScreeningType
-  handlePayAndBook: (id: string) => void
-}) {
-  const navigate = useNavigate()
-  const joinWaitlistMutation = useJoinWaitlist()
-  const leaveWaitlistMutation = useLeaveWaitlist()
-  const { data: waitlistStatus, isLoading: isCheckingWaitlist } = useQuery(
-    useCheckWaitlistStatus(screeningType.id),
-  )
-
-  const hasUsableDonation =
-    !!waitlistStatus?.data?.waitlist?.allocation?.id &&
-    !!!waitlistStatus?.data?.waitlist?.allocation.claimedAt
-
-  if (screeningType.name == 'Colorectal Cancer Screening')
-    console.log('waitlistStatus of screening', waitlistStatus)
-
-  const handleJoinWaitlist = (screeningId: string) => {
-    joinWaitlistMutation.mutate(
-      { screeningTypeId: screeningId },
-      {
-        onSuccess: () => {
-          toast.success('You have been added to the waitlist')
-        },
-        onError: (error: any) => {
-          toast.error(
-            error?.response?.data?.error ||
-              'Failed to join waitlist. Please try again.',
-          )
-        },
-      },
-    )
-  }
-
-  const handleLeaveWaitlist = () => {
-    const waitlistId = waitlistStatus?.data?.waitlist?.id
-    if (!waitlistId) {
-      toast.error('Cannot leave waitlist without a waitlist ID.')
-      return
-    }
-    leaveWaitlistMutation.mutate(
-      { waitlistId },
-      {
-        onSuccess: () => {
-          toast.success('You have been removed from the waitlist')
-        },
-        onError: (error: any) => {
-          toast.error(
-            error?.response?.data?.error ||
-              'Failed to leave waitlist. Please try again.',
-          )
-        },
-      },
-    )
-  }
-
-  const handleBookWithDonation = (screeningId: string) => {
-    const allocation = waitlistStatus?.data?.waitlist?.allocation
-    if (!allocation) {
-      toast.error('No allocation found. Please contact support.')
-      return
-    }
-
-    // Navigate to dedicated center selection page for donation-based bookings
-    navigate({
-      to: '/patient/book/centers',
-      search: {
-        allocationId: allocation.id,
-        screeningTypeId: screeningId,
-      },
-    })
-  }
-
-  return (
-    <ScreeningCard
-      name={screeningType.name}
-      description={screeningType.description || 'No description available.'}
-      onBookNow={() => handlePayAndBook(screeningType.id)}
-      onJoinWaitlist={() => handleJoinWaitlist(screeningType.id)}
-      onLeaveWaitlist={handleLeaveWaitlist}
-      onBookWithDonation={() => handleBookWithDonation(screeningType.id)}
-      hasUsableDonation={hasUsableDonation}
-      isWaitlisted={waitlistStatus?.data?.inWaitlist}
-      isJoiningWaitlist={joinWaitlistMutation.isPending}
-      isLeavingWaitlist={leaveWaitlistMutation.isPending}
-      isBooking={isCheckingWaitlist}
-    />
   )
 }

@@ -44,6 +44,9 @@ export const useAllScreeningTypes = (search?: string) =>
   queryOptions({
     queryKey: [QueryKeys.screeningTypesAll, search],
     queryFn: () => fetchAllScreeningTypes({ search }),
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
     staleTime: Infinity, // Keep this data fresh indefinitely
   })
 
