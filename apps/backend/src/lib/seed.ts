@@ -1,8 +1,11 @@
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
+import "dotenv/config";
 import { getDB } from "./db";
 
-const prisma = getDB();
+const prisma = getDB({
+  env: { DATABASE_URL: process.env.DATABASE_URL || "" },
+});
 const TEST_PASSWORDS = ["password123", "testpass456", "demo789"];
 
 async function main() {

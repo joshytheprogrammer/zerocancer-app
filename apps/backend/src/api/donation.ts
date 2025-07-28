@@ -23,218 +23,24 @@ import type {
 import crypto from "crypto";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
-import { getDB, TDB } from "src/lib/db";
-import { THonoAppVariables } from "src/lib/types";
-import { createNotificationForUsers } from "src/lib/utils";
+import { getDB } from "src/lib/db";
+import {
+  addToGeneralDonorPool,
+  initializePaystackPayment,
+} from "src/lib/paystack";
+import { TEnvs, THonoApp } from "src/lib/types";
+import {
+  createNotificationForUsers,
+  formatCampaignForResponse,
+} from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 
-export const donationApp = new Hono<{
-  Variables: THonoAppVariables;
-}>();
+export const donationApp = new Hono<THonoApp>();
 
 // ========================================
 // HELPER FUNCTIONS
 // ========================================
-
-// Helper function to initialize Paystack payment with context-aware callback URLs
-export async function initializePaystackPayment(
-  c: any,
-  data: {
-    email: string;
-    amount: number; // in kobo
-    reference: string;
-    paymentType:
-      | "anonymous_donation"
-      | "campaign_creation"
-      | "campaign_funding"
-      | "appointment_booking";
-    campaignId?: string; // Required for campaign-related payments
-    patientId?: string; // Optional for appointment payments
-    metadata?: any;
-  }
-) {
-  const { PAYSTACK_SECRET_KEY, FRONTEND_URL } = env<{
-    PAYSTACK_SECRET_KEY: string;
-    FRONTEND_URL: string;
-  }>(c, "node");
-
-  // Generate context-aware callback URL based on payment type
-  let callbackUrl: string;
-
-  switch (data.paymentType) {
-    case "anonymous_donation":
-      callbackUrl = `${FRONTEND_URL}/donation/payment-status?ref=${data.reference}&type=anonymous`;
-      break;
-    case "campaign_creation":
-      if (!data.campaignId)
-        throw new Error("Campaign ID required for campaign creation");
-      callbackUrl = `${FRONTEND_URL}/donor/campaigns/payment-status?ref=${data.reference}&type=create&campaignId=${data.campaignId}`;
-      break;
-    case "campaign_funding":
-      if (!data.campaignId)
-        throw new Error("Campaign ID required for campaign funding");
-      callbackUrl = `${FRONTEND_URL}/donor/campaigns/${data.campaignId}/payment-status?ref=${data.reference}&type=fund`;
-      break;
-    case "appointment_booking":
-      if (!data.patientId)
-        throw new Error("Patient ID required for appointment payment");
-      callbackUrl = `${FRONTEND_URL}/patient/book/payment-status?ref=${data.reference}&type=book&patientId=${data.patientId}`;
-      break;
-    default:
-      throw new Error(`Unknown payment type: ${data.paymentType}`);
-  }
-
-  const response = await fetch(
-    "https://api.paystack.co/transaction/initialize",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.email,
-        amount: data.amount,
-        reference: data.reference,
-        callback_url: callbackUrl,
-        metadata: {
-          ...data.metadata,
-          payment_type: data.paymentType,
-          campaign_id: data.campaignId || null,
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to initialize Paystack payment");
-  }
-
-  const result = await response.json();
-  console.log("Paystack payment initialized:", result.data);
-  return result.data;
-}
-
-// Helper function to format campaign for API response
-function formatCampaignForResponse(campaign: any): TDonationCampaign {
-  let targetGender: "MALE" | "FEMALE" | "ALL" | undefined;
-
-  if (campaign.targetGender === null || campaign.targetGender === undefined) {
-    targetGender = "ALL";
-  } else if (campaign.targetGender === "MALE") {
-    targetGender = "MALE";
-  } else {
-    targetGender = "FEMALE";
-  }
-
-  const patientsHelped = campaign.allocations?.reduce(
-    (count: number, allocation: any) => {
-      // Count only allocations with completed appointments
-      return count + (allocation.appointment?.status === "COMPLETED" ? 1 : 0);
-    },
-    0
-  );
-
-  const patientAppointmentInProgress = campaign.allocations?.reduce(
-    (count: number, allocation: any) => {
-      // Count only allocations with completed appointments
-      return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
-    },
-    0
-  );
-
-  const patientAppointmentScheduled = campaign.allocations?.reduce(
-    (count: number, allocation: any) => {
-      // Count only allocations with completed appointments
-      return count + (allocation.appointment?.status === "IN_PROGRESS" ? 1 : 0);
-    },
-    0
-  );
-
-  const patientPendingAcceptance = campaign.allocations?.reduce(
-    (count: number, allocation: any) => {
-      // Count only allocations with completed appointments
-      return count + (allocation.appointment?.status === "PENDING" ? 1 : 0);
-    },
-    0
-  );
-
-  return {
-    id: campaign.id ?? "unknown-campaign-id",
-    donorId: campaign.donorId,
-    title: campaign.title || "Untitled Campaign",
-    description: campaign.purpose || "",
-    fundingAmount: campaign.totalAmount,
-    usedAmount: campaign.totalAmount - (campaign.availableAmount || 0),
-    targetGender,
-    targetAgeMin: campaign.targetAgeRange?.split("-")[0]
-      ? parseInt(campaign.targetAgeRange.split("-")[0])
-      : undefined,
-    targetAgeMax: campaign.targetAgeRange?.split("-")[1]
-      ? parseInt(campaign.targetAgeRange.split("-")[1])
-      : undefined,
-    targetStates: campaign.targetStates || [],
-    targetLgas: campaign.targetLgas || [],
-    status: campaign.status as
-      | "ACTIVE"
-      | "COMPLETED"
-      | "DELETED"
-      | "PENDING"
-      | "SUSPENDED",
-    expiryDate: campaign.expiryDate?.toISOString() || null,
-    createdAt: campaign.createdAt.toISOString(),
-    updatedAt: campaign.createdAt.toISOString(),
-    donor: {
-      id: campaign.donor.id,
-      fullName: campaign.donor.fullName,
-      email: campaign.donor.email,
-      organizationName: campaign.donor.donorProfile?.organizationName,
-    },
-    screeningTypes: campaign.screeningTypes || [],
-    patientAllocations: {
-      patientsHelped,
-      patientPendingAcceptance,
-      patientAppointmentInProgress,
-      patientAppointmentScheduled,
-      allocationsCount: campaign.allocations?.length || 0,
-    },
-  };
-}
-
-// Helper function to add funds to general donor pool
-async function addToGeneralDonorPool(amount: number) {
-  const db = getDB();
-
-  // Find or create general donor pool campaign
-  let generalPool = await db.donationCampaign.findFirst({
-    where: { id: "general-donor-pool" },
-  });
-
-  if (!generalPool) {
-    // Create general pool if it doesn't exist
-    generalPool = await db.donationCampaign.create({
-      data: {
-        id: "general-donor-pool",
-        donorId: "system", // System-managed campaign
-        title: "General donation public pool",
-        totalAmount: amount,
-        availableAmount: amount,
-        purpose: "General Donation Pool",
-        status: "ACTIVE",
-      },
-    });
-  } else {
-    // Add to existing pool
-    await db.donationCampaign.update({
-      where: { id: "general-donor-pool" },
-      data: {
-        availableAmount: { increment: amount },
-        totalAmount: { increment: amount },
-      },
-    });
-  }
-}
 
 // ========================================
 // ANONYMOUS DONATION ENDPOINTS
@@ -248,7 +54,7 @@ donationApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const donationData = c.req.valid("json");
 
     // Validate required fields
@@ -265,8 +71,8 @@ donationApp.post(
     // Determine email for Paystack
     const email = donationData.wantsReceipt
       ? donationData.email!
-      : env<{ ANONYMOUS_DONOR_EMAIL: string }>(c, "node")
-          .ANONYMOUS_DONOR_EMAIL || "anon-donor@zerocancer.africa";
+      : env<{ ANONYMOUS_DONOR_EMAIL: string }>(c).ANONYMOUS_DONOR_EMAIL ||
+        "receipt@zerocancer.africa";
 
     // Generate unique reference
     const reference = `donation-anon-${Date.now()}-${crypto
@@ -375,7 +181,7 @@ donationApp.post(
       console.log("Processing Paystack webhook...");
 
       // Get the database instance
-      const db = getDB();
+      const db = getDB(c);
       const payload = c.get("jwtPayload") as unknown as z.infer<
         typeof paystackWebhookSchema
       >;
@@ -400,7 +206,7 @@ donationApp.post(
         if (paymentType === "anonymous_donation") {
           // Add to general donor pool
           console.log("Adding to general donor pool:", amount / 100);
-          await addToGeneralDonorPool(amount / 100);
+          await addToGeneralDonorPool(amount / 100, c);
         } else if (paymentType === "campaign_creation" && metadata) {
           console.log("Funding new campaign:", metadata);
 
@@ -446,7 +252,7 @@ donationApp.post(
             where: { id: appointmentId },
             data: {
               status: "SCHEDULED",
-              checkInCode: crypto.randomBytes(6).toString("hex").toUpperCase(),
+              checkInCode: generateHexId(6).toUpperCase(),
               checkInCodeExpiresAt: new Date(
                 Date.now() + 365 * 24 * 60 * 60 * 1000 // 1 year expiry - since you paid, it shouldn't expire
               ),
@@ -484,7 +290,7 @@ donationApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const campaignData = c.req.valid("json");
     const payload = c.get("jwtPayload");
     const donorId = payload?.id!;
@@ -658,7 +464,7 @@ donationApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { page = 1, pageSize = 20, status, search } = c.req.valid("query");
     const payload = c.get("jwtPayload");
     const donorId = payload?.id!;
@@ -736,7 +542,7 @@ donationApp.get(
 
 // GET /api/donor/campaigns/:id - Get specific campaign details
 donationApp.get("/campaigns/:id", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const campaignId = c.req.param("id");
   const payload = c.get("jwtPayload");
   const donorId = payload?.id!;
@@ -814,7 +620,7 @@ donationApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const campaignId = c.req.param("id");
     const fundData = c.req.valid("json");
     const payload = c.get("jwtPayload");
@@ -929,7 +735,7 @@ donationApp.patch(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const campaignId = c.req.param("id");
     const updateData = c.req.valid("json");
     const payload = c.get("jwtPayload");
@@ -1115,7 +921,7 @@ donationApp.delete(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const campaignId = c.req.param("id");
     const deleteData = c.req.valid("json");
     const payload = c.get("jwtPayload");
@@ -1196,7 +1002,7 @@ donationApp.delete(
         });
 
         // Add funds to general donor pool
-        await addToGeneralDonorPool(fundsToTransfer);
+        await addToGeneralDonorPool(fundsToTransfer, c);
 
         // Create transaction record for the fund transfer
         await tx.transaction.create({
@@ -1226,7 +1032,7 @@ donationApp.delete(
       // Send notification to donor about campaign deletion
       try {
         await Promise.all([
-          createNotificationForUsers({
+          createNotificationForUsers(c, {
             type: "CAMPAIGN_DELETED",
             title: "Campaign Deleted Successfully",
             message: `Your campaign has been deleted and ₦${fundsToTransfer.toFixed(
@@ -1239,7 +1045,7 @@ donationApp.delete(
               transferReference: reference,
             },
           }),
-          createNotificationForUsers({
+          createNotificationForUsers(c, {
             type: "CAMPAIGN_DELETED_ALLOCATION_MOVED",
             title: "Campaign Deleted - Allocation Moved",
             message: `The campaign you were allocated to has been deleted. Your allocation has been moved to the general donation pool and you will still receive support.`,
@@ -1288,7 +1094,7 @@ donationApp.delete(
 
 // GET /api/donor/verify-payment/:reference - Verify payment status with Paystack
 donationApp.get("/verify-payment/:reference", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const reference = c.req.param("reference");
   const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
     c,

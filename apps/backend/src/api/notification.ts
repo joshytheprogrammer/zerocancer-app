@@ -15,16 +15,17 @@ import { getDB } from "src/lib/db";
 import { THonoAppVariables } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
-export const notificationApp = new Hono<{ Variables: THonoAppVariables }>();
+export const notificationApp = new Hono<THonoApp>();
 
 notificationApp.use(authMiddleware());
 
 // GET /api/notifications - get notifications for current user
 notificationApp.get("/", async (c) => {
   const payload = c.get("jwtPayload");
-  if (!payload) return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+  if (!payload)
+    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
   const userId = payload.id!;
-  const db = getDB();
+  const db = getDB(c);
   const notifications = await db.notificationRecipient.findMany({
     where: { userId },
     include: { notification: true },
@@ -35,7 +36,11 @@ notificationApp.get("/", async (c) => {
   const safeNotifications = notifications.map((n) => {
     // Ensure data is an object or null
     let safeData: Record<string, any> | null = null;
-    if (n.notification.data && typeof n.notification.data === "object" && !Array.isArray(n.notification.data)) {
+    if (
+      n.notification.data &&
+      typeof n.notification.data === "object" &&
+      !Array.isArray(n.notification.data)
+    ) {
       safeData = n.notification.data;
     }
     return {
@@ -55,16 +60,20 @@ notificationApp.get("/", async (c) => {
       },
     };
   });
-  return c.json<TGetNotificationsResponse>({ ok: true, data: safeNotifications });
+  return c.json<TGetNotificationsResponse>({
+    ok: true,
+    data: safeNotifications,
+  });
 });
 
 // POST /api/notifications/:id/read - mark notification as read
 notificationApp.post("/:id/read", async (c) => {
   const payload = c.get("jwtPayload");
-  if (!payload) return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+  if (!payload)
+    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
   const userId = payload.id!;
   const id = c.req.param("id");
-  const db = getDB();
+  const db = getDB(c);
   await db.notificationRecipient.updateMany({
     where: { id, userId },
     data: { read: true, readAt: new Date() },
@@ -84,7 +93,7 @@ notificationApp.post(
   }),
   async (c) => {
     // TODO: Add admin check if needed
-    const db = getDB();
+    const db = getDB(c);
     const { type, title, message, data, userIds } = c.req.valid("json");
     // Create notification
     const notification = await db.notification.create({
@@ -100,7 +109,11 @@ notificationApp.post(
     });
     // Strictly shape the notification object
     let safeData: Record<string, any> | null = null;
-    if (notification.data && typeof notification.data === "object" && !Array.isArray(notification.data)) {
+    if (
+      notification.data &&
+      typeof notification.data === "object" &&
+      !Array.isArray(notification.data)
+    ) {
       safeData = notification.data;
     }
     const safeNotification = {
@@ -112,6 +125,9 @@ notificationApp.post(
       createdAt: notification.createdAt.toISOString(),
       updatedAt: notification.createdAt.toISOString(), // fallback if updatedAt not present
     };
-    return c.json<TCreateNotificationResponse>({ ok: true, data: safeNotification });
+    return c.json<TCreateNotificationResponse>({
+      ok: true,
+      data: safeNotification,
+    });
   }
 );

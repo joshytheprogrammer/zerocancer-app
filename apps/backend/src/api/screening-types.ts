@@ -5,8 +5,6 @@ import {
   getScreeningTypesByCategoryParamSchema,
   getScreeningTypesByCategoryQuerySchema,
   getScreeningTypesQuerySchema,
-  // screeningTypeCategorySchema,
-  // screeningTypeSchema,
 } from "@zerocancer/shared";
 import type {
   TErrorResponse,
@@ -16,8 +14,9 @@ import type {
 } from "@zerocancer/shared/types";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
+import { THonoApp } from "src/lib/types";
 
-export const screeningTypesApp = new Hono();
+export const screeningTypesApp = new Hono<THonoApp>();
 
 // GET /api/screening-types - paginated, filtered, searched list
 screeningTypesApp.get(
@@ -27,7 +26,7 @@ screeningTypesApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { page = 1, pageSize = 20, search } = c.req.valid("query");
     const where: any = { active: true };
     if (search) where.name = { contains: search, mode: "insensitive" };
@@ -65,7 +64,7 @@ screeningTypesApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { search } = c.req.valid("query");
     const where: any = { active: true };
     if (search) where.name = { contains: search, mode: "insensitive" };
@@ -86,7 +85,7 @@ screeningTypesApp.get(
 
 // GET /api/screening-types/categories - list all unique categories (by relation)
 screeningTypesApp.get("/categories", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const categories = await db.screeningTypeCategory.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" },
@@ -113,7 +112,7 @@ screeningTypesApp.get(
     }
   ),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { search, page = 1, pageSize = 20 } = c.req.valid("query");
     const { categoryId } = c.req.valid("param");
     const where: any = { active: true, screeningTypeCategoryId: categoryId! };
@@ -152,7 +151,7 @@ screeningTypesApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { name } = c.req.valid("param");
     const data = await db.screeningType.findFirst({
       where: { name: name! },
@@ -177,7 +176,7 @@ screeningTypesApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { id } = c.req.valid("param");
     const data = await db.screeningType.findUnique({
       where: { id: id! },

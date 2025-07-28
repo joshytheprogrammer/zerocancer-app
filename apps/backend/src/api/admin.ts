@@ -17,20 +17,19 @@ import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
+import { createComputeClient } from "src/lib/compute-client";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
-import { THonoAppVariables } from "src/lib/types";
+import { TEnvs, THonoApp } from "src/lib/types";
 import {
   comparePassword,
   createNotificationForUsers,
   hashPassword,
-} from "src/lib/utils";
+} from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 
-export const adminApp = new Hono<{
-  Variables: THonoAppVariables;
-}>();
+export const adminApp = new Hono<THonoApp>();
 
 // ========================================
 // ADMIN AUTH ENDPOINTS (No auth required)
@@ -45,8 +44,8 @@ adminApp.post(
     }
   }),
   async (c) => {
-    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
-    const db = getDB();
+    const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
+    const db = getDB(c);
     const { email, password } = c.req.valid("json");
 
     try {
@@ -127,7 +126,7 @@ adminApp.post(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { email } = c.req.valid("json");
 
     try {
@@ -158,7 +157,7 @@ adminApp.post(
 
       // Send reset email
       const resetUrl = `${
-        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+        env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
       }/admin/reset-password?token=${token}`;
 
       await sendEmail({
@@ -190,7 +189,7 @@ adminApp.post(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { token, password } = c.req.valid("json");
 
     try {
@@ -242,7 +241,7 @@ adminApp.post(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { fullName, email, password } = c.req.valid("json");
 
     try {
@@ -312,7 +311,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -382,7 +381,7 @@ adminApp.patch(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const centerId = c.req.param("id");
     const { status, reason } = c.req.valid("json");
 
@@ -469,7 +468,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -570,7 +569,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { page = 1, pageSize = 20, status, search } = c.req.valid("query");
 
     const where: any = {};
@@ -648,7 +647,7 @@ adminApp.patch(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const campaignId = c.req.param("id");
     const { status, reason } = c.req.valid("json");
 
@@ -680,7 +679,7 @@ adminApp.patch(
       };
 
       try {
-        await createNotificationForUsers({
+        await createNotificationForUsers(c, {
           type: "CAMPAIGN_STATUS_CHANGED",
           title: "Campaign Status Updated",
           message: statusMessages[status],
@@ -741,7 +740,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -830,7 +829,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -920,7 +919,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -1066,7 +1065,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { page = 1, pageSize = 20, search } = c.req.valid("query");
 
     const where: any = {};
@@ -1121,7 +1120,7 @@ adminApp.post(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const productData = c.req.valid("json");
 
     try {
@@ -1156,7 +1155,7 @@ adminApp.patch(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const productId = c.req.param("id");
     const updateData = c.req.valid("json");
 
@@ -1206,7 +1205,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -1269,7 +1268,7 @@ adminApp.get(
 
 // GET /api/admin/matching/executions/:id - Get detailed execution data
 adminApp.get("/matching/executions/:id", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const executionId = c.req.param("id");
 
   try {
@@ -1322,10 +1321,14 @@ adminApp.post(
 
     try {
       // Import the matching algorithm
-      const { waitlistMatcherAlg } = await import("../lib/utils");
+      // const { waitlistMatcherAlg } = await import("../../../compute-service/src/lib/waitlistMatchingAlg");
+      const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+      const computeClient = createComputeClient(
+        COMPUTE_SERVICE_URL || "http://localhost:8788"
+      );
 
       // Trigger the algorithm with custom config (non-blocking)
-      const result = await waitlistMatcherAlg(customConfig);
+      const result = await computeClient.triggerMatching(customConfig);
 
       return c.json({
         ok: true,
@@ -1364,7 +1367,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const executionId = c.req.param("id");
     const {
       page = 1,
@@ -1433,7 +1436,7 @@ adminApp.get(
     }
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -1520,7 +1523,7 @@ adminApp.get(
 
 // GET /api/admin/allocations/expired - View expired allocations
 adminApp.get("/allocations/expired", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
 
   try {
     const expiredAllocations = await db.donationAllocation.findMany({
@@ -1573,7 +1576,7 @@ adminApp.get("/allocations/expired", async (c) => {
 
 // POST /api/admin/allocations/:id/expire - Manually expire allocation
 adminApp.post("/allocations/:id/expire", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const allocationId = c.req.param("id");
 
   try {
@@ -1618,7 +1621,7 @@ adminApp.post("/allocations/:id/expire", async (c) => {
 
     // Send notification to patient
     try {
-      await createNotificationForUsers({
+      await createNotificationForUsers(c, {
         type: "ALLOCATION_EXPIRED",
         title: "Allocation Expired",
         message:
@@ -1649,7 +1652,7 @@ adminApp.post("/allocations/:id/expire", async (c) => {
 
 // GET /api/admin/allocations/patient/:patientId - Patient allocation history
 adminApp.get("/allocations/patient/:patientId", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const patientId = c.req.param("patientId");
 
   try {
@@ -1773,7 +1776,7 @@ adminApp.put(
 
 // GET /api/admin/system/health - Algorithm performance and health checks
 adminApp.get("/system/health", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
 
   try {
     // Get recent execution metrics

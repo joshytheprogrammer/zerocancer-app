@@ -1,3 +1,7 @@
+// This file is automatically synchronized from apps/backend/prisma/schema.prisma
+// Last synced: 2025-07-28T12:43:40.778Z
+// DO NOT MODIFY DIRECTLY - Use the sync-prisma-schemas.js script
+
 generator client {
   provider = "prisma-client-js"
   previewFeatures = ["driverAdapters"]

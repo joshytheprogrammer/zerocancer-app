@@ -20,9 +20,9 @@ import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
 import type { THonoAppVariables } from "src/lib/types";
-import { getUserWithProfiles } from "src/lib/utils";
+import { getUserWithProfiles } from "src/lib/waitlistMatchingAlg";
 
-export const registerApp = new Hono<{ Variables: THonoAppVariables }>();
+export const registerApp = new Hono<THonoApp>();
 
 registerApp.post(
   "/check-profiles",
@@ -48,7 +48,7 @@ registerApp.post(
     if (!result.success) throw new HTTPException(400, { cause: result.error });
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const data = c.req.valid("json");
 
     // Concurrently check if user exists and if center with same email exists
@@ -159,8 +159,7 @@ registerApp.post(
       to: patient.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${
-        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
-        "http://localhost:3000"
+        env<{ FRONTEND_URL: string }>(c).FRONTEND_URL || "http://localhost:3000"
       }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
     });
 
@@ -206,7 +205,7 @@ registerApp.post(
       );
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const data = c.req.valid("json");
 
     const { user: existingUser, profiles } = await getUserWithProfiles({
@@ -284,8 +283,7 @@ registerApp.post(
       to: donor.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${
-        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
-        "http://localhost:3000"
+        env<{ FRONTEND_URL: string }>(c).FRONTEND_URL || "http://localhost:3000"
       }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
     });
 
@@ -321,7 +319,7 @@ registerApp.post(
       );
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const data = c.req.valid("json");
     const existingUser = await db.serviceCenter.findUnique({
       where: { email: data.email! },

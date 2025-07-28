@@ -8,6 +8,10 @@ import { PayoutService } from "../lib/payout.service";
 import { PaystackService } from "../lib/paystack.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 
+// =========
+// TO BE FIXED AND UPDATED
+// =========
+
 const payoutsApp = new Hono();
 
 // Initialize services
@@ -17,7 +21,7 @@ const getPayoutService = (c: any) => {
     "node"
   );
   const paystackService = new PaystackService(PAYSTACK_SECRET_KEY);
-  return new PayoutService(getDB(), paystackService);
+  return new PayoutService(getDB(c), paystackService);
 };
 
 // GET /api/payouts/center-balances - Get all center balances (Admin only)
@@ -326,7 +330,7 @@ payoutsApp.post("/monthly-batch", async (c) => {
   try {
     // Optional: Add API key authentication for cron job
     const apiKey = c.req.header("x-api-key");
-    const { CRON_API_KEY } = env<{ CRON_API_KEY?: string }>(c, "node");
+    const { CRON_API_KEY } = env<{ CRON_API_KEY?: string }>(c);
 
     if (CRON_API_KEY && apiKey !== CRON_API_KEY) {
       return c.json({ error: "Unauthorized" }, 401);
@@ -383,7 +387,7 @@ payoutsApp.post("/webhook/paystack", async (c) => {
 
     if (event.event === "transfer.success") {
       // Update payout status to SUCCESS
-      const updated = await getDB().payout.updateMany({
+      const updated = await getDB(c).payout.updateMany({
         where: { transferReference: event.data.reference },
         data: {
           status: "SUCCESS",
@@ -396,7 +400,7 @@ payoutsApp.post("/webhook/paystack", async (c) => {
       );
     } else if (event.event === "transfer.failed") {
       // Update payout status to FAILED
-      const updated = await getDB().payout.updateMany({
+      const updated = await getDB(c).payout.updateMany({
         where: { transferReference: event.data.reference },
         data: {
           status: "FAILED",
@@ -410,7 +414,7 @@ payoutsApp.post("/webhook/paystack", async (c) => {
       );
     } else if (event.event === "transfer.reversed") {
       // Handle transfer reversal
-      const updated = await getDB().payout.updateMany({
+      const updated = await getDB(c).payout.updateMany({
         where: { transferReference: event.data.reference },
         data: {
           status: "FAILED",

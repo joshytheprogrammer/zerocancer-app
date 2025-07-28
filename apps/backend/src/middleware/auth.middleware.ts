@@ -6,7 +6,7 @@ import { THonoAppVariables } from "src/lib/types";
 
 // export const authMiddleware = (actor?: TActors) =>
 //   createMiddleware((c, next) => {
-//     const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+//     const { JWT_TOKEN_SECRET } = env<{TEnvs}>(c);
 
 //     const jwtMiddleware = jwt({
 //       secret: JWT_TOKEN_SECRET,
@@ -18,8 +18,8 @@ import { THonoAppVariables } from "src/lib/types";
 export const authMiddleware = (
   actor?: (TActors | "center_staff" | "admin")[]
 ) =>
-  createMiddleware<{ Variables: THonoAppVariables }>(async (c, next) => {
-    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+  createMiddleware<THonoApp>(async (c, next) => {
+    const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
 
     const jwtMiddleware = jwt({
       secret: JWT_TOKEN_SECRET,

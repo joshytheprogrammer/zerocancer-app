@@ -1,4 +1,4 @@
-import { serveStatic } from "@hono/node-server/serve-static";
+// import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
@@ -11,10 +11,11 @@ import { centerApp } from "./api/center";
 import { donationApp } from "./api/donation";
 import { notificationApp } from "./api/notification";
 import { payoutsApp } from "./api/payouts";
-import receiptApp from "./api/receipts";
+// import receiptApp from "./api/receipts";
 import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistApp } from "./api/waitlist";
+import { TEnvs } from "./lib/types";
 
 // Create the main app (no basePath for root)
 const app = new Hono();
@@ -24,61 +25,19 @@ const apiApp = new Hono();
 
 app.use(logger());
 
-// Environment-aware setup
+// Enable CORS for all routes
 app.use("*", async (c, next) => {
-  const { NODE_ENV, FRONTEND_URL } = env<{
-    NODE_ENV?: string;
-    FRONTEND_URL: string;
-  }>(c, "node");
+  const { FRONTEND_URL } = env<TEnvs>(c);
 
   const corsMiddlewareHandler = cors({
-    origin: [
-      FRONTEND_URL,
-      // "https://zerocancer.africa",
-      // "https://zerocancer-frontend.vercel.app",
-      // "http://localhost:3000",
-      "https://cautious-sniffle-p5rppxwrwjwc96wp-3000.app.github.dev"
-    ],
+    origin: [FRONTEND_URL],
     credentials: true,
   });
   return corsMiddlewareHandler(c, next);
 });
 
 // ========================================
-// PRODUCTION: SERVE STATIC FILES
-// ========================================
-
-// In production, serve the built frontend files using Hono's serveStatic
-app.use("*", async (c, next) => {
-  const { NODE_ENV } = env<{ NODE_ENV?: string }>(c, "node");
-
-  // Only serve static files in production
-  if (NODE_ENV === "production") {
-    // Skip static file serving for API routes
-    if (c.req.path.startsWith("/api/")) {
-      await next();
-      return;
-    }
-
-    // Use Hono's Node.js serveStatic with simple configuration
-    return serveStatic({
-      root: "./frontend-dist",
-      rewriteRequestPath: (path: string) => {
-        // Handle React Router - serve index.html for non-asset paths
-        if (!path.includes(".") && path !== "/") {
-          return "/index.html";
-        }
-        return path;
-      },
-    })(c, next);
-  }
-
-  // Continue to next middleware in development
-  await next();
-});
-
-// ========================================
-// API ROUTES (BEFORE STATIC FILES)
+// API ROUTES
 // ========================================
 
 apiApp.get("/", (c) => c.text("Hello from Hono.js + Prisma + CORS!"));
@@ -111,7 +70,7 @@ apiApp.get("/debug/env", (c) => {
     PAYSTACK_SECRET_KEY?: string;
     PAYSTACK_PUBLIC_KEY?: string;
     PORT?: string;
-  }>(c, "node");
+  }>(c);
 
   const envVars = {
     NODE_ENV,
@@ -125,21 +84,11 @@ apiApp.get("/debug/env", (c) => {
     PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
     PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
     PORT,
-    // Also check process.env for comparison
-    processEnvKeys: Object.keys(process.env).filter(
-      (key) =>
-        key.includes("DATABASE") ||
-        key.includes("JWT") ||
-        key.includes("SMTP") ||
-        key.includes("PAYSTACK") ||
-        key.includes("FRONTEND")
-    ),
   };
 
   return c.json({
     status: "ok",
     environment: envVars,
-    cwd: process.cwd(),
     timestamp: new Date().toISOString(),
   });
 });
@@ -155,23 +104,19 @@ apiApp.route("/donor", donationApp);
 apiApp.route("/admin", adminApp);
 apiApp.route("/analytics", analyticsApp);
 apiApp.route("/notifications", notificationApp);
-apiApp.route("/receipts", receiptApp);
+// apiApp.route("/receipts", receiptApp);
 apiApp.route("/payouts", payoutsApp);
 
 // Mount API app BEFORE static file serving
 app.route("/api/v1", apiApp);
 
 // ========================================
-// PRODUCTION: SERVE STATIC FILES (AFTER API)
-// ========================================
-
-// ========================================
-// FALLBACK HANDLERS
+// FALLBACK HANDLERS FOR DEV MODE
 // ========================================
 
 // Development fallback - helpful message
 app.get("*", async (c) => {
-  const { NODE_ENV } = env<{ NODE_ENV?: string }>(c, "node");
+  const { NODE_ENV } = env<TEnvs>(c);
 
   if (NODE_ENV !== "production") {
     return c.html(`

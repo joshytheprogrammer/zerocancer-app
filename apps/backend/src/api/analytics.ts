@@ -8,12 +8,12 @@ import type {
   TTimeBasedReportResponse,
 } from "@zerocancer/shared/types";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { TEnvs, THonoApp } from "src/lib/types";
 import { z } from "zod";
-import { AnalyticsService } from "../lib/analytics.service";
-import { getDB } from "../lib/db";
+import { createComputeClient } from "../lib/compute-client";
 
-const analyticsApp = new Hono();
-const analyticsService = new AnalyticsService(getDB());
+const analyticsApp = new Hono<THonoApp>();
 
 // Validation schemas
 const timeReportQuerySchema = z.object({
@@ -29,14 +29,18 @@ const centerReportQuerySchema = z.object({
 // GET /api/analytics/dashboard - Main dashboard metrics
 analyticsApp.get("/dashboard", async (c) => {
   try {
-    const metrics = await analyticsService.getDashboardMetrics();
+    const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+    const computeClient = createComputeClient(
+      COMPUTE_SERVICE_URL || "http://localhost:8788"
+    );
 
-    return c.json<TDashboardMetricsResponse>({
-      ok: true,
-      data: metrics,
-    });
+    const response = await computeClient.getDashboardMetrics();
+    return c.json(response);
   } catch (error) {
-    console.error("Failed to get dashboard metrics:", error);
+    console.error(
+      "Failed to get dashboard metrics from compute service:",
+      error
+    );
     return c.json<TErrorResponse>(
       {
         ok: false,
@@ -54,47 +58,23 @@ analyticsApp.get(
   async (c) => {
     try {
       const { period, from, to } = c.req.valid("query");
+      const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+      const computeClient = createComputeClient(
+        COMPUTE_SERVICE_URL || "http://localhost:8788"
+      );
 
-      // Set default date range if not provided
-      const endDate = to ? new Date(to) : new Date();
-      const startDate = from
-        ? new Date(from)
-        : (() => {
-            const date = new Date();
-            switch (period) {
-              case "daily":
-                date.setDate(date.getDate() - 30); // Last 30 days
-                break;
-              case "weekly":
-                date.setDate(date.getDate() - 7 * 12); // Last 12 weeks
-                break;
-              case "monthly":
-                date.setMonth(date.getMonth() - 12); // Last 12 months
-                break;
-              case "yearly":
-                date.setFullYear(date.getFullYear() - 5); // Last 5 years
-                break;
-            }
-            return date;
-          })();
-
-      const report = await analyticsService.getTimeBasedReport(period, {
-        from: startDate,
-        to: endDate,
+      const response = await computeClient.getTimeBasedReport({
+        period,
+        from,
+        to,
       });
 
-      return c.json<TTimeBasedReportResponse>({
-        ok: true,
-        data: {
-          ...report,
-          dateRange: {
-            from: startDate.toISOString(),
-            to: endDate.toISOString(),
-          },
-        },
-      });
+      return c.json(response);
     } catch (error) {
-      console.error("Failed to get time-based report:", error);
+      console.error(
+        "Failed to get time-based report from compute service:",
+        error
+      );
       return c.json<TErrorResponse>(
         {
           ok: false,
@@ -109,14 +89,18 @@ analyticsApp.get(
 // GET /api/analytics/geographic - Geographic analytics
 analyticsApp.get("/geographic", async (c) => {
   try {
-    const report = await analyticsService.getGeographicReport();
+    const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+    const computeClient = createComputeClient(
+      COMPUTE_SERVICE_URL || "http://localhost:8788"
+    );
 
-    return c.json<TGeographicReportResponse>({
-      ok: true,
-      data: report,
-    });
+    const response = await computeClient.getGeographicReport();
+    return c.json(response);
   } catch (error) {
-    console.error("Failed to get geographic report:", error);
+    console.error(
+      "Failed to get geographic report from compute service:",
+      error
+    );
     return c.json<TErrorResponse>(
       {
         ok: false,
@@ -134,16 +118,21 @@ analyticsApp.get(
   async (c) => {
     try {
       const { centerId } = c.req.valid("query");
-      const reports = await analyticsService.getCenterPerformanceReport(
-        centerId
+      const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+      const computeClient = createComputeClient(
+        COMPUTE_SERVICE_URL || "http://localhost:8788"
       );
 
-      return c.json<TCenterPerformanceResponse>({
-        ok: true,
-        data: reports,
+      const response = await computeClient.getCenterPerformanceReport({
+        centerId,
       });
+
+      return c.json(response);
     } catch (error) {
-      console.error("Failed to get center performance report:", error);
+      console.error(
+        "Failed to get center performance report from compute service:",
+        error
+      );
       return c.json<TErrorResponse>(
         {
           ok: false,
@@ -158,14 +147,18 @@ analyticsApp.get(
 // GET /api/analytics/campaigns - Campaign analytics
 analyticsApp.get("/campaigns", async (c) => {
   try {
-    const analytics = await analyticsService.getCampaignAnalytics();
+    const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+    const computeClient = createComputeClient(
+      COMPUTE_SERVICE_URL || "http://localhost:8788"
+    );
 
-    return c.json<TCampaignAnalyticsResponse>({
-      ok: true,
-      data: analytics,
-    });
+    const response = await computeClient.getCampaignAnalytics();
+    return c.json(response);
   } catch (error) {
-    console.error("Failed to get campaign analytics:", error);
+    console.error(
+      "Failed to get campaign analytics from compute service:",
+      error
+    );
     return c.json<TErrorResponse>(
       {
         ok: false,

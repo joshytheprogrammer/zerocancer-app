@@ -15,6 +15,10 @@ const receiptService = new ReceiptService(db);
 
 const app = new Hono();
 
+// =========================================
+// TO BE REVAMPED
+// =========================================
+
 /**
  * GET /api/receipts/:transactionId
  * Get receipt data for a transaction

@@ -16,16 +16,14 @@ import crypto from "crypto";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { getCookie, setCookie } from "hono/cookie";
-import { cors } from "hono/cors";
 import { jwt, sign, verify } from "hono/jwt";
-import { Variables } from "hono/types";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
-import { THonoAppVariables } from "src/lib/types";
-import { getUserWithProfiles } from "src/lib/utils";
+import { TEnvs, THonoApp } from "src/lib/types";
+import { getUserWithProfiles } from "src/lib/waitlistMatchingAlg";
 import { z } from "zod";
 
-export const authApp = new Hono<{ Variables: THonoAppVariables }>();
+export const authApp = new Hono<THonoApp>();
 
 // POST /api/auth/login?actor=patient|donor|center
 authApp.post(
@@ -54,9 +52,9 @@ authApp.post(
       );
   }),
   async (c) => {
-    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+    const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
+    const db = getDB(c);
 
-    const db = getDB();
     const { email, password } = c.req.valid("json");
     const { actor } = c.req.valid("query");
 
@@ -70,9 +68,12 @@ authApp.post(
       id = user?.id!;
     } else {
       let { user: justUser, profiles: userProfiles } =
-        await getUserWithProfiles({
-          email: email!,
-        });
+        await getUserWithProfiles(
+          {
+            email: email!,
+          },
+          c
+        );
 
       user = { ...justUser, profiles: userProfiles };
 
@@ -178,7 +179,7 @@ authApp.post(
 authApp.get(
   "/me",
   (c, next) => {
-    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+    const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
 
     const jwtMiddleware = jwt({
       secret: JWT_TOKEN_SECRET,
@@ -188,7 +189,7 @@ authApp.get(
   },
   async (c) => {
     const jwtPayload = c.get("jwtPayload");
-    const db = getDB();
+    const db = getDB(c);
 
     console.log("JWT Payload:", jwtPayload);
 
@@ -284,7 +285,7 @@ authApp.get(
 
 // POST /api/auth/refresh
 authApp.post("/refresh", async (c) => {
-  const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+  const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
   const query = c.req.query();
   // Get refresh token from cookie using Hono's getCookie
   const refreshToken = getCookie(c, "refreshToken");
@@ -389,7 +390,7 @@ authApp.post("/logout", async (c) => {
 // POST /api/auth/forgot-password
 // Accepts { email } and sends a reset link if user exists
 authApp.post("/forgot-password", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const { email } = await c.req.json();
   // Find user by email
   const user = await db.user.findUnique({ where: { email } });
@@ -405,8 +406,7 @@ authApp.post("/forgot-password", async (c) => {
   });
   // Send email
   const resetUrl = `${
-    env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
-    "http://localhost:3000"
+    env<{ FRONTEND_URL: string }>(c).FRONTEND_URL || "http://localhost:3000"
   }/reset-password?token=${token}`;
   await sendEmail({
     to: email,
@@ -419,7 +419,7 @@ authApp.post("/forgot-password", async (c) => {
 // POST /api/auth/reset-password
 // Accepts { token, password }
 authApp.post("/reset-password", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const { token, password } = await c.req.json();
   const reset = await db.passwordResetToken.findUnique({ where: { token } });
   if (!reset || reset.expiresAt < new Date()) {
@@ -440,7 +440,7 @@ authApp.post("/reset-password", async (c) => {
 // POST /api/auth/verify-email
 // Accepts { token }
 authApp.post("/verify-email", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const { token } = await c.req.json();
   const verify = await db.emailVerificationToken.findUnique({
     where: { token },
@@ -482,7 +482,7 @@ authApp.post("/verify-email", async (c) => {
 // POST /api/auth/resend-verification
 // Accepts { email, profileType }
 authApp.post("/resend-verification", async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const { email, profileType } = await c.req.json();
   // Find user by email
   const user = await db.user.findUnique({ where: { email } });
@@ -523,8 +523,7 @@ authApp.post("/resend-verification", async (c) => {
     to: user.email!,
     subject: "Verify your email",
     html: `<p>Click <a href='${
-      env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL ||
-      "http://localhost:3000"
+      env<{ FRONTEND_URL: string }>(c).FRONTEND_URL || "http://localhost:3000"
     }/verify-email?token=${verifyToken}'>here</a> to verify your email.</p>`,
   });
   return c.json<TResendVerificationResponse>({ ok: true, data: {} });

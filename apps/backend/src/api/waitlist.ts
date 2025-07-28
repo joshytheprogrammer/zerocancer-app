@@ -3,6 +3,7 @@ import type {
   TCheckWaitlistStatusResponse,
   TErrorResponse,
   TGetAllWaitlistsResponse,
+  TGetPatientWaitlistResponse,
   TGetPatientWaitlistsResponse,
   TJoinWaitlistResponse,
   TLeaveWaitlistResponse,
@@ -18,15 +19,13 @@ import { env } from "hono/adapter";
 import { z } from "zod";
 import { CryptoUtils } from "../lib/crypto.utils";
 import { getDB } from "../lib/db";
-import { THonoAppVariables } from "../lib/types";
-import { waitlistMatcherAlg } from "../lib/utils";
+import { THonoApp } from "../lib/types";
+// import { waitlistMatcherAlg } from "../../../compute-service/src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "../middleware/auth.middleware";
 
-export const waitlistApp = new Hono<{
-  Variables: THonoAppVariables;
-}>();
+export const waitlistApp = new Hono<THonoApp>();
 
-const db = getDB();
+// const db = getDB(c);
 
 // Apply auth middleware to all patient routes
 waitlistApp.use("/patient/*", authMiddleware(["patient"]));
@@ -51,6 +50,7 @@ waitlistApp.get(
       const payload = c.get("jwtPayload");
       const userId = payload?.id;
       const { page = 1, pageSize = 20, status } = c.req.valid("query");
+      const db = getDB(c);
 
       const where = {
         patientId: userId,
@@ -146,6 +146,7 @@ waitlistApp.get("/patient/:waitlistId", async (c) => {
     const payload = c.get("jwtPayload");
     const userId = payload?.id;
     const { waitlistId } = c.req.param();
+    const db = getDB(c);
 
     const waitlist = await db.waitlist.findFirst({
       where: {
@@ -188,7 +189,7 @@ waitlistApp.get("/patient/:waitlistId", async (c) => {
       );
     }
 
-    return c.json({
+    return c.json<TGetPatientWaitlistResponse>({
       ok: true,
       data: {
         waitlist: {
@@ -233,6 +234,7 @@ waitlistApp.get("/patient/status/:screeningTypeId", async (c) => {
     const payload = c.get("jwtPayload");
     const userId = payload?.id;
     const { screeningTypeId } = c.req.param();
+    const db = getDB(c);
 
     const existingWaitlist = await db.waitlist.findFirst({
       where: {
@@ -318,6 +320,7 @@ waitlistApp.post(
       const payload = c.get("jwtPayload");
       const userId = payload?.id;
       const { screeningTypeId } = c.req.valid("json");
+      const db = getDB(c);
 
       // Check if screening type exists
       const screeningType = await db.screeningType.findUnique({
@@ -407,6 +410,7 @@ waitlistApp.post(
       const payload = c.get("jwtPayload");
       const userId = payload?.id;
       const { waitlistId } = c.req.valid("json");
+      const db = getDB(c);
 
       // Check if waitlist entry exists
       const waitlist = await db.waitlist.findFirst({
@@ -467,6 +471,7 @@ waitlistApp.get(
         pageSize = 20,
         demandOrder = "desc",
       } = c.req.valid("query");
+      const db = getDB(c);
 
       // Get waitlist aggregation by screening type
       const waitlistStats = await db.waitlist.groupBy({
@@ -562,7 +567,7 @@ waitlistApp.post("/trigger-matching", async (c) => {
   try {
     // Optional: Add API key authentication for cron job (same pattern as payouts)
     const apiKey = c.req.header("x-api-key");
-    const { CRON_API_KEY } = env<{ CRON_API_KEY?: string }>(c, "node");
+    const { CRON_API_KEY } = env<{ CRON_API_KEY?: string }>(c);
 
     if (CRON_API_KEY && apiKey !== CRON_API_KEY) {
       return c.json({ error: "Unauthorized" }, 401);
@@ -668,6 +673,8 @@ waitlistApp.post("/manual-trigger", authMiddleware(["admin"]), async (c) => {
 // GET /api/waitlist/matching-stats - Get matching statistics for admin dashboard
 waitlistApp.get("/matching-stats", authMiddleware(["admin"]), async (c) => {
   try {
+    const db = getDB(c);
+
     const [pendingCount, matchedCount, totalCampaigns, activeCampaigns] =
       await Promise.all([
         db.waitlist.count({ where: { status: "PENDING" } }),

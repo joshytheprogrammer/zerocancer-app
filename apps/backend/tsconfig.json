@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "./src",
+    // "lib": ["ESNext"],
     "baseUrl": "./"
   },
   "include": ["src"],

@@ -27,10 +27,11 @@ import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
-import { comparePassword, hashPassword } from "src/lib/utils";
+import { TEnvs, THonoApp } from "src/lib/types";
+import { comparePassword, hashPassword } from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
-export const centerApp = new Hono();
+export const centerApp = new Hono<THonoApp>();
 
 // GET /api/center - List centers (paginated, filtered, searched)
 centerApp.get(
@@ -40,7 +41,7 @@ centerApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const {
       page = 1,
       pageSize = 20,
@@ -125,7 +126,7 @@ centerApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { id } = c.req.valid("param");
 
     const center = await db.serviceCenter.findUnique({
@@ -180,7 +181,7 @@ centerApp.get(
 
 // GET /api/center/staff/invite
 centerApp.get("/staff/invite", authMiddleware(["center"]), async (c) => {
-  const db = getDB();
+  const db = getDB(c);
   const centerId = c.get("jwtPayload")?.id;
 
   if (!centerId) {
@@ -218,7 +219,7 @@ centerApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { centerId, emails } = c.req.valid("json");
     const invites: Array<{
       email: string;
@@ -241,7 +242,7 @@ centerApp.post(
       });
       // Send invite email
       const inviteUrl = `${
-        env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+        env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
       }/staff/create-new-password?token=${token}`;
 
       await sendEmail({
@@ -268,7 +269,7 @@ centerApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { token, password } = c.req.valid("json");
 
     // Find invite
@@ -317,7 +318,7 @@ centerApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { centerId, email } = c.req.valid("json");
     // Find staff
     const staff = await db.centerStaff.findFirst({
@@ -342,7 +343,7 @@ centerApp.post(
     });
     // Send reset email
     const resetUrl = `${
-      env<{ FRONTEND_URL: string }>(c, "node").FRONTEND_URL
+      env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
     }/staff/reset-password?token=${token}`;
     await sendEmail({
       to: email!,
@@ -364,7 +365,7 @@ centerApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { token, password } = c.req.valid("json");
     // Find reset token
     const reset = await db.centerStaffResetToken.findUnique({
@@ -400,9 +401,9 @@ centerApp.post(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const { JWT_TOKEN_SECRET } = env<{ JWT_TOKEN_SECRET: string }>(c, "node");
+    const { JWT_TOKEN_SECRET } = env<TEnvs>(c);
 
-    const db = getDB();
+    const db = getDB(c);
     const { centerId, email, password } = c.req.valid("json");
     // Find staff
     const staff = await db.centerStaff.findFirst({
@@ -469,7 +470,7 @@ centerApp.get(
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
   async (c) => {
-    const db = getDB();
+    const db = getDB(c);
     const { token } = c.req.valid("param");
 
     try {

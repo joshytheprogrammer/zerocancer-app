@@ -20,7 +20,7 @@ export class CryptoUtils {
    */
   static generatePayoutBatchReference(): string {
     const yearMonth = new Date().toISOString().slice(0, 7).replace("-", "");
-    const random = crypto.randomBytes(6).toString("hex").toUpperCase();
+    const random = generateHexId(6).toUpperCase();
     return `PAY_${yearMonth}_${random}`;
   }
 

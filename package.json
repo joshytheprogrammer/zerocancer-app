@@ -18,10 +18,14 @@
     "build:copy-frontend": "node scripts/copy-frontend.js",
     "build:production": "pnpm build && pnpm build:copy-frontend",
     "dev": "pnpm --filter ./apps/backend prisma:generate && pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/frontend dev\"",
+    "dev:full": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/worker dev\" \"pnpm --filter ./apps/frontend dev\"",
     "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
+    "worker:dev": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/worker prisma:generate && pnpm --filter ./apps/worker dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
+    "sync-schemas": "node scripts/sync-prisma-schemas.js",
     "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build",
+    "build-worker": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/worker prisma:generate && pnpm --filter ./apps/worker build",
     "start:production": "cd apps/backend && cross-env NODE_ENV=production pnpm start",
     "test:production": "pnpm build:production && pnpm start:production"
   }
