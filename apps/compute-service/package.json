@@ -12,11 +12,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/node-server": "^1.17.1",
     "@hono/zod-validator": "^0.4.1",
     "@neondatabase/serverless": "^0.10.1",
     "@prisma/adapter-neon": "^5.22.0",
     "@prisma/client": "^5.22.0",
     "@zerocancer/shared": "workspace:*",
+    "dotenv": "^17.2.1",
     "hono": "^4.6.11",
     "nodemailer": "^6.9.15",
     "pdfkit": "^0.15.0",

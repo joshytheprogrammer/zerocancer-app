@@ -22,8 +22,8 @@ export async function sendEmail(
 
   return transporter.send({
     from: c.env.SMTP_USER,
-    to: toAddress,
-    subject,
+    to: toAddress!,
+    subject: subject!,
     html,
     text,
   });
