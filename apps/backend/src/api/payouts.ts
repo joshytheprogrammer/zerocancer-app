@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { THonoApp } from "src/lib/types";
 import { z } from "zod";
 import { CryptoUtils } from "../lib/crypto.utils";
 import { getDB } from "../lib/db";
@@ -12,7 +13,7 @@ import { authMiddleware } from "../middleware/auth.middleware";
 // TO BE FIXED AND UPDATED
 // =========
 
-const payoutsApp = new Hono();
+const payoutsApp = new Hono<THonoApp>();
 
 // Initialize services
 const getPayoutService = (c: any) => {

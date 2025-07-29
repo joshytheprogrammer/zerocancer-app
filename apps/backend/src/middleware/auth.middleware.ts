@@ -2,7 +2,7 @@ import { TActors } from "@zerocancer/shared";
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { jwt } from "hono/jwt";
-import { THonoAppVariables } from "src/lib/types";
+import { TEnvs, THonoApp } from "src/lib/types";
 
 // export const authMiddleware = (actor?: TActors) =>
 //   createMiddleware((c, next) => {

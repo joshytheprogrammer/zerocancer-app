@@ -12,7 +12,7 @@ import type {
 } from "@zerocancer/shared/types";
 import { Hono } from "hono";
 import { getDB } from "src/lib/db";
-import { THonoAppVariables } from "src/lib/types";
+import { THonoApp } from "src/lib/types";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const notificationApp = new Hono<THonoApp>();

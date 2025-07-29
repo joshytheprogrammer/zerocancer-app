@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { generateHexId } from "./utils";
 
 export class CryptoUtils {
   /**

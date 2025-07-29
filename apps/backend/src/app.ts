@@ -149,8 +149,4 @@ app.get("*", async (c) => {
   );
 });
 
-showRoutes(app, {
-  verbose: true,
-});
-
 export default app;
