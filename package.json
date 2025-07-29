@@ -23,6 +23,6 @@
     "build-worker": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/worker prisma:generate && pnpm --filter ./apps/worker build",
     "build:production": "pnpm build && pnpm build:copy-frontend",
     "start:production": "cd apps/backend && pnpm dlx wrangler deploy",
-    "test:production": "pnpm build:production && pnpm start:production"
+    "test:production": "pnpm build:production && cd apps/backend && pnpm dlx wrangler dev"
   }
 }
