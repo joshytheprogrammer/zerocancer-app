@@ -4,7 +4,7 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm prisma:generate",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "prisma:generate": "prisma generate",

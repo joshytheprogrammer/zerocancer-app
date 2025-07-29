@@ -9,15 +9,13 @@
   ],
   "devDependencies": {
     "concurrently": "^9.2.0",
-    "cross-env": "^7.0.3",
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build && pnpm --filter ./apps/compute-service build",
+    "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build",
     "build:copy-frontend": "node scripts/copy-frontend.js",
     "dev": "pnpm --filter ./apps/backend prisma:generate && pnpm --filter @zerocancer/shared build && concurrently \"pnpm backend:dev\" \"pnpm --filter ./apps/frontend dev\"",
-    "backend:dev": "pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\" \"pnpm --filter ./apps/compute-service dev\"",
-    "worker:dev": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/compute-service dev",
+    "backend:dev": "pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\"",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
     "sync-schemas": "node scripts/sync-prisma-schemas.js",
