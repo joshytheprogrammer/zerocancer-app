@@ -14,9 +14,6 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
-      nodemon:
-        specifier: ^3.1.9
-        version: 3.1.10
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -53,6 +50,9 @@ importers:
       hono:
         specifier: ^4.0.0
         version: 4.8.3
+      worker-mailer:
+        specifier: ^1.1.4
+        version: 1.1.4
       zod:
         specifier: ^3.25.67
         version: 3.25.67
@@ -118,6 +118,9 @@ importers:
       '@types/pdfkit':
         specifier: ^0.13.4
         version: 0.13.9
+      nodemon:
+        specifier: ^3.1.10
+        version: 3.1.10
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
@@ -305,25 +308,6 @@ importers:
       web-vitals:
         specifier: ^4.2.4
         version: 4.2.4
-
-  apps/worker:
-    dependencies:
-      '@hono/node-server':
-        specifier: ^1.17.1
-        version: 1.17.1(hono@4.8.5)
-      hono:
-        specifier: ^4.8.5
-        version: 4.8.5
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.17
-        version: 20.19.9
-      tsx:
-        specifier: ^4.7.1
-        version: 4.20.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
 
   packages/shared:
     dependencies:
@@ -1135,12 +1119,6 @@ packages:
 
   '@formatjs/intl-localematcher@0.6.1':
     resolution: {integrity: sha512-ePEgLgVCqi2BBFnTMWPfIghu6FkbZnnBVhO2sSxvLfrdFw7wCHAHiDoM2h4NRgjbaY7+B7HgOLZGkK187pZTZg==}
-
-  '@hono/node-server@1.17.1':
-    resolution: {integrity: sha512-SY79W/C+2b1MyAzmIcV32Q47vO1b5XwLRwj8S9N6Jr5n1QCkIfAIH6umOSgqWZ4/v67hg6qq8Ha5vZonVidGsg==}
-    engines: {node: '>=18.14.1'}
-    peerDependencies:
-      hono: ^4
 
   '@hono/zod-validator@0.4.3':
     resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
@@ -2789,9 +2767,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/node@20.19.9':
-    resolution: {integrity: sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==}
 
   '@types/node@22.16.5':
     resolution: {integrity: sha512-bJFoMATwIGaxxx8VJPeM8TonI8t579oRvgAuT8zFugJsJZgzqv0Fu8Mhp68iecjzG7cnN3mO2dJQ5uUM2EFrgQ==}
@@ -5015,6 +4990,9 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
+  worker-mailer@1.1.4:
+    resolution: {integrity: sha512-hRLnS/pkNFycCAlny2QKXgvgNF16Uc0MMblravtbsTqRRmMEyoqBnmGtrjwRellzH4ey59bAlNSjE/iQlZ7WVQ==}
+
   workerd@1.20250712.0:
     resolution: {integrity: sha512-7h+k1OxREpiZW0849g0uQNexRWMcs5i5gUGhJzCY8nIx6Tv4D/ndlXJ47lEFj7/LQdp165IL9dM2D5uDiedZrg==}
     engines: {node: '>=16'}
@@ -5765,10 +5743,6 @@ snapshots:
   '@formatjs/intl-localematcher@0.6.1':
     dependencies:
       tslib: 2.8.1
-
-  '@hono/node-server@1.17.1(hono@4.8.5)':
-    dependencies:
-      hono: 4.8.5
 
   '@hono/zod-validator@0.4.3(hono@4.8.5)(zod@3.25.67)':
     dependencies:
@@ -7851,10 +7825,6 @@ snapshots:
   '@types/estree@1.0.8': {}
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/node@20.19.9':
-    dependencies:
-      undici-types: 6.21.0
 
   '@types/node@22.16.5':
     dependencies:
@@ -10284,6 +10254,8 @@ snapshots:
       stackback: 0.0.2
 
   word-wrap@1.2.5: {}
+
+  worker-mailer@1.1.4: {}
 
   workerd@1.20250712.0:
     optionalDependencies:

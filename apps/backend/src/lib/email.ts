@@ -1,6 +1,6 @@
 import { sendPlainEmailSchema } from "@zerocancer/shared";
+import { WorkerMailer } from "worker-mailer";
 import { z } from "zod";
-import { createComputeClient } from "./compute-client";
 
 export async function sendEmail(
   c: any,
@@ -9,10 +9,19 @@ export async function sendEmail(
   // Convert array to comma-separated string if needed
   const toAddress = Array.isArray(to) ? to.join(", ") : to;
 
-  const computeClient = createComputeClient(c);
+  const transporter = await WorkerMailer.connect({
+    credentials: {
+      username: c.env.SMTP_USER,
+      password: c.env.SMTP_PASS,
+    },
+    authType: "plain",
+    host: c.env.SMTP_HOST,
+    port: Number(c.env.SMTP_PORT),
+    secure: c.env.SMTP_SECURE === "true",
+  });
 
-  // Trigger the algorithm with custom config (non-blocking)
-  await computeClient.sendEmail({
+  return transporter.send({
+    from: c.env.SMTP_USER,
     to: toAddress,
     subject,
     html,

@@ -12,24 +12,25 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.11",
-    "@prisma/client": "^5.22.0",
-    "@prisma/adapter-neon": "^5.22.0",
-    "@neondatabase/serverless": "^0.10.1",
-    "@zerocancer/shared": "workspace:*",
-    "zod": "^3.23.8",
     "@hono/zod-validator": "^0.4.1",
+    "@neondatabase/serverless": "^0.10.1",
+    "@prisma/adapter-neon": "^5.22.0",
+    "@prisma/client": "^5.22.0",
+    "@zerocancer/shared": "workspace:*",
+    "hono": "^4.6.11",
     "nodemailer": "^6.9.15",
     "pdfkit": "^0.15.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
     "@types/node": "^22.10.2",
     "@types/nodemailer": "^6.4.17",
     "@types/pdfkit": "^0.13.4",
-    "@cloudflare/workers-types": "^4.20241218.0",
-    "wrangler": "^3.100.0",
+    "nodemon": "^3.1.10",
+    "prisma": "^5.22.0",
     "typescript": "^5.7.2",
-    "prisma": "^5.22.0"
+    "wrangler": "^3.100.0"
   }
 }
