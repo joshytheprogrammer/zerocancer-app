@@ -183,11 +183,11 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
         !config.url.startsWith('/api/v1/') &&
         !config.url.startsWith('http')
       ) {
-        if (import.meta.env.ENV_MODE !== 'production') {
+        if (import.meta.env.VITE_ENV_MODE !== 'production') {
           // Development: Frontend (3000) -> Backend (8000)
           config.url = config.url.replace(
             '/api/',
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/v1/`,
+            `${import.meta.env.VITE_DEV_API_BASE_URL || 'http://localhost:8787'}/api/v1/`,
           )
         } else {
           // Production: Same server, just rewrite path
