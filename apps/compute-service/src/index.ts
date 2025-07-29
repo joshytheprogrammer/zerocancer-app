@@ -22,17 +22,19 @@ app.use("*", logger());
 app.use("*", prettyJSON());
 app.use(
   "*",
-  cors({
-    origin: [
-      "http://localhost:5173", // Frontend dev
-      "http://localhost:3000", // Frontend prod
-      "http://localhost:8787", // Backend edge
-      process.env.FRONTEND_URL || "http://localhost:5173",
-    ].filter(Boolean),
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
+  (c, next) => 
+    cors({
+      origin: [
+          "http://localhost:5173", // Frontend dev
+          "http://localhost:3000", // Frontend prod
+          "http://localhost:8787", // Backend edge
+          process.env.FRONTEND_URL || "http://localhost:5173",
+        ].filter(Boolean),
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+      })(c, next)
+
 );
 
 // Health check endpoint

@@ -172,7 +172,7 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
 
       return Promise.reject(error)
     },
-  )
+  );
 
   // Axios request interceptor to attach access token from React Query cache
   axios.interceptors.request.use(
@@ -183,7 +183,7 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
         !config.url.startsWith('/api/v1/') &&
         !config.url.startsWith('http')
       ) {
-        if (import.meta.env.MODE !== 'production') {
+        if (import.meta.env.ENV_MODE !== 'production') {
           // Development: Frontend (3000) -> Backend (8000)
           config.url = config.url.replace(
             '/api/',
@@ -204,7 +204,7 @@ export function setupAxiosInterceptors(queryClient: QueryClient) {
       return config
     },
     (error) => Promise.reject(error),
-  )
+  );
 }
 
 export default {

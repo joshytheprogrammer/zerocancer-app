@@ -48,7 +48,7 @@ apiApp.get("/healthz", (c) => c.json({ status: "ok" }));
 apiApp.get("/debug/env", (c) => {
   // Use Hono's env helper to access environment variables
   const {
-    ENV,
+    ENV_MODE,
     DATABASE_URL,
     JWT_TOKEN_SECRET,
     FRONTEND_URL,
@@ -62,7 +62,7 @@ apiApp.get("/debug/env", (c) => {
   } = env<TEnvs>(c);
 
   const envVars = {
-    ENV,
+    ENV_MODE,
     DATABASE_URL: DATABASE_URL ? "***SET***" : "NOT SET",
     JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
     FRONTEND_URL,
@@ -105,9 +105,9 @@ app.route("/api/v1", apiApp);
 
 // Development fallback - helpful message
 app.get("*", async (c) => {
-  const { ENV } = env<TEnvs>(c);
+  const { ENV_MODE } = env<TEnvs>(c);
 
-  if (ENV !== "production") {
+  if (ENV_MODE !== "production") {
     return c.html(`
       <html>
         <head><title>Zerocancer Backend</title></head>
