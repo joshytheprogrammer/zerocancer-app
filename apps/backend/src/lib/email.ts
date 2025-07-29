@@ -1,18 +1,10 @@
+import { sendPlainEmailSchema } from "@zerocancer/shared";
+import { z } from "zod";
 import { createComputeClient } from "./compute-client";
 
 export async function sendEmail(
   c: any,
-  {
-    to,
-    subject,
-    html,
-    text,
-  }: {
-    to: string | string[];
-    subject: string;
-    html?: string;
-    text?: string;
-  }
+  { to, subject, html, text }: z.infer<typeof sendPlainEmailSchema>
 ) {
   // Convert array to comma-separated string if needed
   const toAddress = Array.isArray(to) ? to.join(", ") : to;

@@ -18,21 +18,16 @@ import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
-import { createComputeClient } from "src/lib/compute-client";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
 import { TEnvs, THonoApp } from "src/lib/types";
 import {
   comparePassword,
   createNotificationForUsers,
+  generateHexId,
   hashPassword,
   triggerWaitlistMatching,
 } from "src/lib/utils";
-// import {
-//   comparePassword,
-//   createNotificationForUsers,
-//   hashPassword,
-// } from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 
@@ -150,7 +145,7 @@ adminApp.post(
       }
 
       // Generate reset token
-      const token = crypto.randomBytes(32).toString("hex");
+      const token = generateHexId(12);
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
       // Store token

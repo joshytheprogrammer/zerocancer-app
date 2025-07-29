@@ -4,13 +4,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
+import { emailApp } from "./api/email";
 import { THonoApp } from "./lib/types";
 
 // Load environment variables
 dotenv.config();
 
 // Import API routes
-import analyticsApi from "./api/analytics";
 // import waitlistApi from "./api/waitlist";
 // import emailApi from "./api/email";
 // import pdfApi from "./api/pdf";
@@ -59,10 +59,8 @@ app.get("/health", (c) => {
 });
 
 // API Routes
-app.route("/api/analytics", analyticsApi);
 // app.route("/api/waitlist", waitlistApi);
-// app.route("/api/email", emailApi);
-// app.route("/api/pdf", pdfApi);
+app.route("/api/email", emailApp);
 
 // 404 handler
 app.notFound((c) => {
@@ -85,9 +83,9 @@ app.onError((error, c) => {
 // Start server
 const port = parseInt(process.env.PORT || "8788");
 
-console.log(`🚀 Starting ZeroCancer Compute Service...`);
-console.log(`📊 Analytics, waitlist matching, and heavy computations`);
-console.log(`🌐 Server will be available at http://localhost:${port}`);
+console.log(
+  `🚀 Starting ZeroCancer Compute Service. For NodeJS specific optimizations & heavy computations`
+);
 
 serve(
   {
@@ -95,155 +93,8 @@ serve(
     port,
   },
   (info) => {
-    console.log(`✅ Compute Service running on http://localhost:${info.port}`);
     console.log(
-      `🔗 Backend should set COMPUTE_SERVICE_URL=http://localhost:${info.port}`
+      `🌐 Compute Service running. Backend should set COMPUTE_SERVICE_URL=http://localhost:${info.port}🔗`
     );
   }
 );
-
-/**
- * // POST /api/donor/paystack-webhook - Handle Paystack webhook
-donationApp.post(
-  "/paystack-webhook",
-  // Verify webhook signature
-  async (c, next) => {
-    try {
-      console.log("Received Paystack webhook request");
-
-      // Verify webhook signature
-      const signature = c.req.header("x-paystack-signature");
-
-      // Get the raw body
-      const rawBody = await c.req.raw.arrayBuffer();
-      const rawBodyBuffer = Buffer.from(rawBody);
-
-      const { PAYSTACK_SECRET_KEY } = env<{ PAYSTACK_SECRET_KEY: string }>(
-        c,
-        "node"
-      );
-
-      const hash = crypto
-        .createHmac("sha512", PAYSTACK_SECRET_KEY)
-        .update(rawBodyBuffer)
-        .digest("hex");
-
-      if (hash !== signature) {
-        return c.json({ error: "Invalid signature" }, 401);
-      }
-
-      console.log(JSON.parse(rawBodyBuffer.toString()));
-
-      const payload = (await JSON.parse(rawBodyBuffer.toString())) as z.infer<
-        typeof paystackWebhookSchema
-      >;
-
-      c.set("jwtPayload", payload);
-
-      console.log("Received Valid Paystack webhook!!!:", payload);
-
-      await next();
-    } catch (error) {
-      console.error("Webhook verification error:", error);
-      return c.json({ error: "Webhook verification failed" }, 401);
-    }
-  },
-  async (c) => {
-    try {
-      console.log("Processing Paystack webhook...");
-
-      // Get the database instance
-      const db = getDB(c);
-      const payload = c.get("jwtPayload") as unknown as z.infer<
-        typeof paystackWebhookSchema
-      >;
-
-      if (payload.event === "charge.success") {
-        const { data } = payload;
-
-        // Ensure data exists and has required properties
-        if (!data || !data.reference || !data.amount) {
-          return c.json({ error: "Invalid webhook data" }, 400);
-        }
-
-        const { reference, amount, metadata } = data;
-        const paymentType = metadata?.payment_type;
-
-        // Update transaction status
-        await db.transaction.updateMany({
-          where: { paymentReference: reference },
-          data: { status: "COMPLETED" },
-        });
-
-        if (paymentType === "anonymous_donation") {
-          // Add to general donor pool
-          console.log("Adding to general donor pool:", amount / 100);
-          await addToGeneralDonorPool(amount / 100, c);
-        } else if (paymentType === "campaign_creation" && metadata) {
-          console.log("Funding new campaign:", metadata);
-
-          // Update campaign with initial funding
-          const campaignId = metadata.campaign_id;
-          // const initialFunding = metadata.funding_amount;
-
-          if (campaignId) {
-            await db.donationCampaign.update({
-              where: { id: campaignId },
-              data: {
-                totalAmount: { increment: amount / 100 },
-                availableAmount: { increment: amount / 100 },
-                status: "ACTIVE",
-              },
-            });
-          }
-
-          // Trigger matching for this campaign
-          // TODO: Call matching algorithm
-        } else if (paymentType === "campaign_funding" && metadata) {
-          console.log("Adding funds to campaign:", metadata.campaign_id);
-
-          // Add funds to existing campaign
-          const campaignId = metadata.campaign_id;
-
-          if (campaignId) {
-            await db.donationCampaign.update({
-              where: { id: campaignId },
-              data: {
-                totalAmount: { increment: amount / 100 },
-                availableAmount: { increment: amount / 100 },
-                status: "ACTIVE",
-              },
-            });
-          }
-        } else if (paymentType === "appointment_booking" && metadata) {
-          console.log("Processing appointment booking:", metadata);
-
-          const appointmentId = metadata.appointmentId;
-
-          await db.appointment.update({
-            where: { id: appointmentId },
-            data: {
-              status: "SCHEDULED",
-              checkInCode: generateHexId(6).toUpperCase(),
-              checkInCodeExpiresAt: new Date(
-                Date.now() + 365 * 24 * 60 * 60 * 1000 // 1 year expiry - since you paid, it shouldn't expire
-              ),
-              // paymentReference: reference,
-            },
-          });
-        }
-
-        return c.json({ message: "Webhook processed successfully" });
-      }
-
-      return c.json(
-        { message: "Event not handled", event: payload.event },
-        200
-      );
-    } catch (error) {
-      console.error("Webhook processing error:", error);
-      return c.json({ error: "Webhook processing failed" }, 200);
-    }
-  }
-);
- */

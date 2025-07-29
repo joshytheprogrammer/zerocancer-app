@@ -1,16 +1,10 @@
 import { JsonObject } from "@prisma/client/runtime/library";
-import {
-  TDonationCampaign,
-  TtriggerMatchingParams,
-  TtriggerMatchingSchema,
-} from "@zerocancer/shared";
+import { TDonationCampaign, TtriggerMatchingParams } from "@zerocancer/shared";
 import bcrypt from "bcryptjs";
-import { env } from "hono/adapter";
-import { createComputeClient } from "./compute-client";
+// import { createComputeClient } from "./compute-client";
 import { getDB } from "./db";
-// import { sendNotificationEmail } from "./email";
 import { sendNotificationEmail } from "./email";
-import { TEnvs } from "./types";
+import { waitlistMatcherAlg } from "./waitlistMatchingAlg";
 
 export function generateHexId(length: number = 6) {
   const bytes = new Uint8Array(length);
@@ -116,13 +110,22 @@ export async function triggerWaitlistMatching(
   c: any,
   customConfig?: TtriggerMatchingParams
 ) {
-  const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
-  const computeClient = createComputeClient(
-    COMPUTE_SERVICE_URL || "http://localhost:8788"
-  );
+  /**
+   * Create a compute client for triggering the matching algorithm.
+   * 
+    const computeClient = createComputeClient(c);
+    // Trigger the algorithm with custom config (non-blocking)
+    await computeClient.triggerMatching(customConfig);
+   * 
+   * 
+   */
 
-  // Trigger the algorithm with custom config (non-blocking)
-  await computeClient.triggerMatching(customConfig);
+  await waitlistMatcherAlg(customConfig);
+
+  return {
+    ok: true,
+    message: "Matching process triggered successfully",
+  };
 }
 
 export async function getUserWithProfiles(

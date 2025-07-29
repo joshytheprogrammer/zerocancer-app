@@ -4,6 +4,7 @@ export * from "./auth.schema";
 export * from "./center.schema";
 export * from "./centerStaff.schema";
 export * from "./donation.schema";
+export * from "./email.schema";
 export * from "./notification.schema";
 export * from "./receipt.schema";
 export * from "./register.schema";
