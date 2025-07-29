@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "wrangler dev",
-    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:reset": "prisma migrate reset --force --skip-seed --skip-generate && pnpm db:push && pnpm db:seed",

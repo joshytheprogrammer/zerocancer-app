@@ -51,7 +51,7 @@ importers:
         specifier: ^4.0.0
         version: 4.8.3
       worker-mailer:
-        specifier: ^1.1.4
+        specifier: 1.1.4
         version: 1.1.4
       zod:
         specifier: ^3.25.67
