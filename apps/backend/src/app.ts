@@ -33,6 +33,7 @@ app.use("*", async (c, next) => {
     origin: [FRONTEND_URL],
     credentials: true,
   });
+  
   return corsMiddlewareHandler(c, next);
 });
 
@@ -47,7 +48,7 @@ apiApp.get("/healthz", (c) => c.json({ status: "ok" }));
 apiApp.get("/debug/env", (c) => {
   // Use Hono's env helper to access environment variables
   const {
-    NODE_ENV,
+    ENV,
     DATABASE_URL,
     JWT_TOKEN_SECRET,
     FRONTEND_URL,
@@ -57,23 +58,11 @@ apiApp.get("/debug/env", (c) => {
     SMTP_PASS,
     PAYSTACK_SECRET_KEY,
     PAYSTACK_PUBLIC_KEY,
-    PORT,
-  } = env<{
-    NODE_ENV?: string;
-    DATABASE_URL?: string;
-    JWT_TOKEN_SECRET?: string;
-    FRONTEND_URL?: string;
-    SMTP_HOST?: string;
-    SMTP_PORT?: string;
-    SMTP_USER?: string;
-    SMTP_PASS?: string;
-    PAYSTACK_SECRET_KEY?: string;
-    PAYSTACK_PUBLIC_KEY?: string;
-    PORT?: string;
-  }>(c);
+    ...OtherEnvs
+  } = env<TEnvs>(c);
 
   const envVars = {
-    NODE_ENV,
+    ENV,
     DATABASE_URL: DATABASE_URL ? "***SET***" : "NOT SET",
     JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
     FRONTEND_URL,
@@ -83,7 +72,7 @@ apiApp.get("/debug/env", (c) => {
     SMTP_PASS: SMTP_PASS ? "***SET***" : "NOT SET",
     PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
     PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
-    PORT,
+    ...OtherEnvs
   };
 
   return c.json({
@@ -116,9 +105,9 @@ app.route("/api/v1", apiApp);
 
 // Development fallback - helpful message
 app.get("*", async (c) => {
-  const { NODE_ENV } = env<TEnvs>(c);
+  const { ENV } = env<TEnvs>(c);
 
-  if (NODE_ENV !== "production") {
+  if (ENV !== "production") {
     return c.html(`
       <html>
         <head><title>Zerocancer Backend</title></head>

@@ -17,7 +17,7 @@ export type TEnvs = {
   SMTP_USER: string;
   SMTP_PASS: string;
   FRONTEND_URL: string;
-  NODE_ENV: "production" | "development" | "test";
+  ENV: "production" | "development" | "test";
   PAYSTACK_SECRET_KEY: string;
   PAYSTACK_PUBLIC_KEY: string;
   CRON_API_KEY: string;
