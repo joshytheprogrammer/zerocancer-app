@@ -4,6 +4,7 @@ import {
   adminLoginSchema,
   adminResetPasswordSchema,
   createAdminSchema,
+  triggerMatchingSchema,
 } from "@zerocancer/shared";
 import type {
   TAdminForgotPasswordResponse,
@@ -25,7 +26,13 @@ import {
   comparePassword,
   createNotificationForUsers,
   hashPassword,
-} from "src/lib/waitlistMatchingAlg";
+  triggerWaitlistMatching,
+} from "src/lib/utils";
+// import {
+//   comparePassword,
+//   createNotificationForUsers,
+//   hashPassword,
+// } from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 
@@ -160,7 +167,7 @@ adminApp.post(
         env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
       }/admin/reset-password?token=${token}`;
 
-      await sendEmail({
+      await sendEmail(c, {
         to: email!,
         subject: "Reset your Zerocancer Admin password",
         html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
@@ -1299,16 +1306,6 @@ adminApp.get("/matching/executions/:id", async (c) => {
 });
 
 // POST /api/admin/matching/trigger - Manually trigger matching algorithm
-const triggerMatchingSchema = z.object({
-  patientsPerScreeningType: z.number().min(1).max(100).optional(),
-  maxTotalPatients: z.number().min(1).max(1000).optional(),
-  enableParallelProcessing: z.boolean().optional(),
-  maxConcurrentScreeningTypes: z.number().min(1).max(10).optional(),
-  enableDemographicTargeting: z.boolean().optional(),
-  enableGeographicTargeting: z.boolean().optional(),
-  allocationExpiryDays: z.number().min(1).max(365).optional(),
-});
-
 adminApp.post(
   "/matching/trigger",
   zValidator("json", triggerMatchingSchema, (result, c) => {
@@ -1320,24 +1317,16 @@ adminApp.post(
     const customConfig = c.req.valid("json");
 
     try {
-      // Import the matching algorithm
-      // const { waitlistMatcherAlg } = await import("../../../compute-service/src/lib/waitlistMatchingAlg");
-      const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
-      const computeClient = createComputeClient(
-        COMPUTE_SERVICE_URL || "http://localhost:8788"
-      );
-
-      // Trigger the algorithm with custom config (non-blocking)
-      const result = await computeClient.triggerMatching(customConfig);
+      await triggerWaitlistMatching(c, customConfig);
 
       return c.json({
         ok: true,
         data: {
           message: "Matching algorithm triggered successfully",
-          executionRef: result.executionRef,
-          success: result.success,
-          metrics: result.success ? result.metrics : undefined,
-          error: result.error,
+          // executionRef: result.executionRef,
+          // success: result.success,
+          // metrics: result.success ? result.metrics : undefined,
+          // error: result.error,
         },
       });
     } catch (error) {

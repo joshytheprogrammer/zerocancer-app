@@ -20,7 +20,7 @@ import { jwt, sign, verify } from "hono/jwt";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
 import { TEnvs, THonoApp } from "src/lib/types";
-import { getUserWithProfiles } from "src/lib/waitlistMatchingAlg";
+import { getUserWithProfiles } from "src/lib/utils";
 import { z } from "zod";
 
 export const authApp = new Hono<THonoApp>();
@@ -68,12 +68,9 @@ authApp.post(
       id = user?.id!;
     } else {
       let { user: justUser, profiles: userProfiles } =
-        await getUserWithProfiles(
-          {
-            email: email!,
-          },
-          c
-        );
+        await getUserWithProfiles(c, {
+          email: email!,
+        });
 
       user = { ...justUser, profiles: userProfiles };
 
@@ -408,7 +405,7 @@ authApp.post("/forgot-password", async (c) => {
   const resetUrl = `${
     env<{ FRONTEND_URL: string }>(c).FRONTEND_URL || "http://localhost:3000"
   }/reset-password?token=${token}`;
-  await sendEmail({
+  await sendEmail(c, {
     to: email,
     subject: "Reset your password",
     html: `<p>Click <a href='${resetUrl}'>here</a> to reset your password. This link expires in 30 minutes.</p>`,
@@ -519,7 +516,7 @@ authApp.post("/resend-verification", async (c) => {
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
     },
   });
-  await sendEmail({
+  await sendEmail(c, {
     to: user.email!,
     subject: "Verify your email",
     html: `<p>Click <a href='${

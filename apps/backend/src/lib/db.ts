@@ -1,4 +1,4 @@
-import { neonConfig } from "@neondatabase/serverless";
+import { neonConfig, Pool } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@prisma/client";
 
@@ -11,7 +11,8 @@ declare global {
 }
 
 export const getDB = (c: { env: { DATABASE_URL: string } }) => {
-  const adapter = new PrismaNeon({ connectionString: c.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: c.env.DATABASE_URL });
+  const adapter = new PrismaNeon(pool);
   const prisma = new PrismaClient({ adapter });
 
   return prisma;

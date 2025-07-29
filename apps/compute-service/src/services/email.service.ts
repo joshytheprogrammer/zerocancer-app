@@ -1,26 +1,31 @@
-import { createComputeClient } from "./compute-client";
+import nodemailer from "nodemailer";
 
-export async function sendEmail(
-  c: any,
-  {
-    to,
-    subject,
-    html,
-    text,
-  }: {
-    to: string | string[];
-    subject: string;
-    html?: string;
-    text?: string;
-  }
-) {
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: process.env.SMTP_SECURE === "true",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+}: {
+  to: string | string[];
+  subject: string;
+  html?: string;
+  text?: string;
+}) {
   // Convert array to comma-separated string if needed
   const toAddress = Array.isArray(to) ? to.join(", ") : to;
 
-  const computeClient = createComputeClient(c);
-
-  // Trigger the algorithm with custom config (non-blocking)
-  await computeClient.sendEmail({
+  return transporter.sendMail({
+    from: process.env.SMTP_USER,
     to: toAddress,
     subject,
     html,
@@ -138,31 +143,25 @@ export function createEmailTemplate({
   `;
 }
 
-/**
- * Send notification email with improved template
- */
-export async function sendNotificationEmail(
-  c: any,
-  {
-    to,
-    type,
-    title,
-    message,
-    data,
-  }: {
-    to: string | string[];
-    type: string;
-    title: string;
-    message: string;
-    data?: any;
-  }
-) {
-  const htmlContent = createEmailTemplate({ type, title, message, data });
+export async function sendNotificationEmail({
+  to,
+  type,
+  title,
+  message,
+  data,
+}: {
+  to: string | string[];
+  type: string;
+  title: string;
+  message: string;
+  data?: any;
+}) {
+  const html = createEmailTemplate({ type, title, message, data });
 
-  return sendEmail(c, {
+  return sendEmail({
     to,
-    subject: `ZeroCancer - ${title}`,
-    text: message,
-    html: htmlContent,
+    subject: `[${type}] ${title}`,
+    html,
+    text: `${title}\n\n${message}\n\nData: ${JSON.stringify(data, null, 2)}`,
   });
 }

@@ -43,7 +43,8 @@ import { authMiddleware } from "src/middleware/auth.middleware";
 // import { centerAppointmentApp } from "./center.appointment";
 // import { patientAppointmentApp } from "./patient.appointment";
 import { initializePaystackPayment } from "src/lib/paystack";
-import { createNotificationForUsers } from "src/lib/waitlistMatchingAlg";
+import { createNotificationForUsers, generateHexId } from "src/lib/utils";
+// import { createNotificationForUsers } from "src/lib/waitlistMatchingAlg";
 
 export const appointmentApp = new Hono<THonoApp>();
 

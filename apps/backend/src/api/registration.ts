@@ -19,8 +19,9 @@ import { env } from "hono/adapter";
 import { HTTPException } from "hono/http-exception";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
-import type { THonoAppVariables } from "src/lib/types";
-import { getUserWithProfiles } from "src/lib/waitlistMatchingAlg";
+// import { sendEmail } from "src/lib/email";
+import { THonoApp } from "src/lib/types";
+import { getUserWithProfiles } from "src/lib/utils";
 
 export const registerApp = new Hono<THonoApp>();
 
@@ -30,7 +31,7 @@ registerApp.post(
     if (!result.success) throw new HTTPException(400, { cause: result.error });
   }),
   async (c) => {
-    const { profiles } = await getUserWithProfiles({
+    const { profiles } = await getUserWithProfiles(c, {
       email: c.req.valid("json").email!,
     });
     return c.json<TCheckProfilesResponse>({
@@ -53,7 +54,7 @@ registerApp.post(
 
     // Concurrently check if user exists and if center with same email exists
     const [userResult, existingCenter] = await Promise.all([
-      getUserWithProfiles({ email: data.email! }),
+      getUserWithProfiles(c, { email: data.email! }),
       db.serviceCenter.findUnique({ where: { email: data.email! } }),
     ]);
 
@@ -155,7 +156,7 @@ registerApp.post(
       },
     });
 
-    await sendEmail({
+    await sendEmail(c, {
       to: patient.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${
@@ -208,7 +209,7 @@ registerApp.post(
     const db = getDB(c);
     const data = c.req.valid("json");
 
-    const { user: existingUser, profiles } = await getUserWithProfiles({
+    const { user: existingUser, profiles } = await getUserWithProfiles(c, {
       email: data.email!,
     });
 
@@ -279,7 +280,7 @@ registerApp.post(
       },
     });
 
-    await sendEmail({
+    await sendEmail(c, {
       to: donor.email,
       subject: "Verify your email",
       html: `<p>Click <a href='${

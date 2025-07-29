@@ -28,7 +28,7 @@ import { sign } from "hono/jwt";
 import { getDB } from "src/lib/db";
 import { sendEmail } from "src/lib/email";
 import { TEnvs, THonoApp } from "src/lib/types";
-import { comparePassword, hashPassword } from "src/lib/waitlistMatchingAlg";
+import { comparePassword, hashPassword } from "src/lib/utils";
 import { authMiddleware } from "src/middleware/auth.middleware";
 
 export const centerApp = new Hono<THonoApp>();
@@ -245,7 +245,7 @@ centerApp.post(
         env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
       }/staff/create-new-password?token=${token}`;
 
-      await sendEmail({
+      await sendEmail(c, {
         to: email!,
         subject: "You're invited to join a center on Zerocancer",
         html: `<p>You have been invited to join a center. <a href="${inviteUrl}">Click here to set your password and join.</a></p>`,
@@ -345,7 +345,7 @@ centerApp.post(
     const resetUrl = `${
       env<{ FRONTEND_URL: string }>(c).FRONTEND_URL
     }/staff/reset-password?token=${token}`;
-    await sendEmail({
+    await sendEmail(c, {
       to: email!,
       subject: "Reset your Zerocancer Center Staff password",
       html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,

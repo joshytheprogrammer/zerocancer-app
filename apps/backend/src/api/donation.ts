@@ -32,7 +32,12 @@ import { TEnvs, THonoApp } from "src/lib/types";
 import {
   createNotificationForUsers,
   formatCampaignForResponse,
-} from "src/lib/waitlistMatchingAlg";
+  generateHexId,
+} from "src/lib/utils";
+// import {
+//   createNotificationForUsers,
+//   formatCampaignForResponse,
+// } from "src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "src/middleware/auth.middleware";
 import { z } from "zod";
 

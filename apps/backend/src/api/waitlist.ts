@@ -16,11 +16,11 @@ import {
 } from "@zerocancer/shared";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { triggerWaitlistMatching } from "src/lib/utils";
 import { z } from "zod";
 import { CryptoUtils } from "../lib/crypto.utils";
 import { getDB } from "../lib/db";
 import { THonoApp } from "../lib/types";
-// import { waitlistMatcherAlg } from "../../../compute-service/src/lib/waitlistMatchingAlg";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 export const waitlistApp = new Hono<THonoApp>();
@@ -577,7 +577,7 @@ waitlistApp.post("/trigger-matching", async (c) => {
     const startTime = Date.now();
 
     // Run the matching algorithm
-    await waitlistMatcherAlg();
+    await triggerWaitlistMatching(c);
 
     const endTime = Date.now();
     const duration = endTime - startTime;
@@ -637,7 +637,8 @@ waitlistApp.post("/manual-trigger", authMiddleware(["admin"]), async (c) => {
     );
 
     const startTime = Date.now();
-    await waitlistMatcherAlg();
+    // Run the matching algorithm
+    await triggerWaitlistMatching(c);
     const endTime = Date.now();
     const duration = endTime - startTime;
 

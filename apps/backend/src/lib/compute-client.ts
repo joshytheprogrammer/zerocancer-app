@@ -13,6 +13,8 @@ import type {
   TGeographicReportResponse,
   TTimeBasedReportResponse,
 } from "@zerocancer/shared/types";
+import { env } from "hono/adapter";
+import { TEnvs } from "./types";
 
 export interface ComputeClientConfig {
   baseUrl: string;
@@ -241,19 +243,17 @@ export class ComputeClientError extends Error {
  * Factory function to create a compute client instance
  */
 export function createComputeClient(
-  baseUrl: string,
+  c: any,
   options?: Partial<ComputeClientConfig>
 ): ComputeClient {
+  const { COMPUTE_SERVICE_URL } = env<TEnvs>(c);
+
+  if (!COMPUTE_SERVICE_URL) {
+    throw new Error("COMPUTE_SERVICE_URL environment variable is not set");
+  }
+
   return new ComputeClient({
-    baseUrl,
+    baseUrl: COMPUTE_SERVICE_URL,
     ...options,
   });
 }
-
-/**
- * Default compute client instance
- * Usage: import { computeClient } from './compute-client'
- */
-export const computeClient = createComputeClient(
-  process.env.COMPUTE_SERVICE_URL || "http://localhost:8788"
-);

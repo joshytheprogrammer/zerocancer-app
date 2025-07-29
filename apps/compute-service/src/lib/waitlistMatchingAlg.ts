@@ -1,7 +1,6 @@
 import { CampaignStatus, Gender, PrismaClient } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
 import { TDonationCampaign } from "@zerocancer/shared/types";
-import bcrypt from "bcryptjs";
 import { getDB } from "./db";
 import { sendEmail, sendNotificationEmail } from "./email";
 
@@ -464,17 +463,6 @@ export async function getUserWithProfiles(
   }
   return { user, profiles: userProfiles };
 }
-
-export const hashPassword = async (password: string) => {
-  return await bcrypt.hash(password, 10);
-};
-
-export const comparePassword = async (
-  password: string,
-  hash: string
-): Promise<boolean> => {
-  return await bcrypt.compare(password, hash);
-};
 
 /**
  *  FOR FRIDAY
@@ -1213,87 +1201,6 @@ async function processScreeningTypeBatch(
   console.log(
     `✨ Completed processing ${screeningTypeName} - ${screeningMetrics.matchesCreated} matches created`
   );
-}
-
-/**
- * Utility to create a notification for one or more users.
- *
- * This function handles both in-app notifications and optional email notifications
- * for important events like successful matching between patients and donors.
- *
- * Notification Types:
- * - MATCHED: Patient successfully matched to a campaign
- * - PATIENT_MATCHED: Donor notified about patient match
- * - INFO: General information notifications
- * - WARNING: Important warnings requiring attention
- *
- * @param params.type Notification type (e.g., 'MATCHED', 'INFO', etc.)
- * @param params.title Notification title for display
- * @param params.message Detailed notification message
- * @param params.userIds Array of user IDs to notify
- * @param params.data Optional extra data (screening details, campaign info, etc.)
- * @param email Whether to send email notifications in addition to in-app
- * @returns Promise<Notification> Created notification object
- */
-export async function createNotificationForUsers(
-  c: any,
-  {
-    type,
-    title,
-    message,
-    userIds,
-    data,
-  }: {
-    type: string;
-    title: string;
-    message: string;
-    userIds: string[];
-    data?: JsonObject | undefined;
-  },
-  email = false
-) {
-  const db = getDB(c);
-
-  // Send emails if requested
-  if (email) {
-    try {
-      // Fetch user emails
-      const users = await db.user.findMany({
-        where: { id: { in: userIds } },
-        select: { email: true, fullName: true },
-      });
-
-      const emails = users.map((u) => u.email).filter(Boolean);
-
-      if (emails.length > 0) {
-        await sendNotificationEmail({
-          to: emails,
-          type,
-          title,
-          message,
-          data,
-        });
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Failed to send email notifications:", errorMessage);
-      // Don't throw error here as we still want to create the notification
-    }
-  }
-
-  // Create the notification in database
-  return db.notification.create({
-    data: {
-      type,
-      title,
-      message,
-      data,
-      recipients: {
-        create: userIds.map((userId) => ({ userId })),
-      },
-    },
-  });
 }
 
 /**
