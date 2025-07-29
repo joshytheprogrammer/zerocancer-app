@@ -58,7 +58,10 @@ apiApp.get("/debug/env", (c) => {
     SMTP_PASS,
     PAYSTACK_SECRET_KEY,
     PAYSTACK_PUBLIC_KEY,
-    ...OtherEnvs
+    CRON_API_KEY,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
   } = env<TEnvs>(c);
 
   const envVars = {
@@ -72,7 +75,10 @@ apiApp.get("/debug/env", (c) => {
     SMTP_PASS: SMTP_PASS ? "***SET***" : "NOT SET",
     PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
     PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
-    ...OtherEnvs
+    CRON_API_KEY: CRON_API_KEY ? "***SET***" : "NOT SET",
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: CLOUDINARY_API_KEY ? "***SET***" : "NOT SET",
+    CLOUDINARY_API_SECRET: CLOUDINARY_API_SECRET ? "***SET***" : "NOT SET",
   };
 
   return c.json({

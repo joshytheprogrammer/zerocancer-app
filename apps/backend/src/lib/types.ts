@@ -24,7 +24,4 @@ export type TEnvs = {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
-  VITE_CLOUDINARY_CLOUD_NAME: string;
-  VITE_CLOUDINARY_UPLOAD_PRESET: string;
-  COMPUTE_SERVICE_URL: string;
 };
