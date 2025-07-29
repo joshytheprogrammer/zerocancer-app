@@ -1,7 +1,7 @@
-// import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
+import { getRouterName, showRoutes } from "hono/dev"; // import { serveStatic } from "@hono/node-server/serve-static";
 import { logger } from "hono/logger";
 import { adminApp } from "./api/admin";
 import analyticsApp from "./api/analytics";
@@ -147,6 +147,10 @@ app.get("*", async (c) => {
     },
     404
   );
+});
+
+showRoutes(app, {
+  verbose: true,
 });
 
 export default app;

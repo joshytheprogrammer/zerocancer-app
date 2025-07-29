@@ -60,6 +60,7 @@ appointmentApp.get(
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
   }),
+
   async (c) => {
     const db = getDB(c);
     const { id: appointmentId } = c.req.valid("param");
@@ -163,7 +164,7 @@ appointmentApp.use("/center/*", authMiddleware(["center", "center_staff"]));
 
 // GET /api/appointment/center - List appointments (paginated, filterable)
 appointmentApp.get(
-  "/",
+  "/center",
   zValidator("query", getCenterAppointmentsSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -223,7 +224,7 @@ appointmentApp.get(
 
 // GET /api/appointment/center/:id - Get appointment details
 appointmentApp.get(
-  "/:id",
+  "/center/:id",
   zValidator("param", getCenterAppointmentByIdSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -267,7 +268,7 @@ appointmentApp.get(
 
 // POST /api/appointment/center/:id/cancel - Cancel appointment
 appointmentApp.post(
-  "/:id/cancel",
+  "/center/:id/cancel",
   zValidator("json", cancelCenterAppointmentSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -311,7 +312,7 @@ appointmentApp.post(
 // NOTE TO SELF: Make a more robust rescheduling system later
 // This is a simple version that just updates the date/time & resets status
 appointmentApp.post(
-  "/:id/reschedule",
+  "/center/:id/reschedule",
   zValidator("json", rescheduleCenterAppointmentSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -360,7 +361,7 @@ appointmentApp.post(
 
 // POST /api/appointment/center/verify - Verify check-in code
 appointmentApp.post(
-  "/verify",
+  "/center/verify",
   zValidator("json", verifyCheckInCodeSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -551,7 +552,7 @@ appointmentApp.post(
 
 // POST /api/appointment/center/:id/upload-results - Upload screening results
 appointmentApp.post(
-  "/:id/upload-results",
+  "/center/:id/upload-results",
   zValidator("json", uploadResultsSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -664,7 +665,7 @@ appointmentApp.post(
 
 // POST /api/appointment/center/:id/complete - Mark appointment as completed
 appointmentApp.post(
-  "/:id/complete",
+  "/center/:id/complete",
   zValidator("json", completeAppointmentSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -799,7 +800,7 @@ appointmentApp.post(
 
 // DELETE /api/appointment/center/files/:fileId - Soft delete a file
 appointmentApp.delete(
-  "/files/:fileId",
+  "/center/files/:fileId",
   zValidator("json", deleteResultFileSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -886,7 +887,7 @@ appointmentApp.delete(
 
 // POST /api/appointment/center/files/:fileId/restore - Restore a soft-deleted file
 appointmentApp.post(
-  "/files/:fileId/restore",
+  "/center/files/:fileId/restore",
   zValidator("json", restoreResultFileSchema, (result, c) => {
     if (!result.success) {
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -975,7 +976,7 @@ appointmentApp.use("/patient/*", authMiddleware(["patient"]));
 
 // POST /api/appointment/patient/book
 appointmentApp.post(
-  "/book",
+  "/patient/book",
   zValidator("json", bookSelfPayAppointmentSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -1128,78 +1129,81 @@ appointmentApp.post(
 );
 
 // GET /api/appointment/patient/matches/eligible-centers/:allocationId
-appointmentApp.get("/matches/eligible-centers/:allocationId", async (c) => {
-  const db = getDB(c);
-  const payload = c.get("jwtPayload");
-  if (!payload)
-    return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
-  const userId = payload.id!;
-  const allocationId = c.req.param("allocationId");
-  const page = parseInt(c.req.query("page") || "1", 10);
-  const size = parseInt(c.req.query("size") || "20", 10);
-  const state = c.req.query("state");
-  const lga = c.req.query("lga");
+appointmentApp.get(
+  "/patient/matches/eligible-centers/:allocationId",
+  async (c) => {
+    const db = getDB(c);
+    const payload = c.get("jwtPayload");
+    if (!payload)
+      return c.json<TErrorResponse>({ ok: false, error: "Unauthorized" }, 401);
+    const userId = payload.id!;
+    const allocationId = c.req.param("allocationId");
+    const page = parseInt(c.req.query("page") || "1", 10);
+    const size = parseInt(c.req.query("size") || "20", 10);
+    const state = c.req.query("state");
+    const lga = c.req.query("lga");
 
-  // Ensure allocation belongs to this patient and is not yet assigned to an appointment
-  const allocation = await db.donationAllocation.findUnique({
-    where: { id: allocationId },
-    include: { waitlist: true },
-  });
-  if (
-    !allocation ||
-    allocation.patientId !== userId ||
-    allocation.appointmentId
-  ) {
-    return c.json<TErrorResponse>(
-      { ok: false, error: "Invalid or already assigned allocation" },
-      400
-    );
+    // Ensure allocation belongs to this patient and is not yet assigned to an appointment
+    const allocation = await db.donationAllocation.findUnique({
+      where: { id: allocationId },
+      include: { waitlist: true },
+    });
+    if (
+      !allocation ||
+      allocation.patientId !== userId ||
+      allocation.appointmentId
+    ) {
+      return c.json<TErrorResponse>(
+        { ok: false, error: "Invalid or already assigned allocation" },
+        400
+      );
+    }
+    // Find all active centers offering this screening type
+    const screeningTypeId = allocation.waitlist.screeningTypeId!;
+    const [centers, total] = await Promise.all([
+      db.serviceCenter.findMany({
+        skip: (page - 1) * size,
+        take: size,
+        where: {
+          services: { some: { id: screeningTypeId } },
+          state: state || undefined,
+          lga: lga || undefined,
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+          centerName: true,
+          address: true,
+          state: true,
+          lga: true,
+        },
+      }),
+      db.serviceCenter.count({
+        where: {
+          services: { some: { id: screeningTypeId } },
+          state: state || undefined,
+          lga: lga || undefined,
+          status: "ACTIVE",
+        },
+      }),
+    ]);
+
+    return c.json<TGetEligibleCentersResponse>({
+      ok: true,
+      data: {
+        centers,
+        page,
+        pageSize: size,
+        total,
+        totalPages: Math.ceil(centers.length / size),
+      },
+    });
   }
-  // Find all active centers offering this screening type
-  const screeningTypeId = allocation.waitlist.screeningTypeId!;
-  const [centers, total] = await Promise.all([
-    db.serviceCenter.findMany({
-      skip: (page - 1) * size,
-      take: size,
-      where: {
-        services: { some: { id: screeningTypeId } },
-        state: state || undefined,
-        lga: lga || undefined,
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        centerName: true,
-        address: true,
-        state: true,
-        lga: true,
-      },
-    }),
-    db.serviceCenter.count({
-      where: {
-        services: { some: { id: screeningTypeId } },
-        state: state || undefined,
-        lga: lga || undefined,
-        status: "ACTIVE",
-      },
-    }),
-  ]);
-
-  return c.json<TGetEligibleCentersResponse>({
-    ok: true,
-    data: {
-      centers,
-      page,
-      pageSize: size,
-      total,
-      totalPages: Math.ceil(centers.length / size),
-    },
-  });
-});
+);
 
 // POST /api/appointment/patient/matches/select-center
 appointmentApp.post(
-  "/matches/select-center",
+  "/patient/matches/select-center",
   zValidator("json", selectCenterSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -1327,7 +1331,7 @@ appointmentApp.post(
 
 // GET /api/appointment/patient - List patient appointments
 appointmentApp.get(
-  "/",
+  "/patient",
   zValidator("query", getPatientAppointmentsSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -1518,7 +1522,7 @@ appointmentApp.get(
 
 // GET /api/appointment/patient/results/:id - Get specific patient result
 appointmentApp.get(
-  "/results/:id",
+  "/patient/results/:id",
   zValidator("param", getPatientResultByIdSchema, (result, c) => {
     if (!result.success)
       return c.json<TErrorResponse>({ ok: false, error: result.error }, 400);
@@ -1700,7 +1704,7 @@ appointmentApp.get("/patient/receipts/:id", async (c) => {
 });
 
 // GET /api/appointment/patient/:id - Get appointment details by ID
-appointmentApp.get("/:id", async (c) => {
+appointmentApp.get("/patient/:id", async (c) => {
   const db = getDB(c);
   const payload = c.get("jwtPayload");
   if (!payload)
@@ -1861,7 +1865,7 @@ appointmentApp.get("/:id", async (c) => {
 });
 
 // GET /api/appointment/patient/:id/checkin-code - Get appointment check-in code
-appointmentApp.get("/:id/checkin-code", async (c) => {
+appointmentApp.get("/patient/:id/checkin-code", async (c) => {
   const db = getDB(c);
   const payload = c.get("jwtPayload");
   if (!payload)
