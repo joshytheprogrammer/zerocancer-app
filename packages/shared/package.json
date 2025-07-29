@@ -8,6 +8,7 @@
     "build": "tsc -p ."
   },
   "dependencies": {
-    "zod": "^3.25.67"
+    "zod": "^3.25.67",
+    "typescript": "^5.8.3"
   }
 }
