@@ -1688,18 +1688,18 @@ adminApp.get("/config/matching", async (c) => {
     // Return current environment-based configuration
     const config = {
       patientsPerScreeningType: parseInt(
-        process.env.WAITLIST_BATCH_SIZE || "50"
+        c.env.WAITLIST_BATCH_SIZE || "50"
       ),
-      maxTotalPatients: parseInt(process.env.WAITLIST_MAX_TOTAL || "500"),
-      enableParallelProcessing: process.env.WAITLIST_PARALLEL === "true",
+      maxTotalPatients: parseInt(c.env.WAITLIST_MAX_TOTAL || "500"),
+      enableParallelProcessing: c.env.WAITLIST_PARALLEL === "true",
       maxConcurrentScreeningTypes: parseInt(
-        process.env.WAITLIST_CONCURRENT || "5"
+        c.env.WAITLIST_CONCURRENT || "5"
       ),
       enableDemographicTargeting:
-        process.env.WAITLIST_DEMOGRAPHIC_TARGETING !== "false",
+        c.env.WAITLIST_DEMOGRAPHIC_TARGETING !== "false",
       enableGeographicTargeting:
-        process.env.WAITLIST_GEOGRAPHIC_TARGETING !== "false",
-      allocationExpiryDays: parseInt(process.env.WAITLIST_EXPIRY_DAYS || "30"),
+        c.env.WAITLIST_GEOGRAPHIC_TARGETING !== "false",
+      allocationExpiryDays: parseInt(c.env.WAITLIST_EXPIRY_DAYS || "30"),
     };
 
     return c.json({
