@@ -120,7 +120,7 @@ export async function triggerWaitlistMatching(
    * 
    */
 
-  await waitlistMatcherAlg(customConfig);
+  await waitlistMatcherAlg(c, customConfig);
 
   return {
     ok: true,

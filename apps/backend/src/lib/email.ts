@@ -32,7 +32,7 @@ export async function sendEmail(
 /**
  * Creates an HTML email template for different notification types
  */
-export function createEmailTemplate({
+export function createEmailTemplate(c: any, {
   type,
   title,
   message,
@@ -65,7 +65,7 @@ export function createEmailTemplate({
       alertClass = "alert-success";
       actionButton = `
         <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.FRONTEND_URL}/patient/appointments" class="button">
+          <a href="${c.env.FRONTEND_URL}/patient/appointments" class="button">
             View Your Appointments
           </a>
         </div>
@@ -75,7 +75,7 @@ export function createEmailTemplate({
       alertClass = "alert-success";
       actionButton = `
         <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.FRONTEND_URL}/donor/campaigns" class="button">
+          <a href="${c.env.FRONTEND_URL}/donor/campaigns" class="button">
             View Your Campaign
           </a>
         </div>
@@ -84,7 +84,7 @@ export function createEmailTemplate({
     case "APPOINTMENT_REMINDER":
       actionButton = `
         <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.FRONTEND_URL}/patient/appointments" class="button">
+          <a href="${c.env.FRONTEND_URL}/patient/appointments" class="button">
             View Appointment Details
           </a>
         </div>
@@ -93,7 +93,7 @@ export function createEmailTemplate({
     case "RESULT_READY":
       actionButton = `
         <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.FRONTEND_URL}/patient/results" class="button">
+          <a href="${c.env.FRONTEND_URL}/patient/results" class="button">
             View Your Results
           </a>
         </div>
@@ -158,7 +158,7 @@ export async function sendNotificationEmail(
     data?: any;
   }
 ) {
-  const htmlContent = createEmailTemplate({ type, title, message, data });
+  const htmlContent = createEmailTemplate(c, { type, title, message, data });
 
   return sendEmail(c, {
     to,
