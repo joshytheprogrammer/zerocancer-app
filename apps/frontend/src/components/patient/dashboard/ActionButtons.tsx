@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 
 export default function ActionButtons() {
   return (
@@ -9,4 +9,4 @@ export default function ActionButtons() {
       <Button variant="outline">Refer Loved One</Button>
     </div>
   )
-} 
+}

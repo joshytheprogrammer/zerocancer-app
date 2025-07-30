@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/(auth)/sign-up/_layout/donor')({
+export const Route = createFileRoute('/(auth)/sign-up/donor')({
   component: RouteComponent,
 })
 

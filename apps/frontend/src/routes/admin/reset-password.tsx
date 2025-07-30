@@ -12,14 +12,14 @@ import { toast } from 'sonner'
 import type { z } from 'zod'
 
 import logo from '@/assets/images/logo-blue.svg'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/shared/ui/card'
 import {
   Form,
   FormControl,
@@ -27,8 +27,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import PasswordInput from '@/components/ui/password-input'
+} from '@/components/shared/ui/form'
+import PasswordInput from '@/components/shared/ui/password-input'
 import { useAdminResetPassword } from '@/services/providers/admin.provider'
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
 

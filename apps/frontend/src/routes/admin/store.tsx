@@ -1,22 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { 
-  useAdminStoreProducts,
-  useCreateStoreProduct,
-  useUpdateStoreProduct
-} from '@/services/providers/admin.provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -24,26 +13,42 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { 
-  Search, 
-  Plus,
-  Edit,
-  Package,
-  DollarSign,
+} from '@/components/shared/ui/dialog'
+import { Input } from '@/components/shared/ui/input'
+import { Label } from '@/components/shared/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/shared/ui/table'
+import { Textarea } from '@/components/shared/ui/textarea'
+import {
+  useAdminStoreProducts,
+  useCreateStoreProduct,
+  useUpdateStoreProduct,
+} from '@/services/providers/admin.provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import {
   AlertTriangle,
+  Boxes,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  Edit,
+  Package,
+  Plus,
+  Search,
   ShoppingCart,
-  Boxes
 } from 'lucide-react'
-import { format } from 'date-fns'
-import { toast } from 'sonner'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 export const Route = createFileRoute('/admin/store')({
   component: AdminStore,
@@ -69,7 +74,7 @@ function AdminStore() {
     product: any
   }>({
     open: false,
-    product: null
+    product: null,
   })
 
   // Build query parameters
@@ -80,11 +85,11 @@ function AdminStore() {
   }
 
   // Fetch products data
-  const { 
-    data: productsData, 
-    isLoading, 
+  const {
+    data: productsData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useAdminStoreProducts(queryParams)
 
   // Mutations
@@ -158,8 +163,18 @@ function AdminStore() {
   }
 
   const getStockStatus = (stock: number) => {
-    if (stock === 0) return { status: 'Out of Stock', variant: 'destructive' as const, icon: AlertTriangle }
-    if (stock <= 10) return { status: 'Low Stock', variant: 'secondary' as const, icon: AlertTriangle }
+    if (stock === 0)
+      return {
+        status: 'Out of Stock',
+        variant: 'destructive' as const,
+        icon: AlertTriangle,
+      }
+    if (stock <= 10)
+      return {
+        status: 'Low Stock',
+        variant: 'secondary' as const,
+        icon: AlertTriangle,
+      }
     return { status: 'In Stock', variant: 'default' as const, icon: Package }
   }
 
@@ -169,10 +184,12 @@ function AdminStore() {
 
   // Calculate analytics
   const totalProducts = products.length
-  const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0)
+  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0)
   const totalStock = products.reduce((sum, p) => sum + p.stock, 0)
-  const outOfStockProducts = products.filter(p => p.stock === 0).length
-  const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 10).length
+  const outOfStockProducts = products.filter((p) => p.stock === 0).length
+  const lowStockProducts = products.filter(
+    (p) => p.stock > 0 && p.stock <= 10,
+  ).length
 
   return (
     <div className="space-y-6">
@@ -184,8 +201,11 @@ function AdminStore() {
             Manage products, inventory, and pricing for the Zero Cancer store
           </p>
         </div>
-        
-        <Button onClick={() => setCreateDialog(true)} className="flex items-center space-x-2">
+
+        <Button
+          onClick={() => setCreateDialog(true)}
+          className="flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Add Product</span>
         </Button>
@@ -197,7 +217,9 @@ function AdminStore() {
           <CardContent className="flex items-center p-6">
             <Package className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Products</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Products
+              </p>
               <p className="text-2xl font-bold">{totalProducts}</p>
             </div>
           </CardContent>
@@ -206,7 +228,9 @@ function AdminStore() {
           <CardContent className="flex items-center p-6">
             <DollarSign className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Inventory Value</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Inventory Value
+              </p>
               <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
             </div>
           </CardContent>
@@ -215,7 +239,9 @@ function AdminStore() {
           <CardContent className="flex items-center p-6">
             <Boxes className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Stock</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Stock
+              </p>
               <p className="text-2xl font-bold">{totalStock}</p>
               <p className="text-xs text-muted-foreground">units</p>
             </div>
@@ -225,9 +251,15 @@ function AdminStore() {
           <CardContent className="flex items-center p-6">
             <AlertTriangle className="h-8 w-8 text-red-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Stock Alerts</p>
-              <p className="text-2xl font-bold">{outOfStockProducts + lowStockProducts}</p>
-              <p className="text-xs text-muted-foreground">{outOfStockProducts} out, {lowStockProducts} low</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Stock Alerts
+              </p>
+              <p className="text-2xl font-bold">
+                {outOfStockProducts + lowStockProducts}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {outOfStockProducts} out, {lowStockProducts} low
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -249,8 +281,8 @@ function AdminStore() {
                 className="pl-10"
               />
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setSearch('')
                 setPage(1)
@@ -265,9 +297,7 @@ function AdminStore() {
       {/* Products Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Products ({total})
-          </CardTitle>
+          <CardTitle className="text-lg">Products ({total})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -291,8 +321,8 @@ function AdminStore() {
               <div className="text-center">
                 <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No products found</p>
-                <Button 
-                  onClick={() => setCreateDialog(true)} 
+                <Button
+                  onClick={() => setCreateDialog(true)}
                   className="mt-4"
                   variant="outline"
                 >
@@ -319,21 +349,22 @@ function AdminStore() {
                     const stockInfo = getStockStatus(product.stock)
                     const StockIcon = stockInfo.icon
                     const productValue = product.price * product.stock
-                    
+
                     return (
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
                               <Package className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{product.name}</span>
+                              <span className="font-medium">
+                                {product.name}
+                              </span>
                             </div>
                             {product.description && (
                               <p className="text-sm text-muted-foreground">
-                                {product.description.length > 50 
-                                  ? `${product.description.substring(0, 50)}...` 
-                                  : product.description
-                                }
+                                {product.description.length > 50
+                                  ? `${product.description.substring(0, 50)}...`
+                                  : product.description}
                               </p>
                             )}
                           </div>
@@ -341,18 +372,24 @@ function AdminStore() {
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-bold">{formatCurrency(product.price)}</span>
+                            <span className="font-bold">
+                              {formatCurrency(product.price)}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <Boxes className="h-4 w-4 text-purple-600" />
                             <span className="font-medium">{product.stock}</span>
-                            <span className="text-muted-foreground text-sm">units</span>
+                            <span className="text-muted-foreground text-sm">
+                              units
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="font-medium">{formatCurrency(productValue)}</span>
+                          <span className="font-medium">
+                            {formatCurrency(productValue)}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
@@ -365,7 +402,10 @@ function AdminStore() {
                         <TableCell>
                           <div className="space-y-1">
                             <p className="text-sm">
-                              {format(new Date(product.createdAt), 'MMM dd, yyyy')}
+                              {format(
+                                new Date(product.createdAt),
+                                'MMM dd, yyyy',
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(product.createdAt), 'hh:mm a')}
@@ -429,7 +469,10 @@ function AdminStore() {
               Create a new product for the Zero Cancer store.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={createForm.handleSubmit(handleCreateProduct)} className="space-y-4">
+          <form
+            onSubmit={createForm.handleSubmit(handleCreateProduct)}
+            className="space-y-4"
+          >
             <div>
               <Label htmlFor="create-name">Product Name *</Label>
               <Input
@@ -443,7 +486,7 @@ function AdminStore() {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="create-description">Description</Label>
               <Textarea
@@ -453,7 +496,7 @@ function AdminStore() {
                 rows={3}
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="create-price">Price (NGN) *</Label>
@@ -471,7 +514,7 @@ function AdminStore() {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <Label htmlFor="create-stock">Stock Quantity *</Label>
                 <Input
@@ -488,20 +531,19 @@ function AdminStore() {
                 )}
               </div>
             </div>
-            
+
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setCreateDialog(false)}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit"
-                disabled={createProductMutation.isPending}
-              >
-                {createProductMutation.isPending ? 'Creating...' : 'Create Product'}
+              <Button type="submit" disabled={createProductMutation.isPending}>
+                {createProductMutation.isPending
+                  ? 'Creating...'
+                  : 'Create Product'}
               </Button>
             </DialogFooter>
           </form>
@@ -509,8 +551,8 @@ function AdminStore() {
       </Dialog>
 
       {/* Edit Product Dialog */}
-      <Dialog 
-        open={editDialog.open} 
+      <Dialog
+        open={editDialog.open}
         onOpenChange={(open) => setEditDialog({ open, product: null })}
       >
         <DialogContent className="sm:max-w-[500px]">
@@ -520,7 +562,10 @@ function AdminStore() {
               Update product details and inventory.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={editForm.handleSubmit(handleUpdateProduct)} className="space-y-4">
+          <form
+            onSubmit={editForm.handleSubmit(handleUpdateProduct)}
+            className="space-y-4"
+          >
             <div>
               <Label htmlFor="edit-name">Product Name *</Label>
               <Input
@@ -534,7 +579,7 @@ function AdminStore() {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
@@ -544,7 +589,7 @@ function AdminStore() {
                 rows={3}
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-price">Price (NGN) *</Label>
@@ -562,7 +607,7 @@ function AdminStore() {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <Label htmlFor="edit-stock">Stock Quantity *</Label>
                 <Input
@@ -579,20 +624,19 @@ function AdminStore() {
                 )}
               </div>
             </div>
-            
+
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setEditDialog({ open: false, product: null })}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit"
-                disabled={updateProductMutation.isPending}
-              >
-                {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
+              <Button type="submit" disabled={updateProductMutation.isPending}>
+                {updateProductMutation.isPending
+                  ? 'Updating...'
+                  : 'Update Product'}
               </Button>
             </DialogFooter>
           </form>
@@ -600,4 +644,4 @@ function AdminStore() {
       </Dialog>
     </div>
   )
-} 
+}

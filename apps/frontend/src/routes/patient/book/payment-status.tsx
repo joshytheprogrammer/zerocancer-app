@@ -1,18 +1,23 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import { useVerifyPayment } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
   AlertTriangle,
-  Loader2,
   ArrowRight,
   Calendar,
+  CheckCircle,
+  Clock,
+  Loader2,
   MapPin,
-  Stethoscope
+  Stethoscope,
+  XCircle,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -30,27 +35,27 @@ function PatientPaymentStatusPage() {
   const navigate = useNavigate()
   const { ref, type } = Route.useSearch()
   const [redirectTimer, setRedirectTimer] = useState(5)
-  
-  const { 
-    data: paymentData, 
-    isLoading, 
+
+  const {
+    data: paymentData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery(useVerifyPayment(ref))
-  
+
   const payment = paymentData?.data
 
   // Auto-redirect timer for successful payments
   useEffect(() => {
     if (payment?.status === 'success' && redirectTimer > 0) {
       const timer = setTimeout(() => {
-        setRedirectTimer(prev => prev - 1)
+        setRedirectTimer((prev) => prev - 1)
       }, 1000)
-      
+
       if (redirectTimer === 1) {
         navigate({ to: '/patient/appointments' })
       }
-      
+
       return () => clearTimeout(timer)
     }
   }, [payment?.status, redirectTimer, navigate])
@@ -68,7 +73,8 @@ function PatientPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              No payment reference was provided. Please check your payment link or try booking again.
+              No payment reference was provided. Please check your payment link
+              or try booking again.
             </p>
             <Button onClick={() => navigate({ to: '/patient/book' })}>
               Book New Appointment
@@ -90,9 +96,7 @@ function PatientPaymentStatusPage() {
             <p className="text-gray-600 mb-4">
               Please wait while we confirm your appointment payment...
             </p>
-            <div className="text-sm text-gray-500">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500">Reference: {ref}</div>
           </CardContent>
         </Card>
       </div>
@@ -112,7 +116,8 @@ function PatientPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't verify your payment at this time. This might be a temporary issue.
+              We couldn't verify your payment at this time. This might be a
+              temporary issue.
             </p>
             <div className="flex gap-3">
               <Button onClick={() => refetch()} variant="outline">
@@ -140,11 +145,10 @@ function PatientPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't find a payment with this reference. Please check your payment confirmation email or contact support.
+              We couldn't find a payment with this reference. Please check your
+              payment confirmation email or contact support.
             </p>
-            <div className="text-sm text-gray-500 mb-4">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500 mb-4">Reference: {ref}</div>
             <Button onClick={() => navigate({ to: '/patient/book' })}>
               Book New Appointment
             </Button>
@@ -158,8 +162,10 @@ function PatientPaymentStatusPage() {
   if (payment.status === 'success') {
     const paymentContext = payment.context as any
     const isAppointmentBooking = paymentContext?.type === 'appointment_booking'
-    const appointmentData = isAppointmentBooking ? paymentContext?.appointment : null
-    
+    const appointmentData = isAppointmentBooking
+      ? paymentContext?.appointment
+      : null
+
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-green-200 bg-green-50">
@@ -191,11 +197,17 @@ function PatientPaymentStatusPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Date:</span>
-                <span>{new Date(payment.paidAt || payment.transactionDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(
+                    payment.paidAt || payment.transactionDate,
+                  ).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Type:</span>
-                <span className="font-medium">Medical Screening Appointment</span>
+                <span className="font-medium">
+                  Medical Screening Appointment
+                </span>
               </div>
             </div>
 
@@ -210,7 +222,9 @@ function PatientPaymentStatusPage() {
                   {appointmentData.screeningType && (
                     <div className="flex items-center gap-2">
                       <Stethoscope className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium">{appointmentData.screeningType}</span>
+                      <span className="font-medium">
+                        {appointmentData.screeningType}
+                      </span>
                     </div>
                   )}
                   {appointmentData.center && (
@@ -222,7 +236,9 @@ function PatientPaymentStatusPage() {
                   {appointmentData.date && (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-blue-600" />
-                      <span>{new Date(appointmentData.date).toLocaleDateString()}</span>
+                      <span>
+                        {new Date(appointmentData.date).toLocaleDateString()}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -233,24 +249,28 @@ function PatientPaymentStatusPage() {
             <div className="bg-blue-50 rounded-lg p-4">
               <h4 className="font-semibold text-blue-900 mb-2">What's Next?</h4>
               <ul className="space-y-1 text-sm text-blue-800">
-                <li>• You'll receive a check-in code before your appointment</li>
+                <li>
+                  • You'll receive a check-in code before your appointment
+                </li>
                 <li>• Present your QR code at the screening center</li>
                 <li>• Results will be available after your screening</li>
-                <li>• You can view your appointment details in your dashboard</li>
+                <li>
+                  • You can view your appointment details in your dashboard
+                </li>
               </ul>
             </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
+              <Button
                 onClick={() => navigate({ to: '/patient/appointments' })}
                 className="flex-1"
               >
                 View My Appointments
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => navigate({ to: '/patient' })}
                 className="flex-1"
               >
@@ -280,10 +300,9 @@ function PatientPaymentStatusPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            {payment.status === 'failed' 
+            {payment.status === 'failed'
               ? 'Your payment could not be processed. Please try booking again or contact support if the issue persists.'
-              : 'Your payment was cancelled. You can try booking again when you\'re ready.'
-            }
+              : "Your payment was cancelled. You can try booking again when you're ready."}
           </p>
 
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -302,14 +321,14 @@ function PatientPaymentStatusPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
+            <Button
               onClick={() => navigate({ to: '/patient/book' })}
               className="flex-1"
             >
               Try Booking Again
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate({ to: '/patient' })}
               className="flex-1"
             >
@@ -320,4 +339,4 @@ function PatientPaymentStatusPage() {
       </Card>
     </div>
   )
-} 
+}

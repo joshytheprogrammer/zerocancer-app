@@ -1,6 +1,11 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import { Checkbox } from '@/components/shared/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -9,24 +14,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { MultiSelect } from '@/components/ui/multi-select'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import { MultiSelect } from '@/components/shared/ui/multi-select'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/shared/ui/select'
+import { Textarea } from '@/components/shared/ui/textarea'
 import { useCreateCampaign } from '@/services/providers/donor.provider'
 import { useScreeningTypes } from '@/services/providers/screeningType.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { createCampaignSchema } from '@zerocancer/shared/schemas/donation.schema'
 import statesData from '@zerocancer/shared/constants/states.json'
+import { createCampaignSchema } from '@zerocancer/shared/schemas/donation.schema'
 import {
   ArrowLeft,
   CircleDollarSign,
@@ -36,10 +41,10 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { useState, useMemo } from 'react'
 
 export const Route = createFileRoute('/donor/campaigns/create')({
   component: CreateCampaign,
@@ -72,12 +77,12 @@ function CreateCampaign() {
   // Prepare LGA options based on selected states
   const lgaOptions = useMemo(() => {
     if (selectedStates.length === 0) return []
-    
+
     const allLgas: { value: string; label: string }[] = []
-    selectedStates.forEach(stateName => {
-      const stateData = statesData.find(item => item.state.name === stateName)
+    selectedStates.forEach((stateName) => {
+      const stateData = statesData.find((item) => item.state.name === stateName)
       if (stateData) {
-        stateData.state.locals.forEach(local => {
+        stateData.state.locals.forEach((local) => {
           allLgas.push({
             value: local.name,
             label: `${local.name} (${stateName})`,
@@ -127,7 +132,7 @@ function CreateCampaign() {
   const targetLgas = form.watch('targetLgas') || []
   const targetAgeMin = form.watch('targetAgeMin')
   const targetAgeMax = form.watch('targetAgeMax')
-  
+
   const selectedScreeningTypes = screeningTypes.filter((type) =>
     screeningTypeIds.includes(type.id),
   )
@@ -153,17 +158,19 @@ function CreateCampaign() {
   const handleStateSelectionChange = (states: string[]) => {
     setSelectedStates(states)
     form.setValue('targetStates', states)
-    
+
     // Clear LGA selection if no states are selected or if some states were removed
     const currentLgas = form.getValues('targetLgas') || []
     if (states.length === 0) {
       form.setValue('targetLgas', [])
     } else {
       // Remove LGAs that are no longer valid for the selected states
-      const validLgas = currentLgas.filter(lga => {
-        return states.some(stateName => {
-          const stateData = statesData.find(item => item.state.name === stateName)
-          return stateData?.state.locals.some(local => local.name === lga)
+      const validLgas = currentLgas.filter((lga) => {
+        return states.some((stateName) => {
+          const stateData = statesData.find(
+            (item) => item.state.name === stateName,
+          )
+          return stateData?.state.locals.some((local) => local.name === lga)
         })
       })
       form.setValue('targetLgas', validLgas)
@@ -260,13 +267,14 @@ function CreateCampaign() {
                               className="pl-10"
                               {...field}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^\d]/g, '')
+                                const value = e.target.value.replace(
+                                  /[^\d]/g,
+                                  '',
+                                )
                                 field.onChange(value ? Number(value) : '')
                               }}
                               value={
-                                field.value
-                                  ? field.value.toLocaleString()
-                                  : ''
+                                field.value ? field.value.toLocaleString() : ''
                               }
                             />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
@@ -302,8 +310,8 @@ function CreateCampaign() {
                             </label>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {(field.value || []).length} of {screeningTypeOptions.length}{' '}
-                            selected
+                            {(field.value || []).length} of{' '}
+                            {screeningTypeOptions.length} selected
                           </div>
                         </div>
                         <MultiSelect
@@ -387,51 +395,60 @@ function CreateCampaign() {
                       </FormItem>
                     )}
                   />
-                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <FormField
-                       control={form.control}
-                       name="targetAgeMin"
-                       render={({ field }) => (
-                         <FormItem>
-                           <FormLabel>Minimum Age</FormLabel>
-                           <FormControl>
-                             <Input
-                               type="number"
-                               placeholder="e.g., 18"
-                               min="0"
-                               max="100"
-                               {...field}
-                               onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
-                             />
-                           </FormControl>
-                           <FormMessage />
-                         </FormItem>
-                       )}
-                     />
-                     <FormField
-                       control={form.control}
-                       name="targetAgeMax"
-                       render={({ field }) => (
-                         <FormItem>
-                           <FormLabel>Maximum Age</FormLabel>
-                           <FormControl>
-                             <Input
-                               type="number"
-                               placeholder="e.g., 65"
-                               min="0"
-                               max="100"
-                               {...field}
-                               onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
-                             />
-                           </FormControl>
-                           <FormMessage />
-                         </FormItem>
-                       )}
-                     />
-                   </div>
-                   <div className="text-sm text-muted-foreground">
-                     Leave empty to target all ages. Age range will help match patients more effectively.
-                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="targetAgeMin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Minimum Age</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="e.g., 18"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Number(e.target.value) || undefined,
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="targetAgeMax"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Maximum Age</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="e.g., 65"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Number(e.target.value) || undefined,
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Leave empty to target all ages. Age range will help match
+                    patients more effectively.
+                  </div>
                 </CardContent>
               </Card>
 
@@ -500,7 +517,9 @@ function CreateCampaign() {
                       <p key={lga}>{lga}</p>
                     ))}
                     {targetLgas.length > 3 && (
-                      <p className="text-gray-400">+{targetLgas.length - 3} more</p>
+                      <p className="text-gray-400">
+                        +{targetLgas.length - 3} more
+                      </p>
                     )}
                   </div>
                 ) : (

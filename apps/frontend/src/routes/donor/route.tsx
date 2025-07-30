@@ -1,12 +1,17 @@
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import whiteLogo from '@/assets/images/logo.svg'
 import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
-import { useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 
 // Icon imports
 import cross from '@/assets/images/cross.png'
-import stethoscope from '@/assets/images/stethoscope.png'
 import logoutIcon from '@/assets/images/logout.png'
+import stethoscope from '@/assets/images/stethoscope.png'
 
 export const Route = createFileRoute('/donor')({
   component: DonorLayout,
@@ -106,9 +111,9 @@ function DonorLayout() {
               key={link.to}
               to={link.to}
               className="flex-1"
-              activeOptions={
-                link.to === '/donor' ? { exact: true } : { exact: false }
-              }
+              activeOptions={{
+                exact: link.to === '/donor',
+              }}
               preload="render"
             >
               {({ isActive }) => (

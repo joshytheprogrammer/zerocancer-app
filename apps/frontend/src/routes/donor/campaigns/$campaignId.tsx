@@ -1,12 +1,12 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
+} from '@/components/shared/ui/dialog'
+import { Input } from '@/components/shared/ui/input'
+import { Label } from '@/components/shared/ui/label'
+import { Progress } from '@/components/shared/ui/progress'
+import { Separator } from '@/components/shared/ui/separator'
 import {
   Table,
   TableBody,
@@ -26,7 +26,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
 import {
   useDeleteCampaign,
   useDonorCampaign,
@@ -59,9 +59,9 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import donationIcon from '@/assets/images/donor.png'
-import sponsoredIcon from '@/assets/images/sponsored.png'
-import screeningIcon from '@/assets/images/screening.png'
 import locationIcon from '@/assets/images/health.png'
+import screeningIcon from '@/assets/images/screening.png'
+import sponsoredIcon from '@/assets/images/sponsored.png'
 import { formatCurrency } from '@/lib/utils'
 
 export const Route = createFileRoute('/donor/campaigns/$campaignId')({
@@ -155,20 +155,45 @@ function CampaignDetails() {
       </div>
     )
   }
-  
+
   const targetSponsored = Math.floor(campaign.fundingAmount / 2500)
-  const progressPercentage = campaign.fundingAmount > 0 ? (campaign.usedAmount / campaign.fundingAmount) * 100 : 0
-  
+  const progressPercentage =
+    campaign.fundingAmount > 0
+      ? (campaign.usedAmount / campaign.fundingAmount) * 100
+      : 0
+
   // Placeholder data for Donation Log and Campaign Impact
   const donationLog = [
-    { amount: '₦1,240,000', sponsored: 200, date: '10 Jul 2025', status: 'Active' },
-    { amount: '₦20,000,000', sponsored: 2000, date: '10 Jul 2025', status: 'Active' },
+    {
+      amount: '₦1,240,000',
+      sponsored: 200,
+      date: '10 Jul 2025',
+      status: 'Active',
+    },
+    {
+      amount: '₦20,000,000',
+      sponsored: 2000,
+      date: '10 Jul 2025',
+      status: 'Active',
+    },
   ]
 
   const campaignImpact = [
-    { time: '10:30 AM', message: 'A woman you sponsored in Lagos just completed her cervical cancer screening. Thank you for your support.' },
-    { time: '10:30 AM', message: 'One of your beneficiaries has booked her screening appointment and will visit the clinic soon. Thank you for your support.' },
-    { time: '10:30 AM', message: 'A woman you helped tested positive and needs follow-up care to stay healthy. Thank you for your support.' },
+    {
+      time: '10:30 AM',
+      message:
+        'A woman you sponsored in Lagos just completed her cervical cancer screening. Thank you for your support.',
+    },
+    {
+      time: '10:30 AM',
+      message:
+        'One of your beneficiaries has booked her screening appointment and will visit the clinic soon. Thank you for your support.',
+    },
+    {
+      time: '10:30 AM',
+      message:
+        'A woman you helped tested positive and needs follow-up care to stay healthy. Thank you for your support.',
+    },
   ]
 
   return (
@@ -181,7 +206,9 @@ function CampaignDetails() {
           </h1>
           <p className="text-gray-500 mt-1">Campaign Details & Impact</p>
         </div>
-        <Badge className="bg-green-100 text-green-700 border border-green-200 text-sm px-3 py-1">Active</Badge>
+        <Badge className="bg-green-100 text-green-700 border border-green-200 text-sm px-3 py-1">
+          Active
+        </Badge>
       </div>
 
       {/* Stat Cards */}
@@ -219,34 +246,66 @@ function CampaignDetails() {
       {/* Progress Section */}
       <Card className="bg-slate-800 text-white shadow-lg">
         <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="text-center md:text-left">
-                    <p className="text-sm text-slate-300">Progress</p>
-                    <p><span className="font-bold text-lg">{campaign.patientAllocations.patientsHelped}</span> Screened</p>
-                    <p><span className="font-bold text-lg">{formatCurrency(campaign.usedAmount)}</span> Spent</p>
-                </div>
-                <div className="w-full md:w-1/2 mx-4">
-                    <Progress value={progressPercentage} className="h-2 [&>div]:bg-white" />
-                    <div className="text-center mt-1 text-sm font-bold">{Math.round(progressPercentage)}%</div>
-                </div>
-                <div className="text-center md:text-right">
-                    <p className="text-sm text-slate-300">Target</p>
-                    <p><span className="font-bold text-lg">{targetSponsored.toLocaleString()}</span> Sponsored</p>
-                    <p><span className="font-bold text-lg">{formatCurrency(campaign.fundingAmount)}</span> Donated</p>
-                </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-slate-300">Progress</p>
+              <p>
+                <span className="font-bold text-lg">
+                  {campaign.patientAllocations.patientsHelped}
+                </span>{' '}
+                Screened
+              </p>
+              <p>
+                <span className="font-bold text-lg">
+                  {formatCurrency(campaign.usedAmount)}
+                </span>{' '}
+                Spent
+              </p>
             </div>
+            <div className="w-full md:w-1/2 mx-4">
+              <Progress
+                value={progressPercentage}
+                className="h-2 [&>div]:bg-white"
+              />
+              <div className="text-center mt-1 text-sm font-bold">
+                {Math.round(progressPercentage)}%
+              </div>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-slate-300">Target</p>
+              <p>
+                <span className="font-bold text-lg">
+                  {targetSponsored.toLocaleString()}
+                </span>{' '}
+                Sponsored
+              </p>
+              <p>
+                <span className="font-bold text-lg">
+                  {formatCurrency(campaign.fundingAmount)}
+                </span>{' '}
+                Donated
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
-      
-      {/* Action Buttons */}
-       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <ActionButton icon={Plus} label="Add Donation" onClick={() => setFundDialogOpen(true)} />
-          <ActionButton icon={Share2} label="Share Campaign" disabled />
-          <ActionButton icon={Edit} label="Edit Campaign" disabled />
-          <ActionButton icon={Download} label="Download Report" disabled />
-          <ActionButton icon={Trash2} label="End Campaign" onClick={() => setDeleteDialogOpen(true)} />
-        </div>
 
+      {/* Action Buttons */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <ActionButton
+          icon={Plus}
+          label="Add Donation"
+          onClick={() => setFundDialogOpen(true)}
+        />
+        <ActionButton icon={Share2} label="Share Campaign" disabled />
+        <ActionButton icon={Edit} label="Edit Campaign" disabled />
+        <ActionButton icon={Download} label="Download Report" disabled />
+        <ActionButton
+          icon={Trash2}
+          label="End Campaign"
+          onClick={() => setDeleteDialogOpen(true)}
+        />
+      </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -270,11 +329,18 @@ function CampaignDetails() {
                 <TableBody>
                   {donationLog.map((log, index) => (
                     <TableRow key={index}>
-                      <TableCell className="font-medium">{log.amount}</TableCell>
+                      <TableCell className="font-medium">
+                        {log.amount}
+                      </TableCell>
                       <TableCell>{log.sponsored}</TableCell>
                       <TableCell>{log.date}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-green-600 border-green-600">{log.status}</Badge>
+                        <Badge
+                          variant="outline"
+                          className="text-green-600 border-green-600"
+                        >
+                          {log.status}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon">
@@ -287,27 +353,37 @@ function CampaignDetails() {
               </Table>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Campaign Impact</CardTitle>
-              <Link to="/donor/campaigns/$campaignId" params={{ campaignId }} className="text-sm font-medium text-primary hover:underline">See All</Link>
+              <Link
+                to="/donor/campaigns/$campaignId"
+                params={{ campaignId }}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                See All
+              </Link>
             </CardHeader>
             <CardContent className="space-y-4">
-                {campaignImpact.map((item, index) => (
-                    <div key={index} className="flex items-start gap-4 p-3 rounded-lg bg-slate-50">
-                        <div className="bg-slate-200 p-2 rounded-full">
-                            <MessageSquareHeart className="h-5 w-5 text-slate-600"/>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">{item.message}</p>
-                            <p className="text-xs text-slate-500 mt-1">{item.time}</p>
-                        </div>
-                    </div>
-                ))}
+              {campaignImpact.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 p-3 rounded-lg bg-slate-50"
+                >
+                  <div className="bg-slate-200 p-2 rounded-full">
+                    <MessageSquareHeart className="h-5 w-5 text-slate-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {item.message}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">{item.time}</p>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
-
         </div>
 
         {/* Right Column (Sidebar) */}
@@ -320,23 +396,41 @@ function CampaignDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-                <InfoRow icon={ClipboardList} label="Description" value={campaign.description} />
-                <Separator/>
-                <InfoRow icon={Paperclip} label="Screening Types">
-                    <div className="flex flex-wrap gap-2">
-                        {campaign.screeningTypes?.length > 0 ? (
-                            campaign.screeningTypes.map((type) => (
-                                <Badge key={type.id} variant="secondary" className="bg-slate-200">{type.name}</Badge>
-                            ))
-                        ) : <Badge variant="secondary">All Types</Badge>}
-                    </div>
-                </InfoRow>
-                <Separator/>
-                <InfoRow icon={User} label="Target Gender">
-                    <Badge variant="secondary" className="bg-slate-200">{campaign.targetGender || 'All'}</Badge>
-                </InfoRow>
-                <Separator/>
-                <InfoRow icon={CalendarDays} label="Date Created" value={format(new Date(campaign.createdAt), 'dd MMM, yyyy')} />
+              <InfoRow
+                icon={ClipboardList}
+                label="Description"
+                value={campaign.description}
+              />
+              <Separator />
+              <InfoRow icon={Paperclip} label="Screening Types">
+                <div className="flex flex-wrap gap-2">
+                  {campaign.screeningTypes?.length > 0 ? (
+                    campaign.screeningTypes.map((type) => (
+                      <Badge
+                        key={type.id}
+                        variant="secondary"
+                        className="bg-slate-200"
+                      >
+                        {type.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="secondary">All Types</Badge>
+                  )}
+                </div>
+              </InfoRow>
+              <Separator />
+              <InfoRow icon={User} label="Target Gender">
+                <Badge variant="secondary" className="bg-slate-200">
+                  {campaign.targetGender || 'All'}
+                </Badge>
+              </InfoRow>
+              <Separator />
+              <InfoRow
+                icon={CalendarDays}
+                label="Date Created"
+                value={format(new Date(campaign.createdAt), 'dd MMM, yyyy')}
+              />
             </CardContent>
           </Card>
         </div>
@@ -432,28 +526,38 @@ function StatCard({
 }) {
   return (
     <Card className={`p-4 shadow-sm border-0 bg-gradient-to-br ${color}`}>
-       <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-2">
         <div>
-            <p className="text-sm font-semibold text-gray-700">{title}</p>
-            <p className="text-3xl font-bold text-gray-800">{value}</p>
-            <p className="text-xs text-gray-600">{description}</p>
+          <p className="text-sm font-semibold text-gray-700">{title}</p>
+          <p className="text-3xl font-bold text-gray-800">{value}</p>
+          <p className="text-xs text-gray-600">{description}</p>
         </div>
         <div className="p-2 bg-white/50 rounded-full">
-            <img src={icon} alt={title} className="w-6 h-6" />
+          <img src={icon} alt={title} className="w-6 h-6" />
         </div>
       </div>
     </Card>
   )
 }
 
-function ActionButton({ icon: Icon, label, onClick, disabled = false }: {
-  icon: React.ElementType;
-  label: string;
-  onClick?: () => void;
-  disabled?: boolean;
+function ActionButton({
+  icon: Icon,
+  label,
+  onClick,
+  disabled = false,
+}: {
+  icon: React.ElementType
+  label: string
+  onClick?: () => void
+  disabled?: boolean
 }) {
   return (
-    <Button variant="outline" className="flex-col h-24 gap-2 shadow-sm bg-white" onClick={onClick} disabled={disabled}>
+    <Button
+      variant="outline"
+      className="flex-col h-24 gap-2 shadow-sm bg-white"
+      onClick={onClick}
+      disabled={disabled}
+    >
       <div className="p-2 bg-slate-100 rounded-full">
         <Icon className="h-6 w-6 text-primary" />
       </div>
@@ -462,20 +566,25 @@ function ActionButton({ icon: Icon, label, onClick, disabled = false }: {
   )
 }
 
-function InfoRow({ icon: Icon, label, value, children }: {
-  icon: React.ElementType;
-  label: string;
-  value?: string;
-  children?: React.ReactNode;
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  children,
+}: {
+  icon: React.ElementType
+  label: string
+  value?: string
+  children?: React.ReactNode
 }) {
   return (
     <div className="flex items-start gap-4">
-        <Icon className="h-5 w-5 text-slate-500 mt-1" />
-        <div className="w-full">
-            <p className="font-medium text-slate-800">{label}</p>
-            {value && <p className="text-slate-600">{value}</p>}
-            {children}
-        </div>
+      <Icon className="h-5 w-5 text-slate-500 mt-1" />
+      <div className="w-full">
+        <p className="font-medium text-slate-800">{label}</p>
+        {value && <p className="text-slate-600">{value}</p>}
+        {children}
+      </div>
     </div>
   )
 }

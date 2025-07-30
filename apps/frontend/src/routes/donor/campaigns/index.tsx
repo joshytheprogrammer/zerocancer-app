@@ -1,6 +1,11 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -8,22 +13,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/shared/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
+} from '@/components/shared/ui/dropdown-menu'
+import { Input } from '@/components/shared/ui/input'
+import { Progress } from '@/components/shared/ui/progress'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -31,7 +36,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
 import {
   useDeleteCampaign,
   useDonorCampaigns,
@@ -49,10 +54,10 @@ import {
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import megaphone from '@/assets/images/megaphone.png'
-import sponsored from '@/assets/images/sponsored.png'
 import health from '@/assets/images/health.png'
 import location from '@/assets/images/location.png'
+import megaphone from '@/assets/images/megaphone.png'
+import sponsored from '@/assets/images/sponsored.png'
 
 export const Route = createFileRoute('/donor/campaigns/')({
   component: DonorCampaigns,
@@ -132,11 +137,23 @@ function DonorCampaigns() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 border border-green-200">Active</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-700 border border-green-200">
+            Active
+          </Badge>
+        )
       case 'COMPLETED':
-        return <Badge className="bg-blue-100 text-blue-700 border border-blue-200">Completed</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-700 border border-blue-200">
+            Completed
+          </Badge>
+        )
       case 'DELETED':
-        return <Badge className="bg-red-100 text-red-700 border border-red-200">Deleted</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-700 border border-red-200">
+            Deleted
+          </Badge>
+        )
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -201,7 +218,10 @@ function DonorCampaigns() {
         <CardHeader className="border-b">
           <div className="flex justify-between items-center">
             <CardTitle>All Campaigns</CardTitle>
-            <Button asChild className="bg-pink-500 hover:bg-pink-600 text-white">
+            <Button
+              asChild
+              className="bg-pink-500 hover:bg-pink-600 text-white"
+            >
               <Link to="/donor/campaigns/create">
                 <Plus className="h-4 w-4 mr-2" />
                 Create New
@@ -259,21 +279,32 @@ function DonorCampaigns() {
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-64 text-center text-red-500">
+                    <TableCell
+                      colSpan={7}
+                      className="h-64 text-center text-red-500"
+                    >
                       Error loading campaigns.
                     </TableCell>
                   </TableRow>
                 ) : campaigns.length > 0 ? (
                   campaigns.map((campaign) => (
                     <TableRow key={campaign.id} className="hover:bg-gray-50/50">
-                      <TableCell className="font-medium">{campaign.title}</TableCell>
+                      <TableCell className="font-medium">
+                        {campaign.title}
+                      </TableCell>
                       <TableCell className="text-sm text-gray-600">
                         {campaign.screeningTypes?.length > 0
-                          ? campaign.screeningTypes.map((st) => st.name).join(', ')
+                          ? campaign.screeningTypes
+                              .map((st) => st.name)
+                              .join(', ')
                           : 'All Types'}
                       </TableCell>
-                      <TableCell>₦{campaign.fundingAmount.toLocaleString()}</TableCell>
-                      <TableCell>{campaign.patientAllocations.patientsHelped}</TableCell>
+                      <TableCell>
+                        ₦{campaign.fundingAmount.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {campaign.patientAllocations.patientsHelped}
+                      </TableCell>
                       <TableCell>
                         {new Date(campaign.createdAt).toLocaleDateString()}
                       </TableCell>
@@ -281,7 +312,11 @@ function DonorCampaigns() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -340,11 +375,16 @@ function DonorCampaigns() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              {deleteCampaignMutation.isPending ? 'Deleting...' : 'Delete Campaign'}
+              {deleteCampaignMutation.isPending
+                ? 'Deleting...'
+                : 'Delete Campaign'}
             </Button>
           </DialogFooter>
         </DialogContent>

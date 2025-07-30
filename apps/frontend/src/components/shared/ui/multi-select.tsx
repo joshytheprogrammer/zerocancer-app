@@ -1,15 +1,15 @@
-import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { X } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/shared/ui/badge'
 import {
   Command,
   CommandGroup,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from '@/components/shared/ui/command'
+import { cn } from '@/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 
 const multiSelectVariants = cva(
@@ -72,11 +72,13 @@ const MultiSelect = React.forwardRef<
   ) => {
     const [inputValue, setInputValue] = React.useState('')
     const [open, setOpen] = React.useState(false)
-    const [selected, setSelected] = React.useState<string[]>(value || defaultValue)
+    const [selected, setSelected] = React.useState<string[]>(
+      value || defaultValue,
+    )
 
     React.useEffect(() => {
-        setSelected(value || defaultValue)
-    },[value, defaultValue])
+      setSelected(value || defaultValue)
+    }, [value, defaultValue])
 
     const handleUnselect = (val: string) => {
       const newValue = selected.filter((s) => s !== val)
@@ -85,9 +87,9 @@ const MultiSelect = React.forwardRef<
     }
 
     const handleSelect = (val: string) => {
-        const newValue = [...selected, val]
-        setSelected(newValue);
-        onValueChange(newValue);
+      const newValue = [...selected, val]
+      setSelected(newValue)
+      onValueChange(newValue)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -123,10 +125,7 @@ const MultiSelect = React.forwardRef<
           <div className="flex gap-1 flex-wrap">
             {selectedValues.map((option) => {
               return (
-                <Badge
-                  key={option?.value}
-                  variant={'secondary'}
-                >
+                <Badge key={option?.value} variant={'secondary'}>
                   {option?.label}
                   <button
                     className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -174,12 +173,12 @@ const MultiSelect = React.forwardRef<
                           if (isSelected) {
                             handleUnselect(option.value)
                           } else {
-                           handleSelect(option.value)
+                            handleSelect(option.value)
                           }
                           setInputValue('')
                         }}
                         className={cn('cursor-pointer', {
-                          'bg-accent': isSelected
+                          'bg-accent': isSelected,
                         })}
                       >
                         {option.label}
@@ -198,4 +197,4 @@ const MultiSelect = React.forwardRef<
 
 MultiSelect.displayName = 'MultiSelect'
 
-export { MultiSelect } 
+export { MultiSelect }

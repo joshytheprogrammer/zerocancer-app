@@ -1,4 +1,4 @@
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon } from 'lucide-react'
 import {
   Button,
   DatePicker,
@@ -6,10 +6,10 @@ import {
   Group,
   Label,
   Popover,
-} from "react-aria-components"
+} from 'react-aria-components'
 
-import { Calendar } from "@/components/ui/calendar-rac"
-import { DateInput } from "@/components/ui/datefield-rac"
+import { Calendar } from '@/components/shared/ui/calendar-rac'
+import { DateInput } from '@/components/shared/ui/datefield-rac'
 
 export default function DatePickerComponent() {
   return (
@@ -19,9 +19,9 @@ export default function DatePickerComponent() {
         <Group className="w-full">
           <DateInput className="pe-9">
             {() => (
-              <input 
-                type="text" 
-                placeholder="Select date" 
+              <input
+                type="text"
+                placeholder="Select date"
                 className="w-full bg-transparent border-none outline-none"
               />
             )}
@@ -44,7 +44,7 @@ export default function DatePickerComponent() {
         role="region"
         aria-live="polite"
       >
-        Built with{" "}
+        Built with{' '}
         <a
           className="hover:text-foreground underline"
           href="https://react-spectrum.adobe.com/react-aria/DatePicker.html"
@@ -56,4 +56,4 @@ export default function DatePickerComponent() {
       </p>
     </DatePicker>
   )
-} 
+}

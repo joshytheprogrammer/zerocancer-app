@@ -1,6 +1,11 @@
-import { Button } from '@/components/ui/button'
-import { Calendar as ShadCalendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/shared/ui/button'
+import { Calendar as ShadCalendar } from '@/components/shared/ui/calendar'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Form,
   FormControl,
@@ -8,13 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
 import {
   Popover as ShadPopover,
   PopoverContent as ShadPopoverContent,
   PopoverTrigger as ShadPopoverTrigger,
-} from '@/components/ui/popover'
+} from '@/components/shared/ui/popover'
 import { cn } from '@/lib/utils'
 import { centers } from '@/services/providers/center.provider'
 import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'

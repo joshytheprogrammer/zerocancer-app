@@ -1,30 +1,30 @@
-import { useId } from "react"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import type { ControllerRenderProps } from "react-hook-form"
-import { cn } from "@/lib/utils"
+import { Label } from '@/components/shared/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/shared/ui/radio-group'
+import { cn } from '@/lib/utils'
+import { useId } from 'react'
+import type { ControllerRenderProps } from 'react-hook-form'
 
 interface RoleSelectionProps {
-  field: ControllerRenderProps<any, "role">
+  field: ControllerRenderProps<any, 'role'>
 }
 
 export default function RoleSelection({ field }: RoleSelectionProps) {
   const id = useId()
   const roles = [
     {
-      value: "patient",
-      label: "Patient",
-      description: "Book, waitlist, and view your results.",
+      value: 'patient',
+      label: 'Patient',
+      description: 'Book, waitlist, and view your results.',
     },
     {
-      value: "donor",
-      label: "Donor",
-      description: "Create and view donation campaigns.",
+      value: 'donor',
+      label: 'Donor',
+      description: 'Create and view donation campaigns.',
     },
     {
-      value: "center",
-      label: "Center / Health Worker",
-      description: "Manage dashboard, staff, and results.",
+      value: 'center',
+      label: 'Center / Health Worker',
+      description: 'Manage dashboard, staff, and results.',
     },
   ]
 
@@ -39,7 +39,7 @@ export default function RoleSelection({ field }: RoleSelectionProps) {
         <div
           key={role.value}
           className={cn(
-            "border-input has-data-[state=checked]:border-primary relative flex w-full items-start gap-2 rounded-md border p-4 shadow-sm transition",
+            'border-input has-data-[state=checked]:border-primary relative flex w-full items-start gap-2 rounded-md border p-4 shadow-sm transition',
           )}
         >
           <RadioGroupItem
@@ -63,4 +63,4 @@ export default function RoleSelection({ field }: RoleSelectionProps) {
       ))}
     </RadioGroup>
   )
-} 
+}

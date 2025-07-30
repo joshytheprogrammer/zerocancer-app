@@ -4,7 +4,7 @@ import NotificationsPanel from '@/components/patient/dashboard/NotificationsPane
 import UpcomingAppointmentsPanel from '@/components/patient/dashboard/UpcomingAppointmentsPanel'
 import ScreeningCard from '@/components/shared/ScreeningCard'
 import StatusCard from '@/components/shared/StatusCard'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import { useNotifications } from '@/services/providers/notification.provider'
 import {

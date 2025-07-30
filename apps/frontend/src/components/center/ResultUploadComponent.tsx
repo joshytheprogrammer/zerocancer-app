@@ -1,6 +1,11 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Form,
   FormControl,
@@ -9,9 +14,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Progress } from '@/components/ui/progress'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/shared/ui/form'
+import { Progress } from '@/components/shared/ui/progress'
+import { Textarea } from '@/components/shared/ui/textarea'
 import { useResultManagement } from '@/hooks/useResultManagement'
 import { useResultUpload } from '@/hooks/useResultUpload'
 import { useAppointmentResults } from '@/services/providers/patient.provider'

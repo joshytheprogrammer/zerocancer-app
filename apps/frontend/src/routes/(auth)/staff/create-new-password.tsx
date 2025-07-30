@@ -1,12 +1,16 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/shared/ui/alert'
+import { Button } from '@/components/shared/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/shared/ui/card'
 import {
   Form,
   FormControl,
@@ -14,9 +18,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import PasswordInput from '@/components/ui/password-input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
 import {
   useCreateCenterStaffPassword,
   validateStaffInvite,

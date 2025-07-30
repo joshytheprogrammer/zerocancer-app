@@ -1,7 +1,12 @@
 import appointment from '@/assets/images/appointment.png'
 import AppointmentCard from '@/components/shared/AppointmentCard'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/shared/ui/tabs'
 import { usePatientAppointments } from '@/services/providers/patient.provider'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -38,7 +43,7 @@ function PatientAppointments() {
 
   // Correct filtering logic:
   // - Past: All completed appointments (regardless of original date)
-  // - Upcoming: Only scheduled appointments in the future  
+  // - Upcoming: Only scheduled appointments in the future
   // - Ongoing: All in-progress appointments
   // - Cancelled: All cancelled appointments
   const pastAppointments = appointments.filter(

@@ -1,5 +1,5 @@
 import heroImage from '@/assets/images/hero.png'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 import {
   Form,
   FormControl,
@@ -7,15 +7,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
 import { useDonateAnonymous } from '@/services/providers/donor.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Checkbox } from '../ui/checkbox'
+import { Checkbox } from '../shared/ui/checkbox'
 
 // This local form schema resolves the type conflicts with react-hook-form
 // by using a simple boolean for `wantsReceipt` and handling validation locally.

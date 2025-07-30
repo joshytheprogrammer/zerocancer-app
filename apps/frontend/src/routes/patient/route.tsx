@@ -1,75 +1,60 @@
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { useNavigate } from '@tanstack/react-router'
-
 import calendar from '@/assets/images/calendar.png'
 import cross from '@/assets/images/cross.png'
-import health from '@/assets/images/health.png'
+import logo from '@/assets/images/logo.svg'
 import logoutIcon from '@/assets/images/logout.png'
-import people from '@/assets/images/people.png'
-import screening from '@/assets/images/screening.png'
-import whiteLogo from '@/assets/images/logo.svg'
-import treatment from '@/assets/images/treatment.png'
-import {
-  isAuthMiddleware,
-  useAuthUser,
-  useLogout,
-} from '@/services/providers/auth.provider'
+import notification from '@/assets/images/notification.png'
+import stethoscope from '@/assets/images/stethoscope.png'
+import { cn } from '@/lib/utils'
+import { isAuthMiddleware, useLogout } from '@/services/providers/auth.provider'
+import { useNotifications } from '@/services/providers/notification.provider'
+import { usePatientAppointments } from '@/services/providers/patient.provider'
+import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/center')({
-  component: CenterLayout,
+export const Route = createFileRoute('/patient')({
+  component: PatientLayout,
   beforeLoad: async ({ context }) => {
-    const { isAuth, profile } = await isAuthMiddleware(context.queryClient)
+    const { isAuth, isAuthorized, profile } = await isAuthMiddleware(
+      context.queryClient,
+      'patient',
+    )
 
     if (!isAuth) return redirect({ to: `/` })
 
-    // Check if user is CENTER or CENTER_STAFF
-    const isCenterUser = profile === 'CENTER' || profile === 'CENTER_STAFF'
-
     // If authenticated but wrong role, redirect to correct dashboard
-    if (!isCenterUser) {
-      if (profile === 'PATIENT') return redirect({ to: '/patient' })
+    if (!isAuthorized) {
       if (profile === 'DONOR') return redirect({ to: '/donor' })
-      if (profile === 'ADMIN') return redirect({ to: '/admin' })
-
-      // If unknown profile, redirect to home
-      return redirect({ to: '/' })
+      if (profile === 'CENTER') return redirect({ to: '/center' })
     }
 
     return null
   },
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(usePatientAppointments({}))
+    context.queryClient.prefetchQuery(useAllScreeningTypes())
+    context.queryClient.prefetchQuery(useNotifications())
+  },
 })
 
-function CenterLayout() {
+function PatientLayout() {
   const { mutate: logout } = useLogout()
-  const navigate = useNavigate()
 
-  const authUserQuery = useQuery(useAuthUser())
-  const user = authUserQuery.data?.data?.user
-  const isStaff = user?.profile === 'CENTER_STAFF'
-  const isAdmin = user?.profile === 'CENTER'
-
-  const baseNavLinks = [
-    { to: '/center', label: 'Dashboard', icon: cross },
+  const navLinks = [
+    { to: '/patient', label: 'Dashboard', icon: cross },
+    { to: '/patient/book', label: 'Book Screening', icon: stethoscope },
+    { to: '/patient/appointments', label: 'Appointments', icon: calendar },
     {
-      to: '/center/appointments',
-      label: 'Appointments',
-      icon: calendar,
-    },
-    { to: '/center/verify-code', label: 'Verify Code', icon: screening },
-    {
-      to: '/center/upload-results',
-      label: 'Upload Results',
-      icon: treatment,
+      to: '/patient/notifications',
+      label: 'Notifications',
+      icon: notification,
     },
   ]
 
-  const adminNavLinks = [
-    { to: '/center/receipt-history', label: 'Payouts', icon: health },
-    { to: '/center/staff', label: 'Staff', icon: people },
-  ]
+  const { data } = useQuery(useNotifications())
 
-  const navLinks = isAdmin ? [...baseNavLinks, ...adminNavLinks] : baseNavLinks
+  const numberOfUnreadNotifications =
+    data?.data?.filter((n) => !n.read).length || 0
 
   return (
     <div className="min-h-screen w-full">
@@ -78,15 +63,10 @@ function CenterLayout() {
         <div className="flex h-full flex-col">
           <div className="flex h-20 items-center px-4 lg:h-[80px] lg:px-6">
             <Link
-              to="/center"
+              to="/patient"
               className="flex items-center gap-2 font-semibold"
             >
-              <img src={whiteLogo} alt="ZeroCancer" className="h-12" />
-              {isStaff && (
-                <span className="text-sm text-gray-300 ml-2">
-                  Staff Portal
-                </span>
-              )}
+              <img src={logo} alt="ZeroCancer" className="h-12" />
             </Link>
           </div>
           <div className="flex-1 overflow-y-auto flex flex-col justify-between">
@@ -97,20 +77,32 @@ function CenterLayout() {
                   to={link.to}
                   preload="render"
                   className="flex items-center gap-4 rounded-lg px-3 py-3 text-white transition-all hover:bg-white/20"
-                  activeOptions={{ exact: true }}
+                  activeOptions={
+                    link.to === '/patient' ? { exact: true } : { exact: false }
+                  }
                   activeProps={{ className: 'bg-white/30 font-semibold' }}
                 >
-                  <img src={link.icon} alt={link.label} className="h-6 w-6" />
+                  <div className="relative">
+                    <img src={link.icon} alt={link.label} className="h-6 w-6" />
+                    {link.to === '/patient/notifications' &&
+                      numberOfUnreadNotifications !== 0 && (
+                        <span className="absolute -bottom-1 right-0 block size-3.5 text-xs rounded-full bg-red-500 ring-1 ring-white">
+                          {numberOfUnreadNotifications}
+                        </span>
+                      )}
+                  </div>
                   {link.label}
                 </Link>
               ))}
             </nav>
             <div className="p-2 lg:p-4 mt-auto">
               <button
-                onClick={() => logout()}
+                onClick={() => {
+                  logout()
+                }}
                 className="cursor-pointer flex w-full items-center gap-4 rounded-lg px-3 py-3 text-sm font-medium text-white transition-all hover:bg-white/20"
               >
-                <img src={logoutIcon} alt="Logout" className="h-6 w-6" />
+                <img src={logoutIcon} alt="logout" className="h-6 w-6" />
                 Logout
               </button>
             </div>
@@ -119,10 +111,11 @@ function CenterLayout() {
       </div>
 
       {/* Mobile Topbar */}
+
       <div className="flex flex-col md:ml-60 xl:ml-72">
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b bg-primary px-4 py-6 shadow-md md:hidden">
-          <Link to="/center" className="flex items-center gap-2 font-semibold">
-            <img src={whiteLogo} alt="ZeroCancer" className="h-12" />
+          <Link to="/patient" className="flex items-center gap-2 font-semibold">
+            <img src={logo} alt="ZeroCancer" className="h-12" />
           </Link>
           <div className="flex items-center gap-2">
             <button
@@ -149,23 +142,26 @@ function CenterLayout() {
               to={link.to}
               className="flex-1"
               activeOptions={{
-                exact: link.to === '/center' ? true : false,
+                exact: link.to === '/patient',
               }}
               preload="render"
             >
-              {({ isActive }) => (
+              {({ isActive, isTransitioning }) => (
                 <div
-                  className={`flex h-16 w-full flex-col items-center justify-center rounded-lg p-1 transition-colors duration-200 ${
-                    isActive ? 'bg-primary' : 'bg-transparent'
-                  }`}
+                  className={cn(
+                    'flex h-16 w-full flex-col items-center justify-center rounded-lg p-1 transition-colors duration-200',
+                    isActive ? 'bg-primary' : 'bg-transparent',
+                    isTransitioning && 'animate-pulse',
+                  )}
                 >
                   <img src={link.icon} alt={link.label} className="h-6 w-6" />
                   <span
-                    className={`mt-2 text-xs ${
+                    className={cn(
+                      'mt-2 text-xs',
                       isActive
                         ? 'font-semibold text-white'
-                        : 'text-muted-foreground'
-                    }`}
+                        : 'text-muted-foreground',
+                    )}
                   >
                     {link.label.split(' ')[0]}
                   </span>

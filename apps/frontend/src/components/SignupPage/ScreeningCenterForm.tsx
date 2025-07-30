@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 import {
   Form,
   FormControl,
@@ -12,25 +12,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import PasswordInput from '@/components/ui/password-input'
-import PhoneInputComponent from '@/components/ui/phone-input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
+import PhoneInputComponent from '@/components/shared/ui/phone-input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/shared/ui/select'
 import { useCenterRegistration } from '@/services/providers/register.provider'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import statesData from '@zerocancer/shared/constants/states.json'
 import { centerSchema } from '@zerocancer/shared/schemas/register.schema'
 import * as RPNInput from 'react-phone-number-input'
 import { toast } from 'sonner'
-import { useNavigate } from '@tanstack/react-router'
 
 type FormData = z.infer<typeof centerSchema>
 
@@ -49,9 +49,8 @@ export default function ScreeningCenterForm({
   const navigate = useNavigate()
 
   // Fetch available screening types from the backend
-  const { data: screeningTypesResponse, isLoading: isLoadingScreeningTypes } = useQuery(
-    useAllScreeningTypes()
-  )
+  const { data: screeningTypesResponse, isLoading: isLoadingScreeningTypes } =
+    useQuery(useAllScreeningTypes())
 
   const form = useForm<FormData>({
     resolver: zodResolver(centerSchema),
@@ -217,12 +216,18 @@ export default function ScreeningCenterForm({
                       type="button"
                       key={screeningType.id}
                       variant={
-                        field.value.includes(screeningType.id) ? 'default' : 'outline'
+                        field.value.includes(screeningType.id)
+                          ? 'default'
+                          : 'outline'
                       }
                       onClick={() => {
                         const currentServices = field.value
-                        const newServices = currentServices.includes(screeningType.id)
-                          ? currentServices.filter((s) => s !== screeningType.id)
+                        const newServices = currentServices.includes(
+                          screeningType.id,
+                        )
+                          ? currentServices.filter(
+                              (s) => s !== screeningType.id,
+                            )
                           : [...currentServices, screeningType.id]
                         field.onChange(newServices)
                       }}
@@ -297,11 +302,31 @@ export default function ScreeningCenterForm({
           )}
         />
 
-        <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={mutation.isPending}>
+        <Button
+          type="submit"
+          className="w-full flex items-center justify-center gap-2"
+          disabled={mutation.isPending}
+        >
           {mutation.isPending && (
-            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
             </svg>
           )}
           Create Account

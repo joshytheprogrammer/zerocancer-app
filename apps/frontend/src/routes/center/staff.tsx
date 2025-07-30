@@ -1,12 +1,11 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -14,7 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/shared/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/shared/ui/dropdown-menu'
 import {
   Form,
   FormControl,
@@ -23,8 +28,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
 import {
   Table,
   TableBody,
@@ -32,8 +37,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+} from '@/components/shared/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/shared/ui/tabs'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import {
   centerById,
@@ -64,10 +69,10 @@ import { useFieldArray, useForm, type FieldValues } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
-import { cn } from '@/lib/utils'
-import peopleIcon from '@/assets/images/people.png'
 import megaphoneIcon from '@/assets/images/megaphone.png'
+import peopleIcon from '@/assets/images/people.png'
 import complianceIcon from '@/assets/images/view.png'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/center/staff')({
   component: CenterStaff,

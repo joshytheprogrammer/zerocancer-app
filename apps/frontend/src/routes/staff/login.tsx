@@ -5,8 +5,8 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import signupImage from '@/assets/images/signup.png'
-import { Button } from '@/components/ui/button'
-import { Combobox } from '@/components/ui/combobox'
+import { Button } from '@/components/shared/ui/button'
+import { Combobox } from '@/components/shared/ui/combobox'
 import {
   Form,
   FormControl,
@@ -14,9 +14,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import PasswordInput from '@/components/ui/password-input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
 import {
   centers,
   useCenterStaffForgotPassword,

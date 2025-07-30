@@ -1,18 +1,36 @@
-import { createFileRoute, useNavigate, Link, redirect } from '@tanstack/react-router'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import { adminLoginSchema } from '@zerocancer/shared/schemas/admin.schema'
-import type { z } from 'zod'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import type { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import PasswordInput from '@/components/ui/password-input'
+import logo from '@/assets/images/logo-blue.svg'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
 import { useAdminLogin } from '@/services/providers/admin.provider'
 import { isAuthMiddleware } from '@/services/providers/auth.provider'
-import logo from '@/assets/images/logo-blue.svg'
 
 type AdminLoginForm = z.infer<typeof adminLoginSchema>
 
@@ -20,12 +38,12 @@ export const Route = createFileRoute('/admin/login')({
   component: AdminLoginPage,
   beforeLoad: async ({ context }) => {
     const { isAuth, profile } = await isAuthMiddleware(context.queryClient)
-    
+
     // If already authenticated as admin, redirect to admin dashboard
     if (isAuth && profile === 'ADMIN') {
       return redirect({ to: '/admin' })
     }
-    
+
     // If authenticated as other role, don't redirect (allow admin login)
     return null
   },
@@ -46,13 +64,14 @@ function AdminLoginPage() {
   const onSubmit = async (data: AdminLoginForm) => {
     try {
       const response = await adminLoginMutation.mutateAsync(data)
-      
+
       if (response.ok) {
         toast.success('Welcome back, Admin!')
         navigate({ to: '/admin', replace: true, reloadDocument: true })
       }
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.error || 'Login failed. Please try again.'
+      const errorMessage =
+        error?.response?.data?.error || 'Login failed. Please try again.'
       toast.error(errorMessage)
     }
   }
@@ -63,7 +82,7 @@ function AdminLoginPage() {
         <div className="flex justify-center mb-8">
           <img src={logo} alt="ZeroCancer" className="h-16" />
         </div>
-        
+
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
@@ -73,7 +92,10 @@ function AdminLoginPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -141,4 +163,4 @@ function AdminLoginPage() {
       </div>
     </div>
   )
-} 
+}

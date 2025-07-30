@@ -4,7 +4,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/(auth)/sign-up/_layout/center')({
+export const Route = createFileRoute('/(auth)/sign-up/center')({
   component: RouteComponent,
   loader: ({ context }) => {
     context.queryClient.prefetchQuery(useAllScreeningTypes())

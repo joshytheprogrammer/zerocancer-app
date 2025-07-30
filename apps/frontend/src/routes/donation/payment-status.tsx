@@ -1,17 +1,22 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import { useVerifyPayment } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
   AlertTriangle,
-  Loader2,
+  CheckCircle,
+  Clock,
   Heart,
   Home,
-  Mail
+  Loader2,
+  Mail,
+  XCircle,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -29,27 +34,27 @@ function DonationPaymentStatusPage() {
   const navigate = useNavigate()
   const { ref, type } = Route.useSearch()
   const [redirectTimer, setRedirectTimer] = useState(8)
-  
-  const { 
-    data: paymentData, 
-    isLoading, 
+
+  const {
+    data: paymentData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery(useVerifyPayment(ref))
-  
+
   const payment = paymentData?.data
 
   // Auto-redirect timer for successful payments
   useEffect(() => {
     if (payment?.status === 'success' && redirectTimer > 0) {
       const timer = setTimeout(() => {
-        setRedirectTimer(prev => prev - 1)
+        setRedirectTimer((prev) => prev - 1)
       }, 1000)
-      
+
       if (redirectTimer === 1) {
         navigate({ to: '/' })
       }
-      
+
       return () => clearTimeout(timer)
     }
   }, [payment?.status, redirectTimer, navigate])
@@ -67,7 +72,8 @@ function DonationPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              No payment reference was provided. Please check your payment link or try again.
+              No payment reference was provided. Please check your payment link
+              or try again.
             </p>
             <Button onClick={() => navigate({ to: '/' })}>
               Return to Home
@@ -85,13 +91,14 @@ function DonationPaymentStatusPage() {
         <Card>
           <CardContent className="text-center py-12">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
-            <h3 className="text-lg font-semibold mb-2">Verifying Your Donation</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Verifying Your Donation
+            </h3>
             <p className="text-gray-600 mb-4">
-              Please wait while we confirm your donation with our payment provider...
+              Please wait while we confirm your donation with our payment
+              provider...
             </p>
-            <div className="text-sm text-gray-500">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500">Reference: {ref}</div>
           </CardContent>
         </Card>
       </div>
@@ -111,7 +118,8 @@ function DonationPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't verify your donation at this time. This might be a temporary issue.
+              We couldn't verify your donation at this time. This might be a
+              temporary issue.
             </p>
             <div className="flex gap-3">
               <Button onClick={() => refetch()} variant="outline">
@@ -139,11 +147,10 @@ function DonationPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't find a donation with this reference. Please check your confirmation email or contact support.
+              We couldn't find a donation with this reference. Please check your
+              confirmation email or contact support.
             </p>
-            <div className="text-sm text-gray-500 mb-4">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500 mb-4">Reference: {ref}</div>
             <Button onClick={() => navigate({ to: '/' })}>
               Return to Home
             </Button>
@@ -156,9 +163,11 @@ function DonationPaymentStatusPage() {
   // Success state
   if (payment.status === 'success') {
     const isAnonymous = payment.context?.type === 'anonymous_donation'
-    const wantsReceipt = isAnonymous ? (payment.context as any)?.wantsReceipt : false
+    const wantsReceipt = isAnonymous
+      ? (payment.context as any)?.wantsReceipt
+      : false
     const message = isAnonymous ? (payment.context as any)?.message : null
-    
+
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-green-200 bg-green-50">
@@ -193,7 +202,11 @@ function DonationPaymentStatusPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Date:</span>
-                <span>{new Date(payment.paidAt || payment.transactionDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(
+                    payment.paidAt || payment.transactionDate,
+                  ).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Type:</span>
@@ -204,7 +217,9 @@ function DonationPaymentStatusPage() {
             {/* Personal Message */}
             {message && (
               <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">Your Message:</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">
+                  Your Message:
+                </h4>
                 <p className="text-sm text-blue-800 italic">"{message}"</p>
               </div>
             )}
@@ -214,9 +229,12 @@ function DonationPaymentStatusPage() {
               <div className="bg-amber-50 rounded-lg p-4 flex items-start gap-3">
                 <Mail className="h-5 w-5 text-amber-600 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-amber-900 mb-1">Receipt Notification</h4>
+                  <h4 className="font-semibold text-amber-900 mb-1">
+                    Receipt Notification
+                  </h4>
                   <p className="text-sm text-amber-800">
-                    A receipt has been sent to your email address for tax purposes.
+                    A receipt has been sent to your email address for tax
+                    purposes.
                   </p>
                 </div>
               </div>
@@ -224,10 +242,13 @@ function DonationPaymentStatusPage() {
 
             {/* Impact Message */}
             <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <h4 className="font-semibold text-purple-900 mb-2">Your Impact</h4>
+              <h4 className="font-semibold text-purple-900 mb-2">
+                Your Impact
+              </h4>
               <p className="text-sm text-purple-800">
-                Your donation will help provide cancer screening services to patients who cannot afford them. 
-                You're making a real difference in the fight against cancer!
+                Your donation will help provide cancer screening services to
+                patients who cannot afford them. You're making a real difference
+                in the fight against cancer!
               </p>
             </div>
 
@@ -238,16 +259,16 @@ function DonationPaymentStatusPage() {
 
             {/* Action buttons */}
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/' })}
-                className="flex-1"
-              >
+              <Button onClick={() => navigate({ to: '/' })} className="flex-1">
                 <Home className="h-4 w-4 mr-2" />
                 Return Home
               </Button>
-              <Button 
+              <Button
                 variant="outline"
-                onClick={() => window.location.href = 'mailto:support@zerocancer.africa?subject=Donation Inquiry'}
+                onClick={() =>
+                  (window.location.href =
+                    'mailto:support@zerocancer.africa?subject=Donation Inquiry')
+                }
               >
                 Contact Us
               </Button>
@@ -273,7 +294,7 @@ function DonationPaymentStatusPage() {
             <p className="text-gray-600">
               Your donation could not be processed. Your card was not charged.
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 text-sm">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Amount:</span>
@@ -286,15 +307,15 @@ function DonationPaymentStatusPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/' })}
-                className="flex-1"
-              >
+              <Button onClick={() => navigate({ to: '/' })} className="flex-1">
                 Try Donating Again
               </Button>
-              <Button 
+              <Button
                 variant="outline"
-                onClick={() => window.location.href = 'mailto:support@zerocancer.africa?subject=Donation Issue'}
+                onClick={() =>
+                  (window.location.href =
+                    'mailto:support@zerocancer.africa?subject=Donation Issue')
+                }
               >
                 Contact Support
               </Button>
@@ -318,27 +339,23 @@ function DonationPaymentStatusPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              You cancelled the donation process. No charges were made to your card.
+              You cancelled the donation process. No charges were made to your
+              card.
             </p>
-            
+
             <div className="text-center py-4">
               <Heart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
               <p className="text-sm text-gray-500">
-                Your support still means the world to us. Consider donating when you're ready.
+                Your support still means the world to us. Consider donating when
+                you're ready.
               </p>
             </div>
 
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/' })}
-                className="flex-1"
-              >
+              <Button onClick={() => navigate({ to: '/' })} className="flex-1">
                 Try Again
               </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate({ to: '/' })}
-              >
+              <Button variant="outline" onClick={() => navigate({ to: '/' })}>
                 Return Home
               </Button>
             </div>
@@ -360,9 +377,10 @@ function DonationPaymentStatusPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            Your donation is still being processed. We'll update the status automatically.
+            Your donation is still being processed. We'll update the status
+            automatically.
           </p>
-          
+
           <div className="bg-gray-50 rounded-lg p-4 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Reference:</span>
@@ -370,7 +388,7 @@ function DonationPaymentStatusPage() {
             </div>
           </div>
 
-          <Button 
+          <Button
             onClick={() => refetch()}
             variant="outline"
             className="w-full"
@@ -382,4 +400,4 @@ function DonationPaymentStatusPage() {
       </Card>
     </div>
   )
-} 
+}

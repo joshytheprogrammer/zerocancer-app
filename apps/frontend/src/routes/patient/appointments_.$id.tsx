@@ -1,10 +1,19 @@
 import CheckInQR from '@/components/CheckInQR'
 import { ResultViewer } from '@/components/ResultViewer'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/shared/ui/dialog'
+import { Separator } from '@/components/shared/ui/separator'
 import { usePatientAppointmentById } from '@/services/providers/patient.provider'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'

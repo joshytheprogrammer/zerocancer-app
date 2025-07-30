@@ -18,49 +18,76 @@
  * - Manual trigger invalidates cache and refreshes data
  */
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
-  Users,
-  Target,
-  Clock,
-  Activity,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  MapPin,
-  BarChart3,
-  TrendingUp,
-  RefreshCw,
-} from 'lucide-react';
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import { Label } from '@/components/shared/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/shared/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/shared/ui/table'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/shared/ui/tabs'
+import { useAdminWaitlist } from '@/services/providers/admin.provider'
+import {
+  useTriggerWaitlistMatching,
   waitlistMatchingStats,
   waitlistMatchingStatus,
-  useTriggerWaitlistMatching,
-} from '@/services/providers/waitlist.provider';
-import { useAdminWaitlist } from '@/services/providers/admin.provider';
-import { format } from 'date-fns';
+} from '@/services/providers/waitlist.provider'
+import { useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
+import React, { useState } from 'react'
 
-type WaitlistStatus = 'PENDING' | 'MATCHED' | 'CLAIMED' | 'EXPIRED';
+type WaitlistStatus = 'PENDING' | 'MATCHED' | 'CLAIMED' | 'EXPIRED'
 
 const AdminWaitlistPanel: React.FC = () => {
   // State for filters
-  const [statusFilter, setStatusFilter] = useState<WaitlistStatus | undefined>(undefined);
-  const [stateFilter, setStateFilter] = useState<string | undefined>(undefined);
-  const [screeningTypeFilter, setScreeningTypeFilter] = useState<string | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [statusFilter, setStatusFilter] = useState<WaitlistStatus | undefined>(
+    undefined,
+  )
+  const [stateFilter, setStateFilter] = useState<string | undefined>(undefined)
+  const [screeningTypeFilter, setScreeningTypeFilter] = useState<
+    string | undefined
+  >(undefined)
+  const [activeTab, setActiveTab] = useState('overview')
 
   // Fetch waitlist matching data
-  const stats = useQuery(waitlistMatchingStats());
-  const status = useQuery(waitlistMatchingStatus());
-  const triggerMatching = useTriggerWaitlistMatching();
+  const stats = useQuery(waitlistMatchingStats())
+  const status = useQuery(waitlistMatchingStatus())
+  const triggerMatching = useTriggerWaitlistMatching()
 
   // Fetch waitlist entries for data table
   const waitlistEntries = useAdminWaitlist({
@@ -69,42 +96,50 @@ const AdminWaitlistPanel: React.FC = () => {
     status: statusFilter,
     state: stateFilter,
     screeningTypeId: screeningTypeFilter,
-  });
+  })
 
   // Fetch analytics data for hot zones
   const waitlistByState = useAdminWaitlist({
     groupBy: 'state',
     status: 'PENDING', // Focus on pending for hot zones
-  });
+  })
 
   const waitlistByScreeningType = useAdminWaitlist({
     groupBy: 'screening_type',
     status: 'PENDING',
-  });
+  })
 
   // Manual trigger function
   const handleTriggerMatch = () => {
-    triggerMatching.mutate();
-  };
+    triggerMatching.mutate()
+  }
 
   // Helper functions
   const getStatusColor = (serviceStatus?: string) => {
     switch (serviceStatus) {
-      case 'healthy': return 'bg-green-100 text-green-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'healthy':
+        return 'bg-green-100 text-green-800'
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'error':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
-  };
+  }
 
   const getStatusIcon = (serviceStatus?: string) => {
     switch (serviceStatus) {
-      case 'healthy': return <CheckCircle className="w-3 h-3" />;
-      case 'warning': return <AlertCircle className="w-3 h-3" />;
-      case 'error': return <AlertCircle className="w-3 h-3" />;
-      default: return <RefreshCw className="w-3 h-3" />;
+      case 'healthy':
+        return <CheckCircle className="w-3 h-3" />
+      case 'warning':
+        return <AlertCircle className="w-3 h-3" />
+      case 'error':
+        return <AlertCircle className="w-3 h-3" />
+      default:
+        return <RefreshCw className="w-3 h-3" />
     }
-  };
+  }
 
   const getWaitlistStatusBadge = (status: string) => {
     const colors = {
@@ -112,30 +147,34 @@ const AdminWaitlistPanel: React.FC = () => {
       MATCHED: 'bg-green-100 text-green-800',
       CLAIMED: 'bg-blue-100 text-blue-800',
       EXPIRED: 'bg-red-100 text-red-800',
-    };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-  };
+    }
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+  }
 
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
-  };
+    return format(new Date(dateString), 'MMM dd, yyyy HH:mm')
+  }
 
   // Type guards for union types
-  const isWaitlistEntriesData = (data: any): data is { waitlistEntries: any[]; total: number } => {
-    return data && 'waitlistEntries' in data;
-  };
+  const isWaitlistEntriesData = (
+    data: any,
+  ): data is { waitlistEntries: any[]; total: number } => {
+    return data && 'waitlistEntries' in data
+  }
 
-  const isAggregationData = (data: any): data is { aggregation: any[]; groupBy: string } => {
-    return data && 'aggregation' in data;
-  };
+  const isAggregationData = (
+    data: any,
+  ): data is { aggregation: any[]; groupBy: string } => {
+    return data && 'aggregation' in data
+  }
 
   const handleStatusFilterChange = (value: string) => {
     if (value === 'all') {
-      setStatusFilter(undefined);
+      setStatusFilter(undefined)
     } else {
-      setStatusFilter(value as WaitlistStatus);
+      setStatusFilter(value as WaitlistStatus)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -150,7 +189,11 @@ const AdminWaitlistPanel: React.FC = () => {
         </Badge>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview & Stats</TabsTrigger>
           <TabsTrigger value="entries">Waitlist Entries</TabsTrigger>
@@ -162,7 +205,9 @@ const AdminWaitlistPanel: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pending Patients</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Pending Patients
+                </CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -177,7 +222,9 @@ const AdminWaitlistPanel: React.FC = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Matched Patients</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Matched Patients
+                </CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -192,22 +239,24 @@ const AdminWaitlistPanel: React.FC = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Recent Matches</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Recent Matches
+                </CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">
                   {(stats?.data as any)?.recentMatches || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Last 24 hours
-                </p>
+                <p className="text-xs text-muted-foreground">Last 24 hours</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Active Campaigns
+                </CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -226,7 +275,8 @@ const AdminWaitlistPanel: React.FC = () => {
             <CardHeader>
               <CardTitle>Manual Actions</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Trigger the waitlist matching algorithm to process pending patients
+                Trigger the waitlist matching algorithm to process pending
+                patients
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -235,7 +285,8 @@ const AdminWaitlistPanel: React.FC = () => {
                 <div>
                   <h4 className="font-medium">Run Matching Algorithm</h4>
                   <p className="text-sm text-muted-foreground">
-                    Process up to 10 patients per screening type and match them to available campaigns
+                    Process up to 10 patients per screening type and match them
+                    to available campaigns
                   </p>
                 </div>
                 <Button
@@ -260,12 +311,16 @@ const AdminWaitlistPanel: React.FC = () => {
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
                     <div>
-                      <h4 className="font-medium text-green-800">Matching Completed Successfully!</h4>
+                      <h4 className="font-medium text-green-800">
+                        Matching Completed Successfully!
+                      </h4>
                       <p className="text-sm text-green-700">
-                        Execution time: {triggerMatching.data?.data?.executionTime}ms
+                        Execution time:{' '}
+                        {triggerMatching.data?.data?.executionTime}ms
                       </p>
                       <p className="text-sm text-green-700">
-                        Triggered by: {triggerMatching.data?.data?.triggeredBy?.adminEmail}
+                        Triggered by:{' '}
+                        {triggerMatching.data?.data?.triggeredBy?.adminEmail}
                       </p>
                     </div>
                   </div>
@@ -278,9 +333,12 @@ const AdminWaitlistPanel: React.FC = () => {
                   <div className="flex items-center">
                     <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
                     <div>
-                      <h4 className="font-medium text-red-800">Matching Failed</h4>
+                      <h4 className="font-medium text-red-800">
+                        Matching Failed
+                      </h4>
                       <p className="text-sm text-red-700">
-                        {triggerMatching.error?.message || 'Unknown error occurred'}
+                        {triggerMatching.error?.message ||
+                          'Unknown error occurred'}
                       </p>
                     </div>
                   </div>
@@ -297,24 +355,49 @@ const AdminWaitlistPanel: React.FC = () => {
             <CardContent>
               <div className="space-y-3 text-sm">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">1</div>
-                  <p>Processes up to 10 pending patients per screening type (FCFS order)</p>
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+                    1
+                  </div>
+                  <p>
+                    Processes up to 10 pending patients per screening type (FCFS
+                    order)
+                  </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">2</div>
-                  <p>Skips patients with 3+ unclaimed allocations or existing matches</p>
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+                    2
+                  </div>
+                  <p>
+                    Skips patients with 3+ unclaimed allocations or existing
+                    matches
+                  </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">3</div>
-                  <p>Prioritizes most specific campaigns, then highest amount, then earliest created</p>
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+                    3
+                  </div>
+                  <p>
+                    Prioritizes most specific campaigns, then highest amount,
+                    then earliest created
+                  </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">4</div>
-                  <p>Falls back to general donor pool if no specific campaign matches</p>
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+                    4
+                  </div>
+                  <p>
+                    Falls back to general donor pool if no specific campaign
+                    matches
+                  </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">5</div>
-                  <p>Creates notifications for matched patients and updates campaign balances</p>
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+                    5
+                  </div>
+                  <p>
+                    Creates notifications for matched patients and updates
+                    campaign balances
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -331,7 +414,10 @@ const AdminWaitlistPanel: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select value={statusFilter || 'all'} onValueChange={handleStatusFilterChange}>
+                  <Select
+                    value={statusFilter || 'all'}
+                    onValueChange={handleStatusFilterChange}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
@@ -346,7 +432,12 @@ const AdminWaitlistPanel: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <Select value={stateFilter || 'all'} onValueChange={(value) => setStateFilter(value === 'all' ? undefined : value)}>
+                  <Select
+                    value={stateFilter || 'all'}
+                    onValueChange={(value) =>
+                      setStateFilter(value === 'all' ? undefined : value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All states" />
                     </SelectTrigger>
@@ -362,16 +453,29 @@ const AdminWaitlistPanel: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Screening Type</Label>
-                  <Select value={screeningTypeFilter || 'all'} onValueChange={(value) => setScreeningTypeFilter(value === 'all' ? undefined : value)}>
+                  <Select
+                    value={screeningTypeFilter || 'all'}
+                    onValueChange={(value) =>
+                      setScreeningTypeFilter(
+                        value === 'all' ? undefined : value,
+                      )
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All screening types" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All screening types</SelectItem>
                       {/* These would be dynamically loaded in a real implementation */}
-                      <SelectItem value="cervical-cancer">Cervical Cancer</SelectItem>
-                      <SelectItem value="breast-cancer">Breast Cancer</SelectItem>
-                      <SelectItem value="colorectal-cancer">Colorectal Cancer</SelectItem>
+                      <SelectItem value="cervical-cancer">
+                        Cervical Cancer
+                      </SelectItem>
+                      <SelectItem value="breast-cancer">
+                        Breast Cancer
+                      </SelectItem>
+                      <SelectItem value="colorectal-cancer">
+                        Colorectal Cancer
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -383,11 +487,12 @@ const AdminWaitlistPanel: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                Waitlist Entries ({
-                  waitlistEntries.data?.data && isWaitlistEntriesData(waitlistEntries.data.data) 
-                    ? waitlistEntries.data.data.total 
-                    : 0
-                })
+                Waitlist Entries (
+                {waitlistEntries.data?.data &&
+                isWaitlistEntriesData(waitlistEntries.data.data)
+                  ? waitlistEntries.data.data.total
+                  : 0}
+                )
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -408,13 +513,19 @@ const AdminWaitlistPanel: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {waitlistEntries.data?.data && isWaitlistEntriesData(waitlistEntries.data.data) 
-                      ? waitlistEntries.data.data.waitlistEntries?.map((entry) => (
+                    {waitlistEntries.data?.data &&
+                    isWaitlistEntriesData(waitlistEntries.data.data) ? (
+                      waitlistEntries.data.data.waitlistEntries?.map(
+                        (entry) => (
                           <TableRow key={entry.id}>
                             <TableCell>
                               <div>
-                                <div className="font-medium">{entry.patient.fullName}</div>
-                                <div className="text-sm text-muted-foreground">{entry.patient.id}</div>
+                                <div className="font-medium">
+                                  {entry.patient.fullName}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {entry.patient.id}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>{entry.screening.name}</TableCell>
@@ -423,28 +534,34 @@ const AdminWaitlistPanel: React.FC = () => {
                                 <div className="flex items-center gap-1">
                                   <MapPin className="h-3 w-3" />
                                   {entry.patient.patientProfile.state}
-                                  {entry.patient.patientProfile.city && `, ${entry.patient.patientProfile.city}`}
+                                  {entry.patient.patientProfile.city &&
+                                    `, ${entry.patient.patientProfile.city}`}
                                 </div>
                               )}
                             </TableCell>
                             <TableCell>
-                              <Badge className={getWaitlistStatusBadge(entry.status)}>
+                              <Badge
+                                className={getWaitlistStatusBadge(entry.status)}
+                              >
                                 {entry.status}
                               </Badge>
                             </TableCell>
                             <TableCell>{formatDate(entry.joinedAt)}</TableCell>
                             <TableCell>
-                              {entry.claimedAt ? formatDate(entry.claimedAt) : '-'}
+                              {entry.claimedAt
+                                ? formatDate(entry.claimedAt)
+                                : '-'}
                             </TableCell>
                           </TableRow>
-                        )) 
-                      : (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8">
-                            No waitlist entries found
-                          </TableCell>
-                        </TableRow>
-                      )}
+                        ),
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No waitlist entries found
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               )}
@@ -472,27 +589,43 @@ const AdminWaitlistPanel: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {waitlistByState.data?.data && isAggregationData(waitlistByState.data.data)
-                      ? waitlistByState.data.data.aggregation?.slice(0, 10).map((item, index) => (
-                          <div key={item.state || index} className="flex items-center justify-between p-3 border rounded-lg">
+                    {waitlistByState.data?.data &&
+                    isAggregationData(waitlistByState.data.data) ? (
+                      waitlistByState.data.data.aggregation
+                        ?.slice(0, 10)
+                        .map((item, index) => (
+                          <div
+                            key={item.state || index}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                item.count > 20 ? 'bg-red-500' : 
-                                item.count > 10 ? 'bg-yellow-500' : 'bg-green-500'
-                              }`} />
-                              <span className="font-medium">{item.state || 'Unknown'}</span>
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  item.count > 20
+                                    ? 'bg-red-500'
+                                    : item.count > 10
+                                      ? 'bg-yellow-500'
+                                      : 'bg-green-500'
+                                }`}
+                              />
+                              <span className="font-medium">
+                                {item.state || 'Unknown'}
+                              </span>
                             </div>
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               <Users className="h-3 w-3" />
                               {item.count} pending
                             </Badge>
                           </div>
                         ))
-                      : (
-                        <p className="text-center py-8 text-muted-foreground">
-                          No state data available
-                        </p>
-                      )}
+                    ) : (
+                      <p className="text-center py-8 text-muted-foreground">
+                        No state data available
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -516,27 +649,43 @@ const AdminWaitlistPanel: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {waitlistByScreeningType.data?.data && isAggregationData(waitlistByScreeningType.data.data)
-                      ? waitlistByScreeningType.data.data.aggregation?.slice(0, 10).map((item, index) => (
-                          <div key={item.screeningType || index} className="flex items-center justify-between p-3 border rounded-lg">
+                    {waitlistByScreeningType.data?.data &&
+                    isAggregationData(waitlistByScreeningType.data.data) ? (
+                      waitlistByScreeningType.data.data.aggregation
+                        ?.slice(0, 10)
+                        .map((item, index) => (
+                          <div
+                            key={item.screeningType || index}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                item.count > 15 ? 'bg-red-500' : 
-                                item.count > 8 ? 'bg-yellow-500' : 'bg-green-500'
-                              }`} />
-                              <span className="font-medium">{item.screeningType || 'Unknown'}</span>
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  item.count > 15
+                                    ? 'bg-red-500'
+                                    : item.count > 8
+                                      ? 'bg-yellow-500'
+                                      : 'bg-green-500'
+                                }`}
+                              />
+                              <span className="font-medium">
+                                {item.screeningType || 'Unknown'}
+                              </span>
                             </div>
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               <Target className="h-3 w-3" />
                               {item.count} pending
                             </Badge>
                           </div>
                         ))
-                      : (
-                        <p className="text-center py-8 text-muted-foreground">
-                          No screening type data available
-                        </p>
-                      )}
+                    ) : (
+                      <p className="text-center py-8 text-muted-foreground">
+                        No screening type data available
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -549,13 +698,20 @@ const AdminWaitlistPanel: React.FC = () => {
               <CardContent className="flex items-center p-6">
                 <MapPin className="h-8 w-8 text-red-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Hot Zone Alert</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Hot Zone Alert
+                  </p>
                   <p className="text-2xl font-bold">
-                    {waitlistByState.data?.data && isAggregationData(waitlistByState.data.data)
-                      ? waitlistByState.data.data.aggregation?.filter(item => item.count > 20).length || 0
+                    {waitlistByState.data?.data &&
+                    isAggregationData(waitlistByState.data.data)
+                      ? waitlistByState.data.data.aggregation?.filter(
+                          (item) => item.count > 20,
+                        ).length || 0
                       : 0}
                   </p>
-                  <p className="text-xs text-red-600">States with 20+ pending</p>
+                  <p className="text-xs text-red-600">
+                    States with 20+ pending
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -563,10 +719,15 @@ const AdminWaitlistPanel: React.FC = () => {
               <CardContent className="flex items-center p-6">
                 <Target className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">High Demand</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    High Demand
+                  </p>
                   <p className="text-2xl font-bold">
-                    {waitlistByScreeningType.data?.data && isAggregationData(waitlistByScreeningType.data.data)
-                      ? waitlistByScreeningType.data.data.aggregation?.filter(item => item.count > 15).length || 0
+                    {waitlistByScreeningType.data?.data &&
+                    isAggregationData(waitlistByScreeningType.data.data)
+                      ? waitlistByScreeningType.data.data.aggregation?.filter(
+                          (item) => item.count > 15,
+                        ).length || 0
                       : 0}
                   </p>
                   <p className="text-xs text-orange-600">Screening types</p>
@@ -577,9 +738,12 @@ const AdminWaitlistPanel: React.FC = () => {
               <CardContent className="flex items-center p-6">
                 <Activity className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Coverage</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Coverage
+                  </p>
                   <p className="text-2xl font-bold">
-                    {waitlistByState.data?.data && isAggregationData(waitlistByState.data.data)
+                    {waitlistByState.data?.data &&
+                    isAggregationData(waitlistByState.data.data)
                       ? waitlistByState.data.data.aggregation?.length || 0
                       : 0}
                   </p>
@@ -593,13 +757,16 @@ const AdminWaitlistPanel: React.FC = () => {
 
       {/* Last Updated */}
       <div className="text-center text-sm text-muted-foreground">
-        Last updated: {(stats?.data as any)?.lastUpdated ? new Date((stats.data as any).lastUpdated).toLocaleString() : 'Never'}
+        Last updated:{' '}
+        {(stats?.data as any)?.lastUpdated
+          ? new Date((stats.data as any).lastUpdated).toLocaleString()
+          : 'Never'}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminWaitlistPanel;
+export default AdminWaitlistPanel
 
 /**
  * Usage Example in Admin Dashboard:

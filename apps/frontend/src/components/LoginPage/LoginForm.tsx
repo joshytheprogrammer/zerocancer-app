@@ -5,7 +5,7 @@ import { isAxiosError } from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/shared/ui/button'
 import {
   Form,
   FormControl,
@@ -13,9 +13,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import PasswordInput from '@/components/ui/password-input'
+} from '@/components/shared/ui/form'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
 import {
   useAuthUser,
   useForgotPassword,

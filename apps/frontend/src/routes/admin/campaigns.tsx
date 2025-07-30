@@ -1,28 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { 
-  useAdminCampaigns, 
-  useUpdateAdminCampaignStatus 
-} from '@/services/providers/admin.provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -30,22 +13,44 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { 
-  Search, 
-  Heart, 
-  DollarSign, 
-  Users, 
-  Target,
+} from '@/components/shared/ui/dialog'
+import { Input } from '@/components/shared/ui/input'
+import { Label } from '@/components/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/shared/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/shared/ui/table'
+import { Textarea } from '@/components/shared/ui/textarea'
+import {
+  useAdminCampaigns,
+  useUpdateAdminCampaignStatus,
+} from '@/services/providers/admin.provider'
+import { createFileRoute } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import {
+  AlertCircle,
   Building2,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  Heart,
+  Search,
+  Target,
   TrendingUp,
-  AlertCircle
+  Users,
 } from 'lucide-react'
-import { format } from 'date-fns'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/admin/campaigns')({
@@ -57,7 +62,9 @@ type CampaignStatus = 'ACTIVE' | 'COMPLETED' | 'DELETED'
 function AdminCampaigns() {
   // Filters state
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'ALL'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'ALL'>(
+    'ALL',
+  )
   const [page, setPage] = useState(1)
 
   // Status update dialog state
@@ -70,7 +77,7 @@ function AdminCampaigns() {
     open: false,
     campaign: null,
     newStatus: 'ACTIVE',
-    reason: ''
+    reason: '',
   })
 
   // Build query parameters
@@ -82,11 +89,11 @@ function AdminCampaigns() {
   }
 
   // Fetch campaigns data
-  const { 
-    data: campaignsData, 
-    isLoading, 
+  const {
+    data: campaignsData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useAdminCampaigns(queryParams)
 
   // Status update mutation
@@ -99,11 +106,11 @@ function AdminCampaigns() {
       await updateStatusMutation.mutateAsync({
         campaignId: statusDialog.campaign.id,
         status: statusDialog.newStatus,
-        reason: statusDialog.reason || undefined
+        reason: statusDialog.reason || undefined,
       })
-      
+
       toast.success(`Campaign status updated to ${statusDialog.newStatus}`)
-      setStatusDialog(prev => ({ ...prev, open: false, reason: '' }))
+      setStatusDialog((prev) => ({ ...prev, open: false, reason: '' }))
       refetch()
     } catch (error) {
       toast.error('Failed to update campaign status')
@@ -115,16 +122,20 @@ function AdminCampaigns() {
       open: true,
       campaign,
       newStatus,
-      reason: ''
+      reason: '',
     })
   }
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'default'
-      case 'COMPLETED': return 'secondary'
-      case 'DELETED': return 'destructive'
-      default: return 'outline'
+      case 'ACTIVE':
+        return 'default'
+      case 'COMPLETED':
+        return 'secondary'
+      case 'DELETED':
+        return 'destructive'
+      default:
+        return 'outline'
     }
   }
 
@@ -155,11 +166,14 @@ function AdminCampaigns() {
 
   // Calculate summary stats
   const totalDonated = campaigns.reduce((sum, c) => sum + c.initialAmount, 0)
-  const availableFunds = campaigns.reduce((sum, c) => sum + c.availableAmount, 0)
+  const availableFunds = campaigns.reduce(
+    (sum, c) => sum + c.availableAmount,
+    0,
+  )
   const totalPatientsHelped = campaigns.reduce((sum, c) => {
-    return sum + (c.allocations?.filter(a => a.claimedAt).length || 0)
+    return sum + (c.allocations?.filter((a) => a.claimedAt).length || 0)
   }, 0)
-  const activeCampaigns = campaigns.filter(c => c.status === 'ACTIVE').length
+  const activeCampaigns = campaigns.filter((c) => c.status === 'ACTIVE').length
 
   return (
     <div className="space-y-6">
@@ -177,9 +191,13 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <Heart className="h-8 w-8 text-red-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Campaigns</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Campaigns
+              </p>
               <p className="text-2xl font-bold">{total}</p>
-              <p className="text-xs text-muted-foreground">{activeCampaigns} active</p>
+              <p className="text-xs text-muted-foreground">
+                {activeCampaigns} active
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -187,9 +205,15 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <TrendingUp className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Total Donated</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalDonated)}</p>
-              <p className="text-xs text-muted-foreground">{formatCurrency(totalDonated - availableFunds)} used</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Donated
+              </p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(totalDonated)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(totalDonated - availableFunds)} used
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -197,9 +221,13 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <Users className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Patients Helped</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Patients Helped
+              </p>
               <p className="text-2xl font-bold">{totalPatientsHelped}</p>
-              <p className="text-xs text-muted-foreground">Across all campaigns</p>
+              <p className="text-xs text-muted-foreground">
+                Across all campaigns
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -207,9 +235,15 @@ function AdminCampaigns() {
           <CardContent className="flex items-center p-6">
             <DollarSign className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">Available Funds</p>
-              <p className="text-2xl font-bold">{formatCurrency(availableFunds)}</p>
-              <p className="text-xs text-muted-foreground">Ready for allocation</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Available Funds
+              </p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(availableFunds)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Ready for allocation
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -236,7 +270,9 @@ function AdminCampaigns() {
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as CampaignStatus | 'ALL')}
+              onValueChange={(value) =>
+                setStatusFilter(value as CampaignStatus | 'ALL')
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Statuses" />
@@ -260,9 +296,7 @@ function AdminCampaigns() {
       {/* Campaigns Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Campaigns ({total})
-          </CardTitle>
+          <CardTitle className="text-lg">Campaigns ({total})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -275,7 +309,9 @@ function AdminCampaigns() {
           ) : error ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <p className="text-destructive mb-4">Failed to load campaigns</p>
+                <p className="text-destructive mb-4">
+                  Failed to load campaigns
+                </p>
                 <Button onClick={() => refetch()} variant="outline">
                   Try Again
                 </Button>
@@ -305,8 +341,10 @@ function AdminCampaigns() {
                 <TableBody>
                   {campaigns.map((campaign) => {
                     const utilizationRate = calculateUtilizationRate(campaign)
-                    const claimedAllocations = campaign.allocations.filter(a => a.claimedAt).length
-                    
+                    const claimedAllocations = campaign.allocations.filter(
+                      (a) => a.claimedAt,
+                    ).length
+
                     return (
                       <TableRow key={campaign.id}>
                         <TableCell>
@@ -317,8 +355,13 @@ function AdminCampaigns() {
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                               <Building2 className="h-3 w-3" />
                               <span>{campaign.donor.fullName}</span>
-                              {campaign.donor.donorProfile?.organizationName && (
-                                <span>({campaign.donor.donorProfile.organizationName})</span>
+                              {campaign.donor.donorProfile
+                                ?.organizationName && (
+                                <span>
+                                  (
+                                  {campaign.donor.donorProfile.organizationName}
+                                  )
+                                </span>
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground">
@@ -335,17 +378,25 @@ function AdminCampaigns() {
                               </span>
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              <p>Available: {formatCurrency(campaign.availableAmount)}</p>
-                              <p>Reserved: {formatCurrency(campaign.reservedAmount)}</p>
+                              <p>
+                                Available:{' '}
+                                {formatCurrency(campaign.availableAmount)}
+                              </p>
+                              <p>
+                                Reserved:{' '}
+                                {formatCurrency(campaign.reservedAmount)}
+                              </p>
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className="w-16 bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full"
                                   style={{ width: `${utilizationRate}%` }}
                                 ></div>
                               </div>
-                              <span className="text-xs">{utilizationRate}%</span>
+                              <span className="text-xs">
+                                {utilizationRate}%
+                              </span>
                             </div>
                           </div>
                         </TableCell>
@@ -355,7 +406,9 @@ function AdminCampaigns() {
                               <div className="flex items-center space-x-1 text-sm">
                                 <Target className="h-3 w-3" />
                                 <span>{campaign.targetState}</span>
-                                {campaign.targetLga && <span>, {campaign.targetLga}</span>}
+                                {campaign.targetLga && (
+                                  <span>, {campaign.targetLga}</span>
+                                )}
                               </div>
                             )}
                             {campaign.targetAgeRange && (
@@ -365,15 +418,22 @@ function AdminCampaigns() {
                             )}
                             {campaign.targetGender && (
                               <p className="text-sm text-muted-foreground">
-                                Gender: {campaign.targetGender ? 'Targeted' : 'All'}
+                                Gender:{' '}
+                                {campaign.targetGender ? 'Targeted' : 'All'}
                               </p>
                             )}
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {campaign.screeningTypes.slice(0, 2).map((type) => (
-                                <Badge key={type.id} variant="outline" className="text-xs">
-                                  {type.name}
-                                </Badge>
-                              ))}
+                              {campaign.screeningTypes
+                                .slice(0, 2)
+                                .map((type) => (
+                                  <Badge
+                                    key={type.id}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    {type.name}
+                                  </Badge>
+                                ))}
                               {campaign.screeningTypes.length > 2 && (
                                 <Badge variant="outline" className="text-xs">
                                   +{campaign.screeningTypes.length - 2}
@@ -386,8 +446,12 @@ function AdminCampaigns() {
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
                               <Users className="h-4 w-4 text-blue-600" />
-                              <span className="font-medium">{claimedAllocations}</span>
-                              <span className="text-muted-foreground">helped</span>
+                              <span className="font-medium">
+                                {claimedAllocations}
+                              </span>
+                              <span className="text-muted-foreground">
+                                helped
+                              </span>
                             </div>
                             <p className="text-sm text-muted-foreground">
                               {campaign.allocations.length} total allocations
@@ -398,14 +462,19 @@ function AdminCampaigns() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeVariant(campaign.status)}>
+                          <Badge
+                            variant={getStatusBadgeVariant(campaign.status)}
+                          >
                             {campaign.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
                             <p className="text-sm">
-                              {format(new Date(campaign.createdAt), 'MMM dd, yyyy')}
+                              {format(
+                                new Date(campaign.createdAt),
+                                'MMM dd, yyyy',
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(campaign.createdAt), 'hh:mm a')}
@@ -419,14 +488,18 @@ function AdminCampaigns() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => openStatusDialog(campaign, 'COMPLETED')}
+                                  onClick={() =>
+                                    openStatusDialog(campaign, 'COMPLETED')
+                                  }
                                 >
                                   Complete
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="destructive"
-                                  onClick={() => openStatusDialog(campaign, 'DELETED')}
+                                  onClick={() =>
+                                    openStatusDialog(campaign, 'DELETED')
+                                  }
                                 >
                                   Delete
                                 </Button>
@@ -436,7 +509,9 @@ function AdminCampaigns() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => openStatusDialog(campaign, 'ACTIVE')}
+                                onClick={() =>
+                                  openStatusDialog(campaign, 'ACTIVE')
+                                }
                               >
                                 Reactivate
                               </Button>
@@ -445,7 +520,9 @@ function AdminCampaigns() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => openStatusDialog(campaign, 'ACTIVE')}
+                                onClick={() =>
+                                  openStatusDialog(campaign, 'ACTIVE')
+                                }
                               >
                                 Restore
                               </Button>
@@ -492,14 +569,17 @@ function AdminCampaigns() {
       </Card>
 
       {/* Status Update Dialog */}
-      <Dialog open={statusDialog.open} onOpenChange={(open) => 
-        setStatusDialog(prev => ({ ...prev, open }))
-      }>
+      <Dialog
+        open={statusDialog.open}
+        onOpenChange={(open) => setStatusDialog((prev) => ({ ...prev, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Campaign Status</DialogTitle>
             <DialogDescription>
-              Change the status of "{statusDialog.campaign?.purpose || 'this campaign'}" to {statusDialog.newStatus.toLowerCase()}.
+              Change the status of "
+              {statusDialog.campaign?.purpose || 'this campaign'}" to{' '}
+              {statusDialog.newStatus.toLowerCase()}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -509,32 +589,39 @@ function AdminCampaigns() {
                 id="reason"
                 placeholder="Enter reason for status change..."
                 value={statusDialog.reason}
-                onChange={(e) => setStatusDialog(prev => ({ 
-                  ...prev, 
-                  reason: e.target.value 
-                }))}
+                onChange={(e) =>
+                  setStatusDialog((prev) => ({
+                    ...prev,
+                    reason: e.target.value,
+                  }))
+                }
               />
             </div>
             {statusDialog.newStatus === 'DELETED' && (
               <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-md">
                 <AlertCircle className="h-4 w-4 text-red-600" />
                 <p className="text-sm text-red-800">
-                  This action will mark the campaign as deleted and may affect ongoing allocations.
+                  This action will mark the campaign as deleted and may affect
+                  ongoing allocations.
                 </p>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setStatusDialog(prev => ({ ...prev, open: false }))}
+            <Button
+              variant="outline"
+              onClick={() =>
+                setStatusDialog((prev) => ({ ...prev, open: false }))
+              }
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleStatusUpdate}
               disabled={updateStatusMutation.isPending}
-              variant={statusDialog.newStatus === 'DELETED' ? 'destructive' : 'default'}
+              variant={
+                statusDialog.newStatus === 'DELETED' ? 'destructive' : 'default'
+              }
             >
               {updateStatusMutation.isPending ? 'Updating...' : 'Update Status'}
             </Button>
@@ -543,4 +630,4 @@ function AdminCampaigns() {
       </Dialog>
     </div>
   )
-} 
+}

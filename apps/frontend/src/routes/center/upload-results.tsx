@@ -1,15 +1,20 @@
 import { ResultUploadComponent } from '@/components/center/ResultUploadComponent'
 import { ResultViewer } from '@/components/ResultViewer'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/shared/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import { Input } from '@/components/shared/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/shared/ui/select'
 import { centerAppointments } from '@/services/providers/center.provider'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'

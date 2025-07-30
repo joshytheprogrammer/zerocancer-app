@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button'
-import type { TPatientAppointment } from '@zerocancer/shared/types'
-import { useNavigate } from '@tanstack/react-router'
-import notScreenedIllustration from '@/assets/images/girl-think.png'
 import scheduledIllustration from '@/assets/images/center.png'
+import notScreenedIllustration from '@/assets/images/girl-think.png'
+import { Button } from '@/components/shared/ui/button'
+import { useNavigate } from '@tanstack/react-router'
+import type { TPatientAppointment } from '@zerocancer/shared/types'
 import { ArrowRight } from 'lucide-react'
 
 interface StatusCardProps {
@@ -50,12 +50,13 @@ export default function StatusCard({ appointment }: StatusCardProps) {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
-              })} |  ${new Date(
-                appointment.appointmentTime,
-              ).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}`
+              })} |  ${new Date(appointment.appointmentTime).toLocaleTimeString(
+                [],
+                {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                },
+              )}`
             : '-'}
         </p>
         <div className="pt-2">

@@ -1,10 +1,10 @@
-import React, { useId } from "react"
-import { ChevronDownIcon, PhoneIcon } from "lucide-react"
-import * as RPNInput from "react-phone-number-input"
-import flags from "react-phone-number-input/flags"
+import { ChevronDownIcon, PhoneIcon } from 'lucide-react'
+import React, { useId } from 'react'
+import * as RPNInput from 'react-phone-number-input'
+import flags from 'react-phone-number-input/flags'
 
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
+import { Input } from '@/components/shared/ui/input'
+import { cn } from '@/lib/utils'
 
 type PhoneInputComponentProps = {
   value?: RPNInput.Value
@@ -35,20 +35,20 @@ export default function PhoneInputComponent({
   )
 }
 
-const PhoneInput = ({ className, ...props }: React.ComponentProps<"input">) => {
+const PhoneInput = ({ className, ...props }: React.ComponentProps<'input'>) => {
   return (
     <Input
       data-slot="phone-input"
       className={cn(
-        "-ms-px rounded-s-none shadow-none focus-visible:z-10",
-        className
+        '-ms-px rounded-s-none shadow-none focus-visible:z-10',
+        className,
       )}
       {...props}
     />
   )
 }
 
-PhoneInput.displayName = "PhoneInput"
+PhoneInput.displayName = 'PhoneInput'
 
 type CountrySelectProps = {
   disabled?: boolean
@@ -89,7 +89,7 @@ const CountrySelect = ({
           .filter((x) => x.value)
           .map((option, i) => (
             <option key={option.value ?? `empty-${i}`} value={option.value}>
-              {option.label}{" "}
+              {option.label}{' '}
               {option.value &&
                 `+${RPNInput.getCountryCallingCode(option.value)}`}
             </option>
@@ -111,4 +111,4 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
       )}
     </span>
   )
-} 
+}

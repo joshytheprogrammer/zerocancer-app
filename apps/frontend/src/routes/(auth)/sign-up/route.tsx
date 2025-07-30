@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import signupImage from '@/assets/images/signup.png'
 
-export const Route = createFileRoute('/(auth)/sign-up/_layout')({
+export const Route = createFileRoute('/(auth)/sign-up')({
   component: RouteComponent,
 })
 

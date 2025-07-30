@@ -1,6 +1,11 @@
-import { Button } from '@/components/ui/button'
-import { Calendar as ShadCalendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/shared/ui/button'
+import { Calendar as ShadCalendar } from '@/components/shared/ui/calendar'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Form,
   FormControl,
@@ -8,12 +13,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
+} from '@/components/shared/ui/form'
 import {
   Popover as ShadPopover,
   PopoverContent as ShadPopoverContent,
   PopoverTrigger as ShadPopoverTrigger,
-} from '@/components/ui/popover'
+} from '@/components/shared/ui/popover'
 import { cn } from '@/lib/utils'
 import {
   useEligibleCenters,
@@ -26,10 +31,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   CalendarIcon,
   ChevronDownIcon,
+  Gift,
+  Loader2,
   MapPin,
   Users,
-  Loader2,
-  Gift,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -68,10 +73,7 @@ function CenterSelectionPage() {
   })
 
   // Fetch screening type details
-  const {
-    data: screeningTypeData,
-    isLoading: screeningTypeLoading,
-  } = useQuery(
+  const { data: screeningTypeData, isLoading: screeningTypeLoading } = useQuery(
     useScreeningTypeById(search.screeningTypeId || ''),
   )
 
@@ -80,9 +82,7 @@ function CenterSelectionPage() {
     data: centersData,
     isLoading: centersLoading,
     error: centersError,
-  } = useQuery(
-    useEligibleCenters(search.allocationId || '', 1, 20),
-  )
+  } = useQuery(useEligibleCenters(search.allocationId || '', 1, 20))
 
   const selectCenterMutation = useSelectCenter()
 
@@ -108,7 +108,7 @@ function CenterSelectionPage() {
   }
 
   const centers = centersData?.data?.centers || []
-  
+
   // Debug logging
   console.log('Allocation ID:', search.allocationId)
   console.log('Centers Data:', centersData)
@@ -179,7 +179,9 @@ function CenterSelectionPage() {
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-red-200">
           <CardHeader>
-            <CardTitle className="text-red-600">Error Loading Centers</CardTitle>
+            <CardTitle className="text-red-600">
+              Error Loading Centers
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-2">
@@ -189,7 +191,10 @@ function CenterSelectionPage() {
               Error: {centersError?.message || 'Unknown error'}
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate({ to: '/patient/book' })}>
+              <Button
+                variant="outline"
+                onClick={() => navigate({ to: '/patient/book' })}
+              >
                 Back to Booking
               </Button>
               <Button onClick={() => window.location.reload()}>
@@ -207,18 +212,24 @@ function CenterSelectionPage() {
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-orange-200">
           <CardHeader>
-            <CardTitle className="text-orange-600">No Centers Available</CardTitle>
+            <CardTitle className="text-orange-600">
+              No Centers Available
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-2">
               No centers are currently available for your allocated screening.
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              Allocation ID: {search.allocationId}<br/>
+              Allocation ID: {search.allocationId}
+              <br />
               Screening Type ID: {search.screeningTypeId}
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate({ to: '/patient/book' })}>
+              <Button
+                variant="outline"
+                onClick={() => navigate({ to: '/patient/book' })}
+              >
                 Back to Booking
               </Button>
               <Button onClick={() => window.location.reload()}>
@@ -240,8 +251,8 @@ function CenterSelectionPage() {
           <h1 className="text-2xl font-bold">Book with Donation</h1>
         </div>
         <p className="text-gray-600">
-          Great news! Your {screeningType?.name} screening has been sponsored by a generous donor.
-          Select a center and schedule your appointment below.
+          Great news! Your {screeningType?.name} screening has been sponsored by
+          a generous donor. Select a center and schedule your appointment below.
         </p>
       </div>
 
@@ -334,10 +345,17 @@ function CenterSelectionPage() {
                                 <ChevronDownIcon className="h-4 w-4" />
                               </Button>
                             </ShadPopoverTrigger>
-                            <ShadPopoverContent className="w-auto p-0" align="start">
+                            <ShadPopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
                               <ShadCalendar
                                 mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
+                                selected={
+                                  field.value
+                                    ? new Date(field.value)
+                                    : undefined
+                                }
                                 onSelect={(date: Date | undefined) => {
                                   field.onChange(date ? date.toISOString() : '')
                                 }}
@@ -375,11 +393,16 @@ function CenterSelectionPage() {
                               <Button
                                 key={slot.value}
                                 type="button"
-                                variant={field.value === slot.value ? 'default' : 'outline'}
+                                variant={
+                                  field.value === slot.value
+                                    ? 'default'
+                                    : 'outline'
+                                }
                                 size="sm"
                                 className={cn(
                                   'text-xs',
-                                  field.value === slot.value && 'bg-pink-600 hover:bg-pink-700',
+                                  field.value === slot.value &&
+                                    'bg-pink-600 hover:bg-pink-700',
                                 )}
                                 onClick={() => field.onChange(slot.value)}
                               >
@@ -426,4 +449,4 @@ function CenterSelectionPage() {
       </Form>
     </div>
   )
-} 
+}

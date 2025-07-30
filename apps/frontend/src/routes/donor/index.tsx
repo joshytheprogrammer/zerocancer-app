@@ -1,7 +1,12 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import { Progress } from '@/components/shared/ui/progress'
 import {
   Table,
   TableBody,
@@ -9,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import { useDonorCampaigns } from '@/services/providers/donor.provider'
 import { useQuery } from '@tanstack/react-query'
@@ -17,12 +22,12 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
 import center from '@/assets/images/center.png'
-import sponsored from '@/assets/images/sponsored.png'
 import health from '@/assets/images/health.png'
-import awaiting from '@/assets/images/notification.png'
+import impact from '@/assets/images/impact.png'
 import location from '@/assets/images/location.png'
 import megaphone from '@/assets/images/megaphone.png'
-import impact from '@/assets/images/impact.png'
+import awaiting from '@/assets/images/notification.png'
+import sponsored from '@/assets/images/sponsored.png'
 
 export const Route = createFileRoute('/donor/')({
   component: DonorDashboard,
@@ -103,9 +108,7 @@ function DonorDashboard() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-3xl font-bold">
-                      {campaignsLoading
-                        ? '...'
-                        : formatCurrency(totalDonated)}
+                      {campaignsLoading ? '...' : formatCurrency(totalDonated)}
                     </p>
                     <p className="text-sm opacity-80">Total Donated</p>
                   </div>
@@ -254,28 +257,28 @@ function DonorDashboard() {
                 </CardContent>
               </Card>
             </div>
-              {/* Side Content */}
-              <div className="space-y-6">
-                {/* Recent Impact */}
-                <Card className="h-full">
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle>Recent Impact</CardTitle>
-                      <Button variant="link">See All</Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 space-y-4">
-                      <img
-                        src={impact}
-                        alt="No impact yet"
-                        className="w-24 h-24"
-                      />
-                      <p>Your campaign impacts will appear here</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Side Content */}
+            <div className="space-y-6">
+              {/* Recent Impact */}
+              <Card className="h-full">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Recent Impact</CardTitle>
+                    <Button variant="link">See All</Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 space-y-4">
+                    <img
+                      src={impact}
+                      alt="No impact yet"
+                      className="w-24 h-24"
+                    />
+                    <p>Your campaign impacts will appear here</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

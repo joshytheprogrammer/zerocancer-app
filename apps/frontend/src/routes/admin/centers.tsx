@@ -1,28 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { 
-  useAdminCenters, 
-  useUpdateCenterStatus 
-} from '@/services/providers/admin.provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -30,10 +13,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Search, Users, Stethoscope, MapPin } from 'lucide-react'
+} from '@/components/shared/ui/dialog'
+import { Input } from '@/components/shared/ui/input'
+import { Label } from '@/components/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/shared/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/shared/ui/table'
+import { Textarea } from '@/components/shared/ui/textarea'
+import {
+  useAdminCenters,
+  useUpdateCenterStatus,
+} from '@/services/providers/admin.provider'
+import { createFileRoute } from '@tanstack/react-router'
+import { MapPin, Search, Stethoscope, Users } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/admin/centers')({
@@ -59,7 +64,7 @@ function AdminCenters() {
     open: false,
     center: null,
     newStatus: 'ACTIVE',
-    reason: ''
+    reason: '',
   })
 
   // Build query parameters
@@ -72,11 +77,11 @@ function AdminCenters() {
   }
 
   // Fetch centers data
-  const { 
-    data: centersData, 
-    isLoading, 
+  const {
+    data: centersData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useAdminCenters(queryParams)
 
   // Status update mutation
@@ -89,11 +94,11 @@ function AdminCenters() {
       await updateStatusMutation.mutateAsync({
         centerId: statusDialog.center.id,
         status: statusDialog.newStatus,
-        reason: statusDialog.reason || undefined
+        reason: statusDialog.reason || undefined,
       })
-      
+
       toast.success(`Center status updated to ${statusDialog.newStatus}`)
-      setStatusDialog(prev => ({ ...prev, open: false, reason: '' }))
+      setStatusDialog((prev) => ({ ...prev, open: false, reason: '' }))
       refetch()
     } catch (error) {
       toast.error('Failed to update center status')
@@ -105,16 +110,20 @@ function AdminCenters() {
       open: true,
       center,
       newStatus,
-      reason: ''
+      reason: '',
     })
   }
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'default'
-      case 'INACTIVE': return 'secondary'
-      case 'SUSPENDED': return 'destructive'
-      default: return 'outline'
+      case 'ACTIVE':
+        return 'default'
+      case 'INACTIVE':
+        return 'secondary'
+      case 'SUSPENDED':
+        return 'destructive'
+      default:
+        return 'outline'
     }
   }
 
@@ -149,7 +158,9 @@ function AdminCenters() {
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as CenterStatus | 'ALL')}
+              onValueChange={(value) =>
+                setStatusFilter(value as CenterStatus | 'ALL')
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Statuses" />
@@ -170,8 +181,8 @@ function AdminCenters() {
             />
 
             {/* Clear Filters */}
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setSearch('')
                 setStatusFilter('ALL')
@@ -239,7 +250,9 @@ function AdminCenters() {
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <div className="text-sm">{center.state}, {center.lga}</div>
+                            <div className="text-sm">
+                              {center.state}, {center.lga}
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {center.address}
                             </div>
@@ -278,7 +291,9 @@ function AdminCenters() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => openStatusDialog(center, 'SUSPENDED')}
+                              onClick={() =>
+                                openStatusDialog(center, 'SUSPENDED')
+                              }
                             >
                               Suspend
                             </Button>
@@ -287,7 +302,9 @@ function AdminCenters() {
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() => openStatusDialog(center, 'INACTIVE')}
+                              onClick={() =>
+                                openStatusDialog(center, 'INACTIVE')
+                              }
                             >
                               Deactivate
                             </Button>
@@ -300,51 +317,52 @@ function AdminCenters() {
               </Table>
 
               {/* Pagination */}
-              {centersData?.data?.totalPages && centersData.data.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Page {centersData.data.page} of {centersData.data.totalPages}
+              {centersData?.data?.totalPages &&
+                centersData.data.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {centersData.data.page} of{' '}
+                      {centersData.data.totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1}
+                        onClick={() => setPage(page - 1)}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= centersData.data.totalPages}
+                        onClick={() => setPage(page + 1)}
+                      >
+                        Next
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                      onClick={() => setPage(page - 1)}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= centersData.data.totalPages}
-                      onClick={() => setPage(page + 1)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
+                )}
             </>
           )}
         </CardContent>
       </Card>
 
       {/* Status Update Dialog */}
-      <Dialog open={statusDialog.open} onOpenChange={(open) => 
-        setStatusDialog(prev => ({ ...prev, open }))
-      }>
+      <Dialog
+        open={statusDialog.open}
+        onOpenChange={(open) => setStatusDialog((prev) => ({ ...prev, open }))}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Update Center Status
-            </DialogTitle>
+            <DialogTitle>Update Center Status</DialogTitle>
             <DialogDescription>
               Change the status of "{statusDialog.center?.centerName}" to{' '}
               <strong>{statusDialog.newStatus}</strong>
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="reason">Reason (Optional)</Label>
@@ -352,10 +370,12 @@ function AdminCenters() {
                 id="reason"
                 placeholder="Enter reason for status change..."
                 value={statusDialog.reason}
-                onChange={(e) => setStatusDialog(prev => ({ 
-                  ...prev, 
-                  reason: e.target.value 
-                }))}
+                onChange={(e) =>
+                  setStatusDialog((prev) => ({
+                    ...prev,
+                    reason: e.target.value,
+                  }))
+                }
               />
             </div>
           </div>
@@ -363,7 +383,9 @@ function AdminCenters() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setStatusDialog(prev => ({ ...prev, open: false }))}
+              onClick={() =>
+                setStatusDialog((prev) => ({ ...prev, open: false }))
+              }
             >
               Cancel
             </Button>
@@ -378,4 +400,4 @@ function AdminCenters() {
       </Dialog>
     </div>
   )
-} 
+}

@@ -1,20 +1,27 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import { useVerifyPayment } from '@/services/providers/donor.provider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
   AlertTriangle,
-  Loader2,
   ArrowRight,
-  Gift
+  CheckCircle,
+  Clock,
+  Gift,
+  Loader2,
+  XCircle,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export const Route = createFileRoute('/donor/campaigns/$campaignId/payment-status')({
+export const Route = createFileRoute(
+  '/donor/campaigns/$campaignId/payment-status',
+)({
   component: CampaignPaymentStatusPage,
   validateSearch: (search: Record<string, unknown>) => {
     return {
@@ -29,27 +36,27 @@ function CampaignPaymentStatusPage() {
   const { campaignId } = Route.useParams()
   const { ref, type } = Route.useSearch()
   const [redirectTimer, setRedirectTimer] = useState(5)
-  
-  const { 
-    data: paymentData, 
-    isLoading, 
+
+  const {
+    data: paymentData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery(useVerifyPayment(ref))
-  
+
   const payment = paymentData?.data
 
   // Auto-redirect timer for successful payments
   useEffect(() => {
     if (payment?.status === 'success' && redirectTimer > 0) {
       const timer = setTimeout(() => {
-        setRedirectTimer(prev => prev - 1)
+        setRedirectTimer((prev) => prev - 1)
       }, 1000)
-      
+
       if (redirectTimer === 1) {
         navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })
       }
-      
+
       return () => clearTimeout(timer)
     }
   }, [payment?.status, redirectTimer, navigate, campaignId])
@@ -67,9 +74,17 @@ function CampaignPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              No payment reference was provided. Please check your payment link or try again.
+              No payment reference was provided. Please check your payment link
+              or try again.
             </p>
-            <Button onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}>
+            <Button
+              onClick={() =>
+                navigate({
+                  to: '/donor/campaigns/$campaignId',
+                  params: { campaignId },
+                })
+              }
+            >
               Return to Campaign
             </Button>
           </CardContent>
@@ -87,11 +102,10 @@ function CampaignPaymentStatusPage() {
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
             <h3 className="text-lg font-semibold mb-2">Verifying Payment</h3>
             <p className="text-gray-600 mb-4">
-              Please wait while we confirm your payment with our payment provider...
+              Please wait while we confirm your payment with our payment
+              provider...
             </p>
-            <div className="text-sm text-gray-500">
-              Reference: {ref}
-            </div>
+            <div className="text-sm text-gray-500">Reference: {ref}</div>
           </CardContent>
         </Card>
       </div>
@@ -111,13 +125,21 @@ function CampaignPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't verify your payment at this time. This might be a temporary issue.
+              We couldn't verify your payment at this time. This might be a
+              temporary issue.
             </p>
             <div className="flex gap-3">
               <Button onClick={() => refetch()} variant="outline">
                 Try Again
               </Button>
-              <Button onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}>
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: '/donor/campaigns/$campaignId',
+                    params: { campaignId },
+                  })
+                }
+              >
                 Return to Campaign
               </Button>
             </div>
@@ -139,12 +161,18 @@ function CampaignPaymentStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't find a payment with this reference. Please check your payment confirmation email or contact support.
+              We couldn't find a payment with this reference. Please check your
+              payment confirmation email or contact support.
             </p>
-            <div className="text-sm text-gray-500 mb-4">
-              Reference: {ref}
-            </div>
-            <Button onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}>
+            <div className="text-sm text-gray-500 mb-4">Reference: {ref}</div>
+            <Button
+              onClick={() =>
+                navigate({
+                  to: '/donor/campaigns/$campaignId',
+                  params: { campaignId },
+                })
+              }
+            >
               Return to Campaign
             </Button>
           </CardContent>
@@ -157,7 +185,7 @@ function CampaignPaymentStatusPage() {
   if (payment.status === 'success') {
     const isFunding = payment.context?.type === 'campaign_funding'
     const campaign = isFunding ? (payment.context as any)?.campaign : null
-    
+
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-green-200 bg-green-50">
@@ -189,7 +217,11 @@ function CampaignPaymentStatusPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Date:</span>
-                <span>{new Date(payment.paidAt || payment.transactionDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(
+                    payment.paidAt || payment.transactionDate,
+                  ).toLocaleDateString()}
+                </span>
               </div>
               {campaign && (
                 <div className="flex justify-between text-sm">
@@ -209,11 +241,15 @@ function CampaignPaymentStatusPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Available Amount:</span>
-                    <div className="font-semibold">₦{campaign.availableAmount.toLocaleString()}</div>
+                    <div className="font-semibold">
+                      ₦{campaign.availableAmount.toLocaleString()}
+                    </div>
                   </div>
                   <div>
                     <span className="text-gray-600">Patients Helped:</span>
-                    <div className="font-semibold">{campaign.patientsHelped}</div>
+                    <div className="font-semibold">
+                      {campaign.patientsHelped}
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-blue-700 mt-2">
@@ -229,14 +265,19 @@ function CampaignPaymentStatusPage() {
 
             {/* Action buttons */}
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: '/donor/campaigns/$campaignId',
+                    params: { campaignId },
+                  })
+                }
                 className="flex-1"
               >
                 <ArrowRight className="h-4 w-4 mr-2" />
                 View Campaign
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -264,7 +305,7 @@ function CampaignPaymentStatusPage() {
             <p className="text-gray-600">
               Your payment could not be processed. Your card was not charged.
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 text-sm">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Amount:</span>
@@ -277,13 +318,18 @@ function CampaignPaymentStatusPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: '/donor/campaigns/$campaignId',
+                    params: { campaignId },
+                  })
+                }
                 className="flex-1"
               >
                 Try Again
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -309,17 +355,23 @@ function CampaignPaymentStatusPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              You cancelled the payment process. No charges were made to your card.
+              You cancelled the payment process. No charges were made to your
+              card.
             </p>
-            
+
             <div className="flex gap-3">
-              <Button 
-                onClick={() => navigate({ to: '/donor/campaigns/$campaignId', params: { campaignId } })}
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: '/donor/campaigns/$campaignId',
+                    params: { campaignId },
+                  })
+                }
                 className="flex-1"
               >
                 Try Again
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate({ to: '/donor/campaigns' })}
               >
@@ -344,9 +396,10 @@ function CampaignPaymentStatusPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            Your payment is still being processed. We'll update the status automatically.
+            Your payment is still being processed. We'll update the status
+            automatically.
           </p>
-          
+
           <div className="bg-gray-50 rounded-lg p-4 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Reference:</span>
@@ -354,7 +407,7 @@ function CampaignPaymentStatusPage() {
             </div>
           </div>
 
-          <Button 
+          <Button
             onClick={() => refetch()}
             variant="outline"
             className="w-full"
@@ -366,4 +419,4 @@ function CampaignPaymentStatusPage() {
       </Card>
     </div>
   )
-} 
+}

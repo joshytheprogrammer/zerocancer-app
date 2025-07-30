@@ -15,7 +15,7 @@
     "build": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend build && pnpm --filter ./apps/frontend build",
     "build:copy-frontend": "node scripts/copy-frontend.js",
     "dev": "pnpm --filter ./apps/backend prisma:generate && pnpm --filter @zerocancer/shared build && concurrently \"pnpm backend:dev\" \"pnpm --filter ./apps/frontend dev\"",
-    "backend:dev": "pnpm --filter @zerocancer/shared build && concurrently \"pnpm --filter ./apps/backend dev\"",
+    "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
     "sync-schemas": "node scripts/sync-prisma-schemas.js",

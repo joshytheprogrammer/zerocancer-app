@@ -1,6 +1,11 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Table,
   TableBody,
@@ -8,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import { centerAppointments } from '@/services/providers/center.provider'
 import { useQuery } from '@tanstack/react-query'
@@ -63,16 +68,14 @@ function CenterDashboard() {
   const todayEnd = new Date()
   todayEnd.setHours(23, 59, 59, 999)
 
-  const {
-    data: todaysTransactionsData,
-    isLoading: todaysTransactionsLoading,
-  } = useQuery({
-    ...centerTransactionHistory(centerId!, {
-      startDate: todayStart,
-      endDate: todayEnd,
-    }),
-    enabled: !!centerId,
-  })
+  const { data: todaysTransactionsData, isLoading: todaysTransactionsLoading } =
+    useQuery({
+      ...centerTransactionHistory(centerId!, {
+        startDate: todayStart,
+        endDate: todayEnd,
+      }),
+      enabled: !!centerId,
+    })
 
   // --- Client-side calculations from fetched data ---
   const allAppointments = appointmentsData?.data?.appointments || []
@@ -179,7 +182,9 @@ function CenterDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{stat.title}</p>
-                <p className="text-2xl font-bold">{metricsLoading ? '...' : stat.value}</p>
+                <p className="text-2xl font-bold">
+                  {metricsLoading ? '...' : stat.value}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {stat.description}
                 </p>
@@ -246,15 +251,12 @@ function CenterDashboard() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={cn(
-                            'border-transparent text-white',
-                            {
-                              'bg-orange-400': appt.status === 'SCHEDULED',
-                              'bg-green-500': appt.status === 'COMPLETED',
-                              'bg-red-500': appt.status === 'CANCELLED',
-                              'bg-blue-500': appt.status === 'IN_PROGRESS',
-                            },
-                          )}
+                          className={cn('border-transparent text-white', {
+                            'bg-orange-400': appt.status === 'SCHEDULED',
+                            'bg-green-500': appt.status === 'COMPLETED',
+                            'bg-red-500': appt.status === 'CANCELLED',
+                            'bg-blue-500': appt.status === 'IN_PROGRESS',
+                          })}
                         >
                           {appt.status === 'SCHEDULED'
                             ? 'Pending'

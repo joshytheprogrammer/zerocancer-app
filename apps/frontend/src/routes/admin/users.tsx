@@ -1,17 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useAdminUsers } from '@/services/providers/admin.provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
+import { Input } from '@/components/shared/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -19,25 +21,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
+import { cn } from '@/lib/utils'
+import { useAdminUsers } from '@/services/providers/admin.provider'
+import { createFileRoute } from '@tanstack/react-router'
 import {
-  Users,
-  Search,
-  Mail,
-  Phone,
-  Calendar,
-  MapPin,
   Building2,
-  Heart,
-  Stethoscope,
+  Calendar,
   CheckCircle2,
-  XCircle,
   Clock,
   Filter,
-  UserCheck,
   Globe,
+  Heart,
+  Mail,
+  MapPin,
+  Phone,
+  Search,
+  Stethoscope,
+  UserCheck,
+  Users,
+  XCircle,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/admin/users')({
   component: AdminUsers,

@@ -1,21 +1,26 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import { Card, CardContent } from '@/components/shared/ui/card'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/shared/ui/tabs'
 import {
   useMarkNotificationRead,
   useNotifications,
 } from '@/services/providers/notification.provider'
-import type { TNotificationRecipient } from '@zerocancer/shared/types'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import type { TNotificationRecipient } from '@zerocancer/shared/types'
 import { toast } from 'sonner'
 // Asset imports
-import bellIcon from '@/assets/images/notification.png'
-import resultIcon from '@/assets/images/screening.png'
-import donationIcon from '@/assets/images/donor.png'
 import reminderIcon from '@/assets/images/calendar.png'
+import donationIcon from '@/assets/images/donor.png'
+import bellIcon from '@/assets/images/notification.png'
 import waitlistIcon from '@/assets/images/patients.png' // using patients for waitlist
+import resultIcon from '@/assets/images/screening.png'
 
 export const Route = createFileRoute('/patient/notifications')({
   component: PatientNotifications,
@@ -195,13 +200,15 @@ function PatientNotifications() {
   const groupedNotifications = groupNotificationsByDate(notifications)
   const notificationGroups = Object.entries(groupedNotifications)
 
-  const EmptyState = ({ title, message }: { title: string; message: string }) => (
+  const EmptyState = ({
+    title,
+    message,
+  }: {
+    title: string
+    message: string
+  }) => (
     <div className="flex flex-col items-center justify-center text-center py-20">
-      <img
-        src={bellIcon}
-        alt="No notifications"
-        className="w-24 h-24 mb-6"
-      />
+      <img src={bellIcon} alt="No notifications" className="w-24 h-24 mb-6" />
       <h2 className="text-xl font-bold text-gray-800">{title}</h2>
       <p className="text-muted-foreground mt-1">{message}</p>
     </div>
@@ -230,62 +237,60 @@ function PatientNotifications() {
         <TabsContent value="all" className="mt-4">
           {notifications.length > 0 ? (
             <div className="space-y-8">
-              {notificationGroups.map(
-                ([groupTitle, groupNotifications]) => (
-                  <div key={groupTitle}>
-                    <h3 className="text-base font-semibold mb-4 text-gray-600">
-                      {groupTitle}
-                    </h3>
-                    <div className="space-y-2">
-                      {groupNotifications.map((n) => (
+              {notificationGroups.map(([groupTitle, groupNotifications]) => (
+                <div key={groupTitle}>
+                  <h3 className="text-base font-semibold mb-4 text-gray-600">
+                    {groupTitle}
+                  </h3>
+                  <div className="space-y-2">
+                    {groupNotifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100/50 cursor-pointer"
+                        onClick={() => handleNotificationClick(n)}
+                      >
                         <div
-                          key={n.id}
-                          className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100/50 cursor-pointer"
-                          onClick={() => handleNotificationClick(n)}
+                          className={`p-2 rounded-full ${!n.read ? 'bg-blue-100' : 'bg-gray-100'}`}
                         >
-                          <div
-                            className={`p-2 rounded-full ${!n.read ? 'bg-blue-100' : 'bg-gray-100'}`}
-                          >
-                            <img
-                              src={
-                                notificationIcons[n.notification.type] ||
-                                notificationIcons.default
-                              }
-                              alt=""
-                              className="w-7 h-7"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-800">
-                              {n.notification.title}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {n.notification.message}
-                            </p>
-                          </div>
-                          <div className="text-right space-y-1.5 self-start">
-                            <p className="text-xs text-muted-foreground whitespace-nowrap">
-                              {new Date(
-                                n.notification.createdAt,
-                              ).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                            {!n.read && (
-                              <div className="flex justify-end">
-                                <Badge className="bg-red-500 text-white hover:bg-red-600">
-                                  New
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
+                          <img
+                            src={
+                              notificationIcons[n.notification.type] ||
+                              notificationIcons.default
+                            }
+                            alt=""
+                            className="w-7 h-7"
+                          />
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">
+                            {n.notification.title}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {n.notification.message}
+                          </p>
+                        </div>
+                        <div className="text-right space-y-1.5 self-start">
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(
+                              n.notification.createdAt,
+                            ).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                          {!n.read && (
+                            <div className="flex justify-end">
+                              <Badge className="bg-red-500 text-white hover:bg-red-600">
+                                New
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ),
-              )}
+                </div>
+              ))}
             </div>
           ) : (
             <EmptyState
@@ -295,21 +300,30 @@ function PatientNotifications() {
           )}
         </TabsContent>
         <TabsContent value="results" className="mt-4">
-           {notificationsByType('RESULTS_AVAILABLE').length > 0 ? (
+          {notificationsByType('RESULTS_AVAILABLE').length > 0 ? (
             <p>Results notifications will be here</p>
-           ) : (
-            <EmptyState title='No Results' message='Your results notifications will appear here' />
-           )}
+          ) : (
+            <EmptyState
+              title="No Results"
+              message="Your results notifications will appear here"
+            />
+          )}
         </TabsContent>
-         <TabsContent value="appointments" className="mt-4">
-           {notificationsByType('APPOINTMENT_REMINDER').length > 0 ? (
+        <TabsContent value="appointments" className="mt-4">
+          {notificationsByType('APPOINTMENT_REMINDER').length > 0 ? (
             <p>Appointments notifications will be here</p>
-           ) : (
-            <EmptyState title='No Appointment Updates' message='Your appointment notifications will appear here' />
-           )}
+          ) : (
+            <EmptyState
+              title="No Appointment Updates"
+              message="Your appointment notifications will appear here"
+            />
+          )}
         </TabsContent>
-         <TabsContent value="referrals" className="mt-4">
-            <EmptyState title='No Referrals' message='Your referral notifications will appear here' />
+        <TabsContent value="referrals" className="mt-4">
+          <EmptyState
+            title="No Referrals"
+            message="Your referral notifications will appear here"
+          />
         </TabsContent>
       </Tabs>
     </div>

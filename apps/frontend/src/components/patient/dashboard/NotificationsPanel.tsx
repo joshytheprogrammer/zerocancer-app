@@ -1,13 +1,13 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import type { TNotificationRecipient } from '@zerocancer/shared/types'
+import { Button } from '@/components/shared/ui/button'
+import { Card, CardContent } from '@/components/shared/ui/card'
 import { Link, useNavigate } from '@tanstack/react-router'
+import type { TNotificationRecipient } from '@zerocancer/shared/types'
 import { Bell, Loader2 } from 'lucide-react'
 
 // Import icons for different notification types
-import screeningIcon from '@/assets/images/screening.png'
 import donorIcon from '@/assets/images/donor.png'
 import notificationIcon from '@/assets/images/notification.png'
+import screeningIcon from '@/assets/images/screening.png'
 
 interface NotificationsPanelProps {
   notifications: TNotificationRecipient[]
@@ -43,7 +43,8 @@ const NotificationItem = ({
 }) => {
   const navigate = useNavigate()
   const typeInfo =
-    notificationTypes[notification.notification.type as any] || notificationTypes.DEFAULT
+    notificationTypes[notification.notification.type as any] ||
+    notificationTypes.DEFAULT
 
   const handleAction = () => {
     // Navigate based on the data in the notification
@@ -85,7 +86,7 @@ const NotificationItem = ({
               {
                 hour: '2-digit',
                 minute: '2-digit',
-              }
+              },
             )}
           </p>
         </div>
@@ -109,7 +110,11 @@ export default function NotificationsPanel({
       <CardContent className="p-4 space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src={notificationIcon} alt="notification icon" className="w-8 h-8" />
+            <img
+              src={notificationIcon}
+              alt="notification icon"
+              className="w-8 h-8"
+            />
             <h3 className="text-lg font-semibold text-gray-800">
               Notifications
             </h3>
@@ -141,4 +146,4 @@ export default function NotificationsPanel({
       </CardContent>
     </Card>
   )
-} 
+}

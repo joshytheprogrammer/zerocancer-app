@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/shared/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogClose,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/shared/ui/dialog'
 import { Link } from '@tanstack/react-router'
 import type {
   TAppointmentDetails,

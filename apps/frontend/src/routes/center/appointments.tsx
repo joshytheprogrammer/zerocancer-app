@@ -1,6 +1,11 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/shared/ui/badge'
+import { Button } from '@/components/shared/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -8,15 +13,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+} from '@/components/shared/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/shared/ui/dropdown-menu'
+import { Input } from '@/components/shared/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -24,7 +35,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/shared/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/shared/ui/tabs'
+import { cn } from '@/lib/utils'
 import {
   centerAppointmentById,
   centerAppointments,
@@ -32,6 +45,7 @@ import {
 } from '@/services/providers/center.provider'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
 import {
   Calendar,
   ChevronLeft,
@@ -44,15 +58,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
-import { getCenterAppointmentsSchema } from '@zerocancer/shared/schemas/appointment.schema'
 import { z } from 'zod'
 
 type SearchParams = {
@@ -60,7 +65,9 @@ type SearchParams = {
   status?: z.infer<typeof getCenterAppointmentsSchema>['status']
 }
 
-type StatusFilter = z.infer<typeof getCenterAppointmentsSchema>['status'] | 'ALL'
+type StatusFilter =
+  | z.infer<typeof getCenterAppointmentsSchema>['status']
+  | 'ALL'
 
 export const Route = createFileRoute('/center/appointments')({
   validateSearch: (search: Record<string, unknown>): SearchParams => {
@@ -117,9 +124,7 @@ function CenterAppointments() {
   // Filter appointments locally based on search term
   const filteredAppointments = searchTerm
     ? appointments.filter((apt) =>
-        apt.patient?.fullName
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()),
+        apt.patient?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     : appointments
 

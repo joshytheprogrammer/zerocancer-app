@@ -1,14 +1,13 @@
+import GlobalError from '@/components/GlobalError'
+import GlobalNotFound from '@/components/GlobalNotFound'
+import type { QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   HeadContent,
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
-
-import type { QueryClient } from '@tanstack/react-query'
-import { Toaster } from 'sonner'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -37,22 +36,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     //   },
     // ],
   }),
-  notFoundComponent: () => (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-      <p className="text-lg">The page you are looking for does not exist.</p>
-    </div>
-  ),
+  notFoundComponent: GlobalNotFound,
+  errorComponent: GlobalError,
   component: () => (
     <>
       <HeadContent />
-      {/* <Header /> */}
-
       <Outlet />
-      <Toaster richColors/>
-      <TanStackRouterDevtools />
-
-      <TanStackQueryLayout />
+      <TanStackRouterDevtools position="top-left" />
+      <ReactQueryDevtools buttonPosition="bottom-left" />
     </>
   ),
 })

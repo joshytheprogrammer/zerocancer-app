@@ -1,12 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Button } from '@/components/shared/ui/button'
+import { Input } from '@/components/shared/ui/input'
+import PasswordInput from '@/components/shared/ui/password-input'
 import { useResetPassword } from '@/services/providers/auth.provider'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import PasswordInput from '@/components/ui/password-input'
-import { useNavigate } from '@tanstack/react-router'
 
 const resetPasswordSearchSchema = z.object({
   token: z.string().catch(''),
@@ -42,36 +41,42 @@ function ResetPasswordPage() {
       { token, password },
       {
         onSuccess: () => {
-          toast.success('Password reset successful! You will be redirected to the login page now')
+          toast.success(
+            'Password reset successful! You will be redirected to the login page now',
+          )
           setTimeout(() => {
             navigate({ to: '/login', replace: true })
           }, 1500)
         },
         onError: () => toast.error('Failed to reset password.'),
-      }
+      },
     )
   }
 
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="w-xl mx-auto mt-16 p-6 bg-white rounded shadow ">
-      <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <PasswordInput
-          placeholder="Enter new password"
-          value={password}
-          onChange={setPassword}
-        />
-        <PasswordInput
-          placeholder="Confirm new password"
-          value={confirm}
-          onChange={setConfirm}
-        />
-        <Button type="submit" disabled={resetPassword.isPending} className="w-full">
-          {resetPassword.isPending ? 'Resetting...' : 'Reset Password'}
-        </Button>
-      </form>
-    </div>
+        <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <PasswordInput
+            placeholder="Enter new password"
+            value={password}
+            onChange={setPassword}
+          />
+          <PasswordInput
+            placeholder="Confirm new password"
+            value={confirm}
+            onChange={setConfirm}
+          />
+          <Button
+            type="submit"
+            disabled={resetPassword.isPending}
+            className="w-full"
+          >
+            {resetPassword.isPending ? 'Resetting...' : 'Reset Password'}
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }
