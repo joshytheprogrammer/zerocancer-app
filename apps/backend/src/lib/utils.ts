@@ -2,8 +2,10 @@ import { JsonObject } from "@prisma/client/runtime/library";
 import { TDonationCampaign, TtriggerMatchingParams } from "@zerocancer/shared";
 import bcrypt from "bcryptjs";
 // import { createComputeClient } from "./compute-client";
+import { env } from "hono/adapter";
 import { getDB } from "./db";
 import { sendNotificationEmail } from "./email";
+import { TEnvs } from "./types";
 import { waitlistMatcherAlg } from "./waitlistMatchingAlg";
 
 export function generateHexId(length: number = 6) {
@@ -240,4 +242,56 @@ export function formatCampaignForResponse(campaign: any): TDonationCampaign {
       allocationsCount: campaign.allocations?.length || 0,
     },
   };
+}
+
+export function displayEnvVars(c: any) {
+  const {
+    ENV_MODE,
+    DATABASE_URL,
+    JWT_TOKEN_SECRET,
+    FRONTEND_URL,
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASS,
+    PAYSTACK_SECRET_KEY,
+    PAYSTACK_PUBLIC_KEY,
+    CRON_API_KEY,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    WAITLIST_BATCH_SIZE,
+    WAITLIST_MAX_TOTAL,
+    WAITLIST_PARALLEL,
+    WAITLIST_CONCURRENT,
+    WAITLIST_DEMOGRAPHICS,
+    WAITLIST_GEOGRAPHIC_TARGETING,
+    WAITLIST_EXPIRY_DAYS,
+  } = env<TEnvs>(c);
+
+  const envVars = {
+    ENV_MODE,
+    DATABASE_URL: DATABASE_URL ? "***SET***" : "NOT SET",
+    JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
+    FRONTEND_URL: FRONTEND_URL ?? "NOT SET",
+    SMTP_HOST: SMTP_HOST ?? "NOT SET",
+    SMTP_PORT: SMTP_PORT ?? "NOT SET",
+    SMTP_USER: SMTP_USER ?? "NOT SET",
+    SMTP_PASS: SMTP_PASS ? "***SET***" : "NOT SET",
+    PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
+    PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
+    CRON_API_KEY: CRON_API_KEY ? "***SET***" : "NOT SET",
+    CLOUDINARY_CLOUD_NAME: CLOUDINARY_CLOUD_NAME ?? "NOT SET",
+    CLOUDINARY_API_KEY: CLOUDINARY_API_KEY ? "***SET***" : "NOT SET",
+    CLOUDINARY_API_SECRET: CLOUDINARY_API_SECRET ? "***SET***" : "NOT SET",
+    WAITLIST_BATCH_SIZE: WAITLIST_BATCH_SIZE ?? "NOT SET",
+    WAITLIST_MAX_TOTAL: WAITLIST_MAX_TOTAL ?? "NOT SET",
+    WAITLIST_PARALLEL: WAITLIST_PARALLEL ?? "NOT SET",
+    WAITLIST_CONCURRENT: WAITLIST_CONCURRENT ?? "NOT SET",
+    WAITLIST_DEMOGRAPHICS: WAITLIST_DEMOGRAPHICS ?? "NOT SET",
+    WAITLIST_GEOGRAPHIC_TARGETING: WAITLIST_GEOGRAPHIC_TARGETING ?? "NOT SET",
+    WAITLIST_EXPIRY_DAYS: WAITLIST_EXPIRY_DAYS ?? "NOT SET",
+  };
+
+  return envVars;
 }

@@ -16,6 +16,7 @@ import { registerApp } from "./api/registration";
 import { screeningTypesApp } from "./api/screening-types";
 import { waitlistApp } from "./api/waitlist";
 import { TEnvs } from "./lib/types";
+import { displayEnvVars } from "./lib/utils";
 
 // Create the main app (no basePath for root)
 const app = new Hono();
@@ -33,7 +34,7 @@ app.use("*", async (c, next) => {
     origin: [FRONTEND_URL],
     credentials: true,
   });
-  
+
   return corsMiddlewareHandler(c, next);
 });
 
@@ -46,54 +47,7 @@ apiApp.get("/healthz", (c) => c.json({ status: "ok" }));
 
 // Debug endpoint to check environment variables
 apiApp.get("/debug/env", (c) => {
-  // Use Hono's env helper to access environment variables
-  const {
-    ENV_MODE,
-    DATABASE_URL,
-    JWT_TOKEN_SECRET,
-    FRONTEND_URL,
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS,
-    PAYSTACK_SECRET_KEY,
-    PAYSTACK_PUBLIC_KEY,
-    CRON_API_KEY,
-    CLOUDINARY_CLOUD_NAME,
-    CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET,
-    WAITLIST_BATCH_SIZE,
-    WAITLIST_MAX_TOTAL,
-    WAITLIST_PARALLEL,
-    WAITLIST_CONCURRENT,
-    WAITLIST_DEMOGRAPHICS,
-    WAITLIST_GEOGRAPHIC_TARGETING,
-    WAITLIST_EXPIRY_DAYS,
-  } = env<TEnvs>(c);
-
-  const envVars = {
-    ENV_MODE,
-    DATABASE_URL: DATABASE_URL ? "***SET***" : "NOT SET",
-    JWT_TOKEN_SECRET: JWT_TOKEN_SECRET ? "***SET***" : "NOT SET",
-    FRONTEND_URL,
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS: SMTP_PASS ? "***SET***" : "NOT SET",
-    PAYSTACK_SECRET_KEY: PAYSTACK_SECRET_KEY ? "***SET***" : "NOT SET",
-    PAYSTACK_PUBLIC_KEY: PAYSTACK_PUBLIC_KEY ? "***SET***" : "NOT SET",
-    CRON_API_KEY: CRON_API_KEY ? "***SET***" : "NOT SET",
-    CLOUDINARY_CLOUD_NAME,
-    CLOUDINARY_API_KEY: CLOUDINARY_API_KEY ? "***SET***" : "NOT SET",
-    CLOUDINARY_API_SECRET: CLOUDINARY_API_SECRET ? "***SET***" : "NOT SET",
-    WAITLIST_BATCH_SIZE,
-    WAITLIST_MAX_TOTAL,
-    WAITLIST_PARALLEL,
-    WAITLIST_CONCURRENT,
-    WAITLIST_DEMOGRAPHICS,
-    WAITLIST_GEOGRAPHIC_TARGETING,
-    WAITLIST_EXPIRY_DAYS,
-  };
+  const envVars = displayEnvVars(c);
 
   return c.json({
     status: "ok",
