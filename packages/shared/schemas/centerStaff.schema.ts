@@ -28,3 +28,25 @@ export const validateStaffInviteSchema = z.object({
 export type TValidateStaffInviteParams = z.infer<
   typeof validateStaffInviteSchema
 >;
+export type TValidateStaffInviteSchema = typeof validateStaffInviteSchema;
+
+export type TCreateCenterStaffPasswordParams = z.infer<
+  typeof createCenterStaffPasswordSchema
+>;
+export type TCreateCenterStaffPasswordSchema =
+  typeof createCenterStaffPasswordSchema;
+
+export type TCenterStaffForgotPasswordParams = z.infer<
+  typeof centerStaffForgotPasswordSchema
+>;
+export type TCenterStaffForgotPasswordSchema =
+  typeof centerStaffForgotPasswordSchema;
+
+export type TCenterStaffResetPasswordParams = z.infer<
+  typeof centerStaffResetPasswordSchema
+>;
+export type TCenterStaffResetPasswordSchema =
+  typeof centerStaffResetPasswordSchema;
+
+export type TCenterStaffLoginParams = z.infer<typeof centerStaffLoginSchema>;
+export type TCenterStaffLoginSchema = typeof centerStaffLoginSchema;

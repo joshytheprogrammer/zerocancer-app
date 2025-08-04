@@ -12,3 +12,6 @@ export const actorSchema = z.enum(["patient", "donor", "center", "admin"], {
     };
   },
 });
+
+export type TLoginSchema = typeof loginSchema;
+export type TLoginParams = z.infer<typeof loginSchema>;

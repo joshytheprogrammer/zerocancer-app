@@ -33,7 +33,7 @@ authApp.post(
       return c.json<TErrorResponse>(
         {
           ok: false,
-          err_code: "invalid_login_data",
+          err_code: "invalid_credentials" as const,
           error: result.error!,
         },
         400
@@ -44,7 +44,7 @@ authApp.post(
       return c.json<TErrorResponse>(
         {
           ok: false,
-          err_code: "invalid_actor",
+          err_code: "invalid_actor" as const,
           error:
             "Actor type is required and must be one of: patient, donor, center.",
         },
