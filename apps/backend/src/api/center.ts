@@ -427,7 +427,7 @@ centerApp.post(
     const payload = {
       id: centerId!,
       email: email!,
-      profile: "CENTER_STAFF",
+      profile: staff.role === "admin" ? "CENTER" : "CENTER_STAFF",
     };
     const token = await sign(
       { ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 5 },

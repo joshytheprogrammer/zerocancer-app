@@ -62,7 +62,11 @@ export function StaffLoginForm() {
     loginMutation.mutate(values, {
       onSuccess: () => {
         toast.success('Login successful')
-        navigate({ to: '/center' })
+
+        queryClient.fetchQuery(useAuthUser()).then((data) => {
+          const userProfile = data?.data?.user?.profile.toLowerCase()
+          navigate({ to: `/center` })
+        })
       },
       onError: (error: any) => {
         toast.error(
@@ -78,7 +82,7 @@ export function StaffLoginForm() {
     <div className="w-full max-w-md space-y-6 mx-auto">
       {/* <div className="space-y-6"> */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold">Staff Portal</h2>
+        <h2 className="text-3xl font-bold">Screening Center Portal</h2>
         <p className="text-muted-foreground">
           Sign in to access your center's staff portal.
         </p>

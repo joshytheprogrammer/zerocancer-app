@@ -57,7 +57,6 @@ export default function LoginForm() {
 
           queryClient.fetchQuery(useAuthUser()).then((data) => {
             const userProfile = data?.data?.user?.profile.toLowerCase()
-            console.log('userProfile', userProfile)
             navigate({ to: `/${userProfile}` })
           })
         },

@@ -46,6 +46,7 @@ function RouteComponent() {
               <Link
                 to={onSignupPages ? '/login' : '/sign-up'}
                 className="text-primary font-semibold"
+                preload="render"
               >
                 {onSignupPages ? 'Login' : 'Sign Up'}
               </Link>
