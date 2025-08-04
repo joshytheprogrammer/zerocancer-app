@@ -1,10 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { isAxiosError } from 'axios'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-
 import { Button } from '@/components/shared/ui/button'
 import {
   Form,
@@ -18,24 +11,30 @@ import { Input } from '@/components/shared/ui/input'
 import PasswordInput from '@/components/shared/ui/password-input'
 import {
   useAuthUser,
-  useForgotPassword,
   useLogin,
   useResendVerification,
 } from '@/services/providers/auth.provider'
-import { loginSchema } from '@zerocancer/shared/schemas/auth.schema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
+import {
+  loginSchema,
+  type TLoginParams,
+} from '@zerocancer/shared/schemas/auth.schema'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import type { z } from 'zod'
+import Spinner from '../../shared/Spinner'
 import RoleSelection from './RoleSelection'
 
-type FormData = z.infer<typeof loginSchema>
-
 export default function LoginForm() {
-  const [showForgot, setShowForgot] = useState(false)
-  const [forgotEmail, setForgotEmail] = useState('')
-  const [forgotSent, setForgotSent] = useState(false)
-  const [role, setRole] = useState<'patient' | 'donor' | 'center'>('patient')
+  const [role, setRole] = useState<'patient' | 'donor'>('patient')
   const queryClient = useQueryClient()
-  const form = useForm<FormData>({
+  const loginMutation = useLogin()
+  const resendVerificationMutation = useResendVerification()
+  const navigate = useNavigate()
+
+  const form = useForm<TLoginParams>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'testdonor3@example.com',
@@ -43,25 +42,7 @@ export default function LoginForm() {
     },
   })
 
-  const loginMutation = useLogin()
-  const forgotPasswordMutation = useForgotPassword()
-  const resendVerificationMutation = useResendVerification()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (forgotPasswordMutation.status === 'error') {
-      let msg = 'Failed to send reset email.'
-      if (isAxiosError(forgotPasswordMutation.error)) {
-        const data = forgotPasswordMutation.error.response?.data
-        if (data && typeof data === 'object') {
-          msg = JSON.stringify(data)
-        }
-      }
-      toast.error(msg)
-    }
-  }, [forgotPasswordMutation.status])
-
-  function onSubmit(values: FormData) {
+  function onSubmit(values: TLoginParams) {
     loginMutation.mutate(
       {
         params: {
@@ -71,7 +52,7 @@ export default function LoginForm() {
         actor: role,
       },
       {
-        onSuccess: async (response) => {
+        onSuccess: () => {
           toast.success('Login successful')
 
           queryClient.fetchQuery(useAuthUser()).then((data) => {
@@ -85,6 +66,7 @@ export default function LoginForm() {
             toast.error(
               'User not verified. Please check your email for verification code.',
             )
+
             resendVerificationMutation.mutate(
               {
                 email: values.email,
@@ -94,69 +76,26 @@ export default function LoginForm() {
                 onSuccess: () => {
                   toast.success('Verification code resent successfully!')
                 },
-                onError: (error) => {
+                onError: () => {
                   toast.error(
                     'Failed to resend verification code. Please try again.',
                   )
                 },
               },
             )
+          } else if (error.response?.data?.err_code === 'invalid_credentials') {
+            toast.error('Invalid email or password. Please try again.')
+          } else if (error.response?.data?.err_code === 'invalid_actor') {
+            toast.error(
+              "Seems like you're trying to log in with the wrong profile type. Please select the correct role for your account.",
+            )
           }
+
           toast.error(
             error.response?.data?.error || 'Login failed. Please try again.',
           )
         },
       },
-    )
-  }
-
-  function handleForgotPassword(e: React.FormEvent) {
-    e.preventDefault()
-    forgotPasswordMutation.mutate(forgotEmail, {
-      onSuccess: () => setForgotSent(true),
-    })
-  }
-
-  if (showForgot) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold">Forgot Password</h2>
-          <p className="text-muted-foreground">
-            Enter your email to receive a password reset link.
-          </p>
-        </div>
-        <form onSubmit={handleForgotPassword} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="john.doe@example.com"
-            value={forgotEmail}
-            onChange={(e) => setForgotEmail(e.target.value)}
-            required
-          />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={forgotPasswordMutation.status === 'pending'}
-          >
-            {forgotPasswordMutation.status === 'pending'
-              ? 'Sending...'
-              : 'Send Reset Link'}
-          </Button>
-          {forgotSent && (
-            <div className="text-green-600 text-sm">
-              Reset link sent! Check your email.
-            </div>
-          )}
-        </form>
-        <Button
-          variant="link"
-          className="w-full"
-          onClick={() => setShowForgot(false)}
-        >
-          Back to Login
-        </Button>
-      </div>
     )
   }
 
@@ -171,10 +110,10 @@ export default function LoginForm() {
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Login as...</label>
         <RoleSelection
+          selectedRoles={['patient', 'donor']}
           field={{
             value: role,
-            onChange: (value: string) =>
-              setRole(value as 'patient' | 'donor' | 'center'),
+            onChange: (value: string) => setRole(value as 'patient' | 'donor'),
             name: 'role',
             onBlur: () => {},
             ref: () => {},
@@ -219,41 +158,25 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
+
           <div className="flex justify-end">
-            <button
+            <Link
               className=" text-primary cursor-pointer"
-              onClick={() => setShowForgot(true)}
+              to="/forgot-password"
             >
               Forgot Password?
-            </button>
+            </Link>
           </div>
+
           <Button
             type="submit"
-            disabled={loginMutation.status === 'pending'}
+            disabled={
+              loginMutation.status === 'pending' ||
+              loginMutation.status === 'success'
+            }
             className="w-full flex items-center justify-center gap-2"
           >
-            {loginMutation.status === 'pending' && (
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
-            )}
+            {loginMutation.status === 'pending' && <Spinner />}
             Login
           </Button>
         </form>

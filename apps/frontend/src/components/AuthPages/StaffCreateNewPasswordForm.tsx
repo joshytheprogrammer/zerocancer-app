@@ -27,33 +27,24 @@ import {
 } from '@/services/providers/center.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { createCenterStaffPasswordSchema } from '@zerocancer/shared/schemas/centerStaff.schema'
+import { useNavigate } from '@tanstack/react-router'
+import {
+  createCenterStaffPasswordSchema,
+  type TCreateCenterStaffPasswordParams,
+} from '@zerocancer/shared/schemas/centerStaff.schema'
 import {
   AlertTriangle,
   ArrowRight,
   Building,
   CheckCircle,
   Shield,
-  Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-type SearchParams = {
-  token: string
-}
-
-export const Route = createFileRoute('/(auth)/staff/create-new-password')({
-  component: CreateStaffPassword,
-  validateSearch: (search): SearchParams => ({
-    token: String(search.token || ''),
-  }),
-})
-
-type CreatePasswordForm = z.infer<typeof createCenterStaffPasswordSchema> & {
+type CreatePasswordForm = TCreateCenterStaffPasswordParams & {
   confirmPassword: string
 }
 
@@ -66,9 +57,8 @@ const createPasswordFormSchema = createCenterStaffPasswordSchema
     path: ['confirmPassword'],
   })
 
-function CreateStaffPassword() {
+export function CreateStaffPassword({ token }: { token: string }) {
   const navigate = useNavigate()
-  const { token } = Route.useSearch()
   const [isSuccess, setIsSuccess] = useState(false)
 
   // Validate staff invite token and get center details

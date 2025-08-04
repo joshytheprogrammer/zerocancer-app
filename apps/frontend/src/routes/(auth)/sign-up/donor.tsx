@@ -1,6 +1,5 @@
-import DonorForm from '@/components/SignupPage/DonorForm'
-import { Link } from '@tanstack/react-router'
-import { createFileRoute } from '@tanstack/react-router'
+import DonorForm from '@/components/AuthPages/SignupPage/DonorForm'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -38,7 +37,9 @@ function RouteComponent() {
       <div className="">
         <div className="space-y-4">
           <p className="text-center text-lg">
-            A <span className="text-primary">verification link</span> has been sent to <b>{email}</b>. Please check your email and verify your account.
+            A <span className="text-primary">verification link</span> has been
+            sent to <b>{email}</b>. Please check your email and verify your
+            account.
           </p>
           <div className="text-center text-lg">Didnt receive an email?</div>
           <div className="flex justify-center">

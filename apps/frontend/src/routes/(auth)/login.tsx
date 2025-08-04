@@ -1,10 +1,6 @@
-import LoginPage from '@/components/LoginPage/LoginPage.component'
+import LoginPage from '@/components/AuthPages/LoginPage/LoginPage.page'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/(auth)/login')({
-  component: RouteComponent,
+  component: LoginPage,
 })
-
-function RouteComponent() {
-  return <LoginPage />
-}

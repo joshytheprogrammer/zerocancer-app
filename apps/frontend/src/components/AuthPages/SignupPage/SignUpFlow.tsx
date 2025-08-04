@@ -6,7 +6,7 @@ import { Link } from '@tanstack/react-router'
 export default function SignUpFlow() {
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-bold">Who are you signing up as?</h2>
+      <h2 className="text-3xl font-bold">Sign up as?</h2>
       <div className="flex gap-4 flex-wrap">
         <Link
           to="/sign-up/patient"

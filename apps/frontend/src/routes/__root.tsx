@@ -37,7 +37,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     // ],
   }),
   notFoundComponent: GlobalNotFound,
-  errorComponent: GlobalError,
+  // errorComponent: GlobalError,
   component: () => (
     <>
       <HeadContent />

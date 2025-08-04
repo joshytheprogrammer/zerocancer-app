@@ -1,4 +1,4 @@
-import ScreeningCenterForm from '@/components/SignupPage/ScreeningCenterForm'
+import ScreeningCenterForm from '@/components/AuthPages/SignupPage/ScreeningCenterForm'
 import { useAllScreeningTypes } from '@/services/providers/screeningType.provider'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -46,7 +46,7 @@ function RouteComponent() {
             sent to <b>{email}</b>. Please check your email and verify your
             account.
           </p>
-          <div className="text-center text-lg">Didnt reveive and email?</div>
+          <div className="text-center text-lg">Didn't receive an email?</div>
           <div className="flex justify-center">
             <button
               onClick={handleResend}

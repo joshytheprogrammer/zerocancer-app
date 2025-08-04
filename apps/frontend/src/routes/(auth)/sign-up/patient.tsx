@@ -1,7 +1,6 @@
-import PatientForm from '@/components/SignupPage/PatientForm'
+import PatientForm from '@/components/AuthPages/SignupPage/PatientForm'
 import { useResendVerification } from '@/services/providers/auth.provider'
-import { Link } from '@tanstack/react-router'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -40,7 +39,7 @@ function RouteComponent() {
           onError: (error: any) => {
             reject(error)
           },
-        }
+        },
       )
     })
 
@@ -48,7 +47,10 @@ function RouteComponent() {
       loading: 'Resending verification email...',
       success: 'Verification email resent successfully!',
       error: (error: any) => {
-        return error.response?.data?.error || 'Failed to resend verification email. Please try again.'
+        return (
+          error.response?.data?.error ||
+          'Failed to resend verification email. Please try again.'
+        )
       },
     })
   }
@@ -58,7 +60,9 @@ function RouteComponent() {
       <div className="">
         <div className="space-y-4">
           <p className="text-center text-lg">
-            A <span className="text-primary">verification link</span> has been sent to <b>{email}</b>. Please check your email and verify your account.
+            A <span className="text-primary">verification link</span> has been
+            sent to <b>{email}</b>. Please check your email and verify your
+            account.
           </p>
           <div className="text-center text-lg">Didnt receive an email?</div>
           <div className="flex justify-center">
@@ -67,7 +71,9 @@ function RouteComponent() {
               className="bg-primary text-white px-4 py-2 rounded-md cursor-pointer"
               disabled={resendVerificationMutation.isPending}
             >
-              {resendVerificationMutation.isPending ? 'Resending...' : 'Resend Email'}
+              {resendVerificationMutation.isPending
+                ? 'Resending...'
+                : 'Resend Email'}
             </button>
           </div>
         </div>
