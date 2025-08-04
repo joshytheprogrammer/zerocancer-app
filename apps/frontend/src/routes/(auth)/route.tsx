@@ -7,7 +7,6 @@ import {
   redirect,
   useLocation,
 } from '@tanstack/react-router'
-import { Router } from 'lucide-react'
 
 export const Route = createFileRoute('/(auth)')({
   component: RouteComponent,
