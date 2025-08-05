@@ -41,7 +41,7 @@ export const createCampaign = async (
 export const getCampaigns = async (params: {
   page?: number
   pageSize?: number
-  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED' | 'PENDING'
+  status?: 'ACTIVE' | 'COMPLETED' | 'DELETED' //| 'PENDING'
   search?: string
 }) => {
   const response = await request.get<TGetCampaignsResponse>(
