@@ -1,5 +1,5 @@
+import AdminWaitlistPanel from '@/components/AdminPage/Waitlist/AdminWaitlistPanel'
 import { createFileRoute } from '@tanstack/react-router'
-import AdminWaitlistPanel from '@/components/admin/AdminWaitlistPanel'
 
 export const Route = createFileRoute('/admin/waitlist')({
   component: AdminWaitlist,
@@ -11,4 +11,4 @@ function AdminWaitlist() {
       <AdminWaitlistPanel />
     </div>
   )
-} 
+}

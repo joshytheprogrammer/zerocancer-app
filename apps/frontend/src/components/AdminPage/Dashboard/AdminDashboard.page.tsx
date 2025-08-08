@@ -23,19 +23,15 @@ import {
   ArrowUpRight,
   Bell,
   Building2,
-  Calendar,
-  CheckCircle,
   Clock,
   DollarSign,
   Eye,
-  FileText,
   HeartHandshake,
   Stethoscope,
   Store,
   TrendingUp,
   Users,
 } from 'lucide-react'
-import React from 'react'
 
 const AdminDashboardPage = () => {
   const { data: users } = useQuery(adminUsers({ profileType: undefined }))
@@ -56,7 +52,6 @@ const AdminDashboardPage = () => {
     campaigns?.data?.campaigns?.filter(
       (campaign) => campaign.status === 'ACTIVE',
     ).length || 0
-  const totalAppointments = appointments?.data?.appointments?.length || 0
   const scheduledAppointments =
     appointments?.data?.appointments?.filter(
       (apt) => apt.status === 'SCHEDULED',
@@ -66,7 +61,6 @@ const AdminDashboardPage = () => {
     transactions?.data?.transactions?.filter(
       (txn) => txn.status === 'COMPLETED',
     ).length || 0
-  const totalProducts = storeProducts?.data?.products?.length || 0
   const lowStockProducts =
     storeProducts?.data?.products?.filter((product) => product.stock <= 10)
       .length || 0
@@ -441,13 +435,6 @@ const AdminDashboardPage = () => {
       )}
     </div>
   )
-}
-
-export default AdminDashboardPage
-// TODO: Move all dashboard logic and subcomponents here from the old admin route file.
-
-const AdminDashboardPage = () => {
-  return <div>{/* Admin dashboard content goes here */}</div>
 }
 
 export default AdminDashboardPage
