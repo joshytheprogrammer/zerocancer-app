@@ -1,5 +1,4 @@
 import { Button } from '@/components/shared/ui/button'
-import { Calendar as ShadCalendar } from '@/components/shared/ui/calendar'
 import {
   Card,
   CardContent,
@@ -15,22 +14,19 @@ import {
   FormMessage,
 } from '@/components/shared/ui/form'
 import { Input } from '@/components/shared/ui/input'
-import {
-  Popover as ShadPopover,
-  PopoverContent as ShadPopoverContent,
-  PopoverTrigger as ShadPopoverTrigger,
-} from '@/components/shared/ui/popover'
-import { cn } from '@/lib/utils'
 import { centers } from '@/services/providers/center.provider'
 import { useBookSelfPayAppointment } from '@/services/providers/patient.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { Check, ChevronDownIcon, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import AppointmentDatePicker from './components/AppointmentDatePicker'
+import CenterSearchSelect from './components/CenterSearchSelect'
+import TimeSlotsPicker from './components/TimeSlotsPicker'
 
 // Zod schema for form validation
 const bookingSchema = z.object({
@@ -85,16 +81,7 @@ export function PatientPayBookingPage({
     }) || []
 
   // Filter centers based on search query
-  const filteredCenters = availableCenters.filter((center) => {
-    if (!searchQuery) return true
-    const query = searchQuery.toLowerCase()
-    return (
-      center.centerName.toLowerCase().includes(query) ||
-      center.lga.toLowerCase().includes(query) ||
-      center.state.toLowerCase().includes(query) ||
-      center.address.toLowerCase().includes(query)
-    )
-  })
+  const filteredCenters = availableCenters // CenterSearchSelect will handle filtering
 
   const bookSelfPayAppointmentMutation = useBookSelfPayAppointment()
 
@@ -188,86 +175,17 @@ export function PatientPayBookingPage({
                       )}
                     </FormLabel>
                     <FormControl>
-                      <div className="space-y-2">
-                        <Input
-                          placeholder="Type to search centers..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          disabled={centersLoading}
-                        />
-
-                        {searchQuery && (
-                          <div className="border rounded-md max-h-48 overflow-y-auto bg-white">
-                            {filteredCenters.length > 0 ? (
-                              filteredCenters.map((center) => (
-                                <div
-                                  key={center.id}
-                                  className={cn(
-                                    'p-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0',
-                                    field.value === center.id &&
-                                      'bg-blue-50 border-blue-200',
-                                  )}
-                                  onClick={() => {
-                                    console.log(
-                                      'Selected center:',
-                                      center.id,
-                                      center.centerName,
-                                    )
-                                    field.onChange(center.id)
-                                    setSearchQuery(center.centerName)
-                                  }}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    {field.value === center.id && (
-                                      <Check className="h-4 w-4 text-blue-600" />
-                                    )}
-                                    <div className="flex flex-col">
-                                      <span className="font-medium">
-                                        {center.centerName}
-                                      </span>
-                                      <span className="text-sm text-muted-foreground">
-                                        {center.lga}, {center.state}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">
-                                        {center.address}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="p-3 text-center text-sm text-muted-foreground">
-                                {screeningTypeId
-                                  ? 'No centers offer this service'
-                                  : 'No centers found'}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {field.value && !searchQuery && (
-                          <div className="text-sm text-green-600">
-                            ✓ Selected:{' '}
-                            {
-                              availableCenters.find((c) => c.id === field.value)
-                                ?.centerName
-                            }
-                          </div>
-                        )}
-                      </div>
+                      <CenterSearchSelect
+                        centers={filteredCenters}
+                        value={field.value}
+                        onChange={field.onChange}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        loading={centersLoading}
+                        error={centersError}
+                      />
                     </FormControl>
                     <FormMessage />
-                    {centersLoading && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Loading available centers...
-                      </div>
-                    )}
-                    {centersError && (
-                      <div className="text-sm text-destructive mt-2">
-                        Failed to load centers. Please try refreshing the page.
-                      </div>
-                    )}
                   </FormItem>
                 )}
               />
@@ -279,47 +197,10 @@ export function PatientPayBookingPage({
                   <FormItem>
                     <FormLabel>Appointment Date</FormLabel>
                     <FormControl>
-                      <div>
-                        <ShadPopover>
-                          <ShadPopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="w-full justify-between font-normal"
-                            >
-                              {field.value
-                                ? new Date(field.value).toLocaleDateString()
-                                : 'Select appointment date'}
-                              <ChevronDownIcon />
-                            </Button>
-                          </ShadPopoverTrigger>
-                          <ShadPopoverContent
-                            className="w-auto overflow-hidden p-0"
-                            align="start"
-                          >
-                            <ShadCalendar
-                              mode="single"
-                              selected={
-                                field.value ? new Date(field.value) : undefined
-                              }
-                              onSelect={(date: Date | undefined) => {
-                                field.onChange(date ? date.toISOString() : '')
-                              }}
-                              disabled={(date) => {
-                                const today = new Date()
-                                today.setHours(0, 0, 0, 0)
-                                const dayOfWeek = date.getDay()
-                                // Disable past dates, weekends (Saturday=6, Sunday=0)
-                                return (
-                                  date < today ||
-                                  dayOfWeek === 0 ||
-                                  dayOfWeek === 6
-                                )
-                              }}
-                              initialFocus
-                            />
-                          </ShadPopoverContent>
-                        </ShadPopover>
-                      </div>
+                      <AppointmentDatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -333,7 +214,11 @@ export function PatientPayBookingPage({
                   <FormItem>
                     <FormLabel>Appointment Time</FormLabel>
                     <FormControl>
-                      <Input type="time" min="09:00" max="17:00" {...field} />
+                      <TimeSlotsPicker
+                        slots={timeSlots}
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -370,6 +255,18 @@ export function PatientPayBookingPage({
                   ? 'Booking...'
                   : 'Book Appointment'}
               </Button>
+
+              {/* CTA: Link to donation-based options */}
+              <div className="-mt-2">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm"
+                  onClick={() => navigate({ to: '/patient/book' })}
+                >
+                  Prefer a sponsored screening? See donation options
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>

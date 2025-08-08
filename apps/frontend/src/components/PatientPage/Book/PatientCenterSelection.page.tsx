@@ -1,5 +1,4 @@
 import { Button } from '@/components/shared/ui/button'
-import { Calendar as ShadCalendar } from '@/components/shared/ui/calendar'
 import {
   Card,
   CardContent,
@@ -15,12 +14,6 @@ import {
   FormMessage,
 } from '@/components/shared/ui/form'
 import {
-  Popover as ShadPopover,
-  PopoverContent as ShadPopoverContent,
-  PopoverTrigger as ShadPopoverTrigger,
-} from '@/components/shared/ui/popover'
-import { cn } from '@/lib/utils'
-import {
   useEligibleCenters,
   useSelectCenter,
 } from '@/services/providers/patient.provider'
@@ -28,18 +21,14 @@ import { useScreeningTypeById } from '@/services/providers/screeningType.provide
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import {
-  CalendarIcon,
-  ChevronDownIcon,
-  Gift,
-  Loader2,
-  MapPin,
-  Users,
-} from 'lucide-react'
+import { Gift, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import AppointmentDatePicker from './components/AppointmentDatePicker'
+import CenterCardsGrid from './components/CenterCardsGrid'
+import TimeSlotsPicker from './components/TimeSlotsPicker'
 
 // Zod schema for center selection form
 const centerSelectionSchema = z.object({
@@ -107,13 +96,6 @@ export function PatientCenterSelectionPage({
   }
 
   const centers = centersData?.data?.centers || []
-
-  // Debug logging
-  console.log('Allocation ID:', allocationId)
-  console.log('Centers Data:', centersData)
-  console.log('Centers Array:', centers)
-  console.log('Loading:', centersLoading)
-  console.log('Error:', centersError)
   const screeningType = screeningTypeData?.data
 
   // Generate time slots (9 AM to 5 PM, every hour)
@@ -121,7 +103,9 @@ export function PatientCenterSelectionPage({
     const hour = i + 9
     return {
       value: `${hour.toString().padStart(2, '0')}:00`,
-      label: `${hour === 12 ? '12' : hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`,
+      label: `${hour === 12 ? '12' : hour > 12 ? hour - 12 : hour}:00 ${
+        hour >= 12 ? 'PM' : 'AM'
+      }`,
     }
   })
 
@@ -142,16 +126,12 @@ export function PatientCenterSelectionPage({
       appointmentDateTime: appointmentDateTime.toISOString(),
     }
 
-    console.log('Booking with donation data:', bookingData)
-
     selectCenterMutation.mutate(bookingData, {
-      onSuccess: (data) => {
-        console.log('Center selection successful:', data)
+      onSuccess: () => {
         toast.success('Appointment booked successfully with donation!')
         navigate({ to: '/patient/appointments' })
       },
       onError: (error: any) => {
-        console.error('Center selection error:', error)
         toast.error(
           error?.response?.data?.error ||
             error?.response?.data?.message ||
@@ -173,7 +153,6 @@ export function PatientCenterSelectionPage({
   }
 
   if (centersError) {
-    console.error('Centers Error Details:', centersError)
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-red-200">
@@ -261,7 +240,6 @@ export function PatientCenterSelectionPage({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
                 Select a Health Center
               </CardTitle>
             </CardHeader>
@@ -275,36 +253,14 @@ export function PatientCenterSelectionPage({
                       Available Centers ({centers.length} options)
                     </FormLabel>
                     <FormControl>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {centers.map((center) => (
-                          <div
-                            key={center.id}
-                            className={cn(
-                              'p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md',
-                              field.value === center.id
-                                ? 'border-pink-500 bg-pink-50'
-                                : 'border-gray-200 hover:border-gray-300',
-                            )}
-                            onClick={() => {
-                              field.onChange(center.id)
-                              setSelectedCenter(center)
-                            }}
-                          >
-                            <div className="space-y-2">
-                              <h3 className="font-semibold text-lg">
-                                {center.centerName}
-                              </h3>
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <MapPin className="h-4 w-4" />
-                                {center.lga}, {center.state}
-                              </div>
-                              <p className="text-sm text-gray-500">
-                                {center.address}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <CenterCardsGrid
+                        centers={centers}
+                        value={field.value}
+                        onSelect={(c) => {
+                          field.onChange(c.id)
+                          setSelectedCenter(c)
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -318,7 +274,6 @@ export function PatientCenterSelectionPage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
                   Schedule Your Appointment
                 </CardTitle>
               </CardHeader>
@@ -332,47 +287,10 @@ export function PatientCenterSelectionPage({
                       <FormItem>
                         <FormLabel>Appointment Date</FormLabel>
                         <FormControl>
-                          <ShadPopover>
-                            <ShadPopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="w-full justify-between font-normal"
-                              >
-                                {field.value
-                                  ? new Date(field.value).toLocaleDateString()
-                                  : 'Select date'}
-                                <ChevronDownIcon className="h-4 w-4" />
-                              </Button>
-                            </ShadPopoverTrigger>
-                            <ShadPopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <ShadCalendar
-                                mode="single"
-                                selected={
-                                  field.value
-                                    ? new Date(field.value)
-                                    : undefined
-                                }
-                                onSelect={(date: Date | undefined) => {
-                                  field.onChange(date ? date.toISOString() : '')
-                                }}
-                                disabled={(date) => {
-                                  const today = new Date()
-                                  today.setHours(0, 0, 0, 0)
-                                  const dayOfWeek = date.getDay()
-                                  // Disable past dates and weekends
-                                  return (
-                                    date < today ||
-                                    dayOfWeek === 0 ||
-                                    dayOfWeek === 6
-                                  )
-                                }}
-                                initialFocus
-                              />
-                            </ShadPopoverContent>
-                          </ShadPopover>
+                          <AppointmentDatePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -387,28 +305,11 @@ export function PatientCenterSelectionPage({
                       <FormItem>
                         <FormLabel>Appointment Time</FormLabel>
                         <FormControl>
-                          <div className="grid grid-cols-3 gap-2">
-                            {timeSlots.map((slot) => (
-                              <Button
-                                key={slot.value}
-                                type="button"
-                                variant={
-                                  field.value === slot.value
-                                    ? 'default'
-                                    : 'outline'
-                                }
-                                size="sm"
-                                className={cn(
-                                  'text-xs',
-                                  field.value === slot.value &&
-                                    'bg-pink-600 hover:bg-pink-700',
-                                )}
-                                onClick={() => field.onChange(slot.value)}
-                              >
-                                {slot.label}
-                              </Button>
-                            ))}
-                          </div>
+                          <TimeSlotsPicker
+                            slots={timeSlots}
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

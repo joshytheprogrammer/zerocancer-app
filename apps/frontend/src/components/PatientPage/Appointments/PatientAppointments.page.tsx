@@ -12,6 +12,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { PatientAppointmentsList } from './PatientAppointmentsList'
+import { PatientAppointmentsEmptyState } from './PatientAppointmentsEmptyState'
 
 export function PatientAppointmentsPage() {
   const {
@@ -82,25 +84,6 @@ export function PatientAppointmentsPage() {
     )
   }
 
-  const renderEmptyState = (
-    title: string,
-    description: string,
-    showButton: boolean,
-  ) => (
-    <div className="text-center py-16 px-6 bg-gray-50 rounded-lg border-2 border-dashed">
-      <div className="flex justify-center mb-4">
-        <img src={appointment} alt="appointment" className="w-16 h-16" />
-      </div>
-      <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
-      <p className="text-muted-foreground mt-2 mb-6">{description}</p>
-      {showButton && (
-        <Button asChild className="bg-pink-600 hover:bg-pink-700 text-white">
-          <Link to="/patient/book">Book Screening</Link>
-        </Button>
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -135,82 +118,55 @@ export function PatientAppointmentsPage() {
         </TabsList>
         <TabsContent value="upcoming">
           {upcomingAppointments.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-6 mt-4">
-              {upcomingAppointments.map((appt: any) => (
-                <AppointmentCard
-                  key={appt.id}
-                  appointment={appt}
-                  onCancel={handleCancelAppointment}
-                  isCancelling={false}
-                />
-              ))}
-            </div>
+            <PatientAppointmentsList
+              appointments={upcomingAppointments}
+              onCancel={handleCancelAppointment}
+            />
           ) : (
-            renderEmptyState(
-              'No Upcoming Appointments',
-              'Click the button below to book an appointment',
-              true,
-            )
+            <PatientAppointmentsEmptyState
+              title="No Upcoming Appointments"
+              description="Click the button below to book an appointment"
+              showBookButton
+            />
           )}
         </TabsContent>
         <TabsContent value="ongoing">
           {ongoingAppointments.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-6 mt-4">
-              {ongoingAppointments.map((appt: any) => (
-                <AppointmentCard
-                  key={appt.id}
-                  appointment={appt}
-                  onCancel={handleCancelAppointment}
-                  isCancelling={false}
-                />
-              ))}
-            </div>
+            <PatientAppointmentsList
+              appointments={ongoingAppointments}
+              onCancel={handleCancelAppointment}
+            />
           ) : (
-            renderEmptyState(
-              'No Ongoing Appointments',
-              'Appointments that are currently in progress will appear here.',
-              false,
-            )
+            <PatientAppointmentsEmptyState
+              title="No Ongoing Appointments"
+              description="Appointments that are currently in progress will appear here."
+            />
           )}
         </TabsContent>
         <TabsContent value="past">
           {pastAppointments.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-6 mt-4">
-              {pastAppointments.map((appt) => (
-                <AppointmentCard
-                  key={appt.id}
-                  appointment={appt}
-                  onCancel={handleCancelAppointment}
-                  isCancelling={false}
-                />
-              ))}
-            </div>
+            <PatientAppointmentsList
+              appointments={pastAppointments}
+              onCancel={handleCancelAppointment}
+            />
           ) : (
-            renderEmptyState(
-              'No Past Appointments',
-              'Your completed appointment history will appear here.',
-              false,
-            )
+            <PatientAppointmentsEmptyState
+              title="No Past Appointments"
+              description="Your completed appointment history will appear here."
+            />
           )}
         </TabsContent>
         <TabsContent value="cancelled">
           {cancelledAppointments.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-6 mt-4">
-              {cancelledAppointments.map((appt: any) => (
-                <AppointmentCard
-                  key={appt.id}
-                  appointment={appt}
-                  onCancel={handleCancelAppointment}
-                  isCancelling={false}
-                />
-              ))}
-            </div>
+            <PatientAppointmentsList
+              appointments={cancelledAppointments}
+              onCancel={handleCancelAppointment}
+            />
           ) : (
-            renderEmptyState(
-              'No Cancelled Appointments',
-              'Your cancelled appointments will be listed here.',
-              false,
-            )
+            <PatientAppointmentsEmptyState
+              title="No Cancelled Appointments"
+              description="Your cancelled appointments will be listed here."
+            />
           )}
         </TabsContent>
       </Tabs>

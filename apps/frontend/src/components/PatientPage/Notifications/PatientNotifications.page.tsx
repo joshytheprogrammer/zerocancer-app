@@ -1,4 +1,3 @@
-import { Badge } from '@/components/shared/ui/badge'
 import { Button } from '@/components/shared/ui/button'
 import { Card, CardContent } from '@/components/shared/ui/card'
 import {
@@ -15,22 +14,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { TNotificationRecipient } from '@zerocancer/shared/types'
 import { toast } from 'sonner'
-// Asset imports
-import reminderIcon from '@/assets/images/calendar.png'
-import donationIcon from '@/assets/images/donor.png'
-import bellIcon from '@/assets/images/notification.png'
-import waitlistIcon from '@/assets/images/patients.png' // using patients for waitlist
-import resultIcon from '@/assets/images/screening.png'
-
-const notificationIcons: Record<string, string> = {
-  APPOINTMENT_REMINDER: reminderIcon,
-  APPOINTMENT_CONFIRMATION: reminderIcon,
-  APPOINTMENT_CANCELLED: reminderIcon,
-  RESULTS_AVAILABLE: resultIcon,
-  DONATION_ALLOCATED: donationIcon,
-  WAITLIST_UPDATE: waitlistIcon,
-  default: bellIcon,
-}
+import PatientNotificationEmptyState from './PatientNotificationEmptyState'
+import PatientNotificationItem from './PatientNotificationItem'
 
 // Helper to group notifications by date
 const groupNotificationsByDate = (notifications: TNotificationRecipient[]) => {
@@ -193,20 +178,6 @@ export function PatientNotificationsPage() {
   const groupedNotifications = groupNotificationsByDate(notifications)
   const notificationGroups = Object.entries(groupedNotifications)
 
-  const EmptyState = ({
-    title,
-    message,
-  }: {
-    title: string
-    message: string
-  }) => (
-    <div className="flex flex-col items-center justify-center text-center py-20">
-      <img src={bellIcon} alt="No notifications" className="w-24 h-24 mb-6" />
-      <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-      <p className="text-muted-foreground mt-1">{message}</p>
-    </div>
-  )
-
   const notificationsByType = (type: string) =>
     notifications.filter((n) => n.notification.type === type)
 
@@ -237,56 +208,18 @@ export function PatientNotificationsPage() {
                   </h3>
                   <div className="space-y-2">
                     {groupNotifications.map((n) => (
-                      <div
+                      <PatientNotificationItem
                         key={n.id}
-                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100/50 cursor-pointer"
-                        onClick={() => handleNotificationClick(n)}
-                      >
-                        <div
-                          className={`p-2 rounded-full ${!n.read ? 'bg-blue-100' : 'bg-gray-100'}`}
-                        >
-                          <img
-                            src={
-                              notificationIcons[n.notification.type] ||
-                              notificationIcons.default
-                            }
-                            alt=""
-                            className="w-7 h-7"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">
-                            {n.notification.title}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {n.notification.message}
-                          </p>
-                        </div>
-                        <div className="text-right space-y-1.5 self-start">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(
-                              n.notification.createdAt,
-                            ).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                          {!n.read && (
-                            <div className="flex justify-end">
-                              <Badge className="bg-red-500 text-white hover:bg-red-600">
-                                New
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                        notification={n}
+                        onClick={handleNotificationClick}
+                      />
                     ))}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyState
+            <PatientNotificationEmptyState
               title="No Notification"
               message="Your new notifications will appear here"
             />
@@ -296,7 +229,7 @@ export function PatientNotificationsPage() {
           {notificationsByType('RESULTS_AVAILABLE').length > 0 ? (
             <p>Results notifications will be here</p>
           ) : (
-            <EmptyState
+            <PatientNotificationEmptyState
               title="No Results"
               message="Your results notifications will appear here"
             />
@@ -306,14 +239,14 @@ export function PatientNotificationsPage() {
           {notificationsByType('APPOINTMENT_REMINDER').length > 0 ? (
             <p>Appointments notifications will be here</p>
           ) : (
-            <EmptyState
+            <PatientNotificationEmptyState
               title="No Appointment Updates"
               message="Your appointment notifications will appear here"
             />
           )}
         </TabsContent>
         <TabsContent value="referrals" className="mt-4">
-          <EmptyState
+          <PatientNotificationEmptyState
             title="No Referrals"
             message="Your referral notifications will appear here"
           />
