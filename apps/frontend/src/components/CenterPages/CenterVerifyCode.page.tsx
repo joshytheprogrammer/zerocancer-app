@@ -1,4 +1,3 @@
-import { Badge } from '@/components/shared/ui/badge'
 import { Button } from '@/components/shared/ui/button'
 import {
   Card,
@@ -6,33 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/shared/ui/form'
-import { Input } from '@/components/shared/ui/input'
 import { useVerifyCheckInCode } from '@/services/providers/center.provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { verifyCheckInCodeSchema } from '@zerocancer/shared/schemas/appointment.schema'
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  Clock,
-  QrCode,
-  Scan,
-  User,
-  XCircle,
-} from 'lucide-react'
+import { AlertCircle, QrCode, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { CenterVerifyCodeForm } from './CenterVerifyCodeForm'
+import { CenterVerifyCodeResult } from './CenterVerifyCodeResult'
 
 type FormData = z.infer<typeof verifyCheckInCodeSchema>
 
@@ -117,80 +99,13 @@ export function CenterVerifyCodePage({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="checkInCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Check-in Code</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter 6-8 digit code..."
-                          {...field}
-                          disabled={isLoading}
-                          className="font-mono text-lg tracking-wider"
-                          autoComplete="off"
-                          maxLength={20}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The patient should provide this code from their
-                        appointment confirmation
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={isLoading} className="flex-1">
-                    {isLoading ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
-                        Verifying...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Verify Code
-                      </>
-                    )}
-                  </Button>
-
-                  {(verificationResult || form.getValues().checkInCode) && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleClearResult}
-                      disabled={isLoading}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
-
-            {/* Future QR Scanner Option */}
-            <div className="mt-6 pt-6 border-t">
-              <Button
-                variant="outline"
-                disabled
-                className="w-full"
-                title="QR scanning feature coming soon"
-              >
-                <Scan className="h-4 w-4 mr-2" />
-                Scan QR Code (Coming Soon)
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                QR code scanning will be available in a future update
-              </p>
-            </div>
+            <CenterVerifyCodeForm
+              form={form}
+              isLoading={isLoading}
+              onSubmit={onSubmit}
+              onClear={handleClearResult}
+              showClear={Boolean(verificationResult || form.getValues().checkInCode)}
+            />
           </CardContent>
         </Card>
 
@@ -203,59 +118,7 @@ export function CenterVerifyCodePage({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!verificationResult ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Enter a check-in code to see verification results</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div
-                  className={`flex items-center gap-3 p-4 rounded-lg ${
-                    verificationResult.valid
-                      ? 'bg-green-50 text-green-700 border border-green-200'
-                      : 'bg-red-50 text-red-700 border border-red-200'
-                  }`}
-                >
-                  {verificationResult.valid ? (
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                  ) : (
-                    <XCircle className="h-6 w-6 text-red-600" />
-                  )}
-                  <div>
-                    <h3 className="font-semibold">
-                      {verificationResult.valid
-                        ? 'Verification Successful'
-                        : 'Verification Failed'}
-                    </h3>
-                    <p className="text-sm">
-                      {verificationResult.message ||
-                        (verificationResult.valid
-                          ? 'Check-in code is valid'
-                          : 'Check-in code is invalid')}
-                    </p>
-                  </div>
-                </div>
-
-                {verificationResult.valid &&
-                  verificationResult.appointmentId && (
-                    <div className="space-y-3 pt-4 border-t">
-                      <h4 className="font-medium text-gray-900">
-                        Appointment Details
-                      </h4>
-                      <div className="grid gap-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-500" />
-                          <span className="text-gray-600">Appointment ID:</span>
-                          <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                            {verificationResult.appointmentId}
-                          </code>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-              </div>
-            )}
+            <CenterVerifyCodeResult verificationResult={verificationResult} />
           </CardContent>
         </Card>
       </div>

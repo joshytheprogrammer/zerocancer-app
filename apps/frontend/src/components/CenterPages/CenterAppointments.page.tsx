@@ -37,6 +37,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppointmentStatusBadge } from './AppointmentStatusBadge'
+import CenterAppointmentsFilters from './CenterAppointmentsFilters'
 
 type SearchParams = {
   appointmentId?: string
@@ -181,26 +182,12 @@ export function CenterAppointmentsPage({
         </p>
       </div>
 
-      <div className="flex justify-between items-center">
-        <Tabs value={statusFilter} onValueChange={handleStatusChange}>
-          <TabsList>
-            <TabsTrigger value="ALL">All</TabsTrigger>
-            <TabsTrigger value="SCHEDULED">Scheduled</TabsTrigger>
-            <TabsTrigger value="IN_PROGRESS">In Progress</TabsTrigger>
-            <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
-            <TabsTrigger value="CANCELED">Cancelled</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by patient name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <CenterAppointmentsFilters
+        status={statusFilter}
+        onStatusChange={handleStatusChange}
+        search={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       {/* Appointments Table */}
       <Card>

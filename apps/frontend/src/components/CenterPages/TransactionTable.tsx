@@ -32,7 +32,7 @@ import {
 import { format } from 'date-fns'
 import { Eye, Filter, MoreHorizontal, Search } from 'lucide-react'
 
-interface Transaction {
+export interface Transaction {
   id: string
   status: string
   amount: number

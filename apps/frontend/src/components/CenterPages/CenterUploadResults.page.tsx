@@ -1,26 +1,20 @@
 // import { ResultViewer } from '@/components/ResultViewer'
 // import { AppointmentStatusBadge } from './AppointmentStatusBadge'
 import { ResultUploadComponent } from '@/components/CenterPages/ResultUploadComponent'
-import { Badge } from '@/components/shared/ui/badge'
+// Removed Badge, Input, Select imports in favor of extracted components
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card'
-import { Input } from '@/components/shared/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/ui/select'
 import { centerAppointments } from '@/services/providers/center.provider'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Calendar, CheckCircle, Clock, FileText, Search } from 'lucide-react'
+import { Calendar, FileText } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { CenterUploadResultsFilters } from './CenterUploadResultsFilters'
+import { CenterAppointmentList } from './CenterAppointmentList'
 
 export function CenterUploadResultsPage() {
   const queryClient = useQueryClient()
@@ -64,30 +58,6 @@ export function CenterUploadResultsPage() {
     setSelectedAppointment(appointmentId)
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    } catch {
-      return dateString
-    }
-  }
-
-  const formatTime = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })
-    } catch {
-      return 'Invalid time'
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -108,86 +78,20 @@ export function CenterUploadResultsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Filters */}
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search by patient name or screening type..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="completed">Needs Results</SelectItem>
-                  <SelectItem value="all">All Eligible</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <CenterUploadResultsFilters
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
 
             {/* Appointments List */}
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {isLoading ? (
-                <div className="space-y-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-16 bg-muted animate-pulse rounded"
-                    />
-                  ))}
-                </div>
-              ) : eligibleAppointments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No appointments found</p>
-                  <p className="text-xs">
-                    {searchTerm
-                      ? 'Try adjusting your search'
-                      : 'No appointments need results upload'}
-                  </p>
-                </div>
-              ) : (
-                eligibleAppointments.map((appointment: any) => (
-                  <div
-                    key={appointment.id}
-                    className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
-                      selectedAppointment === appointment.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border'
-                    }`}
-                    onClick={() => handleSelectAppointment(appointment.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm">
-                          {appointment.patient?.fullName || 'Unknown Patient'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {appointment.screeningType?.name || 'Unknown Type'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(appointment.appointmentDateTime)}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge variant="outline" className="text-xs">
-                          {appointment.status.toUpperCase()}
-                        </Badge>
-                        {selectedAppointment === appointment.id && (
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            <CenterAppointmentList
+              appointments={eligibleAppointments}
+              isLoading={isLoading}
+              selectedId={selectedAppointment}
+              onSelect={handleSelectAppointment}
+            />
           </CardContent>
         </Card>
 

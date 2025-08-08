@@ -13,10 +13,11 @@ import {
 } from '@/services/providers/payout.provider'
 import { useQuery } from '@tanstack/react-query'
 import { Download } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FinancialSummary } from './FinancialSummary'
 import { PayoutTable } from './PayoutTable'
 import { TransactionTable } from './TransactionTable'
+import type { Transaction } from './TransactionTable'
 
 export function CenterReceiptHistoryPage() {
   const authUserQuery = useQuery(useAuthUser())
@@ -41,32 +42,32 @@ export function CenterReceiptHistoryPage() {
   )
 
   const balance = balanceData?.data
-  const transactions = transactionsData?.data?.transactions || []
+  const transactions: Transaction[] =
+    (transactionsData?.data?.transactions as Transaction[]) || []
   const payouts = payoutsData?.data?.payouts || []
 
   // Filter transactions
-  const filteredTransactions = transactions.filter((transaction: any) => {
-    const matchesSearch =
-      transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.appointments.some(
-        (apt: any) =>
-          apt.patient.fullName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          apt.screeningType.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()),
-      )
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction: Transaction) => {
+      const query = searchTerm.toLowerCase()
+      const matchesSearch =
+        transaction.id.toLowerCase().includes(query) ||
+        transaction.appointments.some(
+          (apt) =>
+            apt.patient.fullName.toLowerCase().includes(query) ||
+            apt.screeningType.name.toLowerCase().includes(query),
+        )
 
-    const matchesStatus =
-      statusFilter === 'ALL' || transaction.status === statusFilter
-    const matchesPayoutStatus =
-      payoutStatusFilter === 'ALL' ||
-      (payoutStatusFilter === 'PAID_OUT' && transaction.payoutItem) ||
-      (payoutStatusFilter === 'PENDING' && !transaction.payoutItem)
+      const matchesStatus =
+        statusFilter === 'ALL' || transaction.status === statusFilter
+      const matchesPayoutStatus =
+        payoutStatusFilter === 'ALL' ||
+        (payoutStatusFilter === 'PAID_OUT' && transaction.payoutItem) ||
+        (payoutStatusFilter === 'PENDING' && !transaction.payoutItem)
 
-    return matchesSearch && matchesStatus && matchesPayoutStatus
-  })
+      return matchesSearch && matchesStatus && matchesPayoutStatus
+    })
+  }, [transactions, searchTerm, statusFilter, payoutStatusFilter])
 
   const handleClearFilters = () => {
     setSearchTerm('')

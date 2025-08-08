@@ -37,7 +37,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/shared/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/shared/ui/tabs'
 import { cn } from '@/lib/utils'
 import { useAuthUser } from '@/services/providers/auth.provider'
 import {
@@ -48,7 +47,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { inviteStaffSchema } from '@zerocancer/shared/schemas/center.schema'
-import { MoreHorizontal, Plus, Search, Trash2, UserPlus, X } from 'lucide-react'
+import { MoreHorizontal, Plus, Trash2, UserPlus, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -57,6 +56,7 @@ import { z } from 'zod'
 // Import static assets
 import megaphoneIcon from '@/assets/images/megaphone.png'
 import peopleIcon from '@/assets/images/people.png'
+import { CenterStaffFilters } from './CenterStaffFilters'
 
 type InviteStaffForm = z.infer<typeof inviteStaffSchema>
 
@@ -266,24 +266,13 @@ export function CenterStaffPage() {
         ))}
       </div>
 
-      <div className="flex justify-between items-center">
-        <Tabs value={filter} onValueChange={setFilter}>
-          <TabsList>
-            <TabsTrigger value="All Staff">All Staff</TabsTrigger>
-            <TabsTrigger value="Active">Active</TabsTrigger>
-            <TabsTrigger value="Invited">Invited</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by staff name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      {/* Replaced inline Tabs + Search with CenterStaffFilters */}
+      <CenterStaffFilters
+        filter={filter}
+        onFilterChange={setFilter}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       <p className="text-sm text-muted-foreground">
         Showing {filteredStaff.length} of {allStaff.length} staff members
