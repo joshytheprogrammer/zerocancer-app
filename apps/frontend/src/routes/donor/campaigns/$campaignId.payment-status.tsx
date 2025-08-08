@@ -3,8 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 function DonorCampaignPaymentStatusPage() {
   const { campaignId } = Route.useParams()
-  const { ref, type } = Route.useSearch()
-  return <CampaignPaymentStatusPage campaignId={campaignId} ref={ref} type={type} />
+  const { ref } = Route.useSearch()
+  return <CampaignPaymentStatusPage campaignId={campaignId} paymentRef={ref} />
 }
 
 export const Route = createFileRoute(

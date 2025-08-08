@@ -21,14 +21,12 @@ import { useEffect, useState } from 'react'
 
 interface CampaignPaymentStatusPageProps {
   campaignId: string
-  ref: string
-  type: string
+  paymentRef: string
 }
 
 export function CampaignPaymentStatusPage({
   campaignId,
-  ref,
-  type,
+  paymentRef,
 }: CampaignPaymentStatusPageProps) {
   const navigate = useNavigate()
   const [redirectTimer, setRedirectTimer] = useState(5)
@@ -38,7 +36,7 @@ export function CampaignPaymentStatusPage({
     isLoading,
     error,
     refetch,
-  } = useQuery(useVerifyPayment(ref))
+  } = useQuery(useVerifyPayment(paymentRef))
 
   const payment = paymentData?.data
 
@@ -58,7 +56,7 @@ export function CampaignPaymentStatusPage({
   }, [payment?.status, redirectTimer, navigate, campaignId])
 
   // Handle missing payment reference
-  if (!ref) {
+  if (!paymentRef) {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-red-200">

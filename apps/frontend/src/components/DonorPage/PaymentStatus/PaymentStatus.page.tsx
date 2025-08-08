@@ -7,10 +7,7 @@ import {
   CardTitle,
 } from '@/components/shared/ui/card'
 import { QueryKeys } from '@/services/keys'
-import {
-  useDonorCampaigns,
-  useVerifyPayment,
-} from '@/services/providers/donor.provider'
+import { useVerifyPayment } from '@/services/providers/donor.provider'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import {
@@ -29,8 +26,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 
 interface PaymentStatusPageProps {
-  ref: string
-  type: string
+  paymentRef: string
   campaignId: string
 }
 
@@ -116,11 +112,9 @@ function InfoRow({
 }
 
 export function PaymentStatusPage({
-  ref,
-  type,
+  paymentRef,
   campaignId,
 }: PaymentStatusPageProps) {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const {
@@ -128,7 +122,7 @@ export function PaymentStatusPage({
     isLoading,
     error,
     refetch,
-  } = useQuery(useVerifyPayment(ref))
+  } = useQuery(useVerifyPayment(paymentRef))
 
   const payment = paymentData?.data
 
@@ -146,7 +140,7 @@ export function PaymentStatusPage({
   }, [payment?.status, queryClient, campaignId])
 
   // Handle missing reference
-  if (!ref) {
+  if (!paymentRef) {
     return (
       <StatusCard
         status="error"

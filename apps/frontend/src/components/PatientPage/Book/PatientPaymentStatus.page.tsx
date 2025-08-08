@@ -13,7 +13,6 @@ import {
   ArrowRight,
   Calendar,
   CheckCircle,
-  Clock,
   Loader2,
   MapPin,
   Stethoscope,
@@ -22,13 +21,11 @@ import {
 import { useEffect, useState } from 'react'
 
 interface PatientPaymentStatusPageProps {
-  ref: string
-  type?: string
+  paymentRef: string
 }
 
 export function PatientPaymentStatusPage({
-  ref,
-  type = 'appointment_booking',
+  paymentRef,
 }: PatientPaymentStatusPageProps) {
   const navigate = useNavigate()
   const [redirectTimer, setRedirectTimer] = useState(5)
@@ -38,7 +35,7 @@ export function PatientPaymentStatusPage({
     isLoading,
     error,
     refetch,
-  } = useQuery(useVerifyPayment(ref))
+  } = useQuery(useVerifyPayment(paymentRef))
 
   const payment = paymentData?.data
 
@@ -58,7 +55,7 @@ export function PatientPaymentStatusPage({
   }, [payment?.status, redirectTimer, navigate])
 
   // Handle missing reference
-  if (!ref) {
+  if (!paymentRef) {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="border-red-200">
@@ -93,7 +90,7 @@ export function PatientPaymentStatusPage({
             <p className="text-gray-600 mb-4">
               Please wait while we confirm your appointment payment...
             </p>
-            <div className="text-sm text-gray-500">Reference: {ref}</div>
+            <div className="text-sm text-gray-500">Reference: {paymentRef}</div>
           </CardContent>
         </Card>
       </div>
@@ -145,7 +142,9 @@ export function PatientPaymentStatusPage({
               We couldn't find a payment with this reference. Please check your
               payment confirmation email or contact support.
             </p>
-            <div className="text-sm text-gray-500 mb-4">Reference: {ref}</div>
+            <div className="text-sm text-gray-500 mb-4">
+              Reference: {paymentRef}
+            </div>
             <Button onClick={() => navigate({ to: '/patient/book' })}>
               Book New Appointment
             </Button>
@@ -202,82 +201,66 @@ export function PatientPaymentStatusPage({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Type:</span>
-                <span className="font-medium">
-                  Medical Screening Appointment
-                </span>
+                <span>Appointment Booking</span>
               </div>
             </div>
 
-            {/* Appointment Info (if available from context) */}
+            {/* Appointment Details */}
             {appointmentData && (
               <div className="bg-blue-50 rounded-lg p-4 space-y-3">
-                <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Appointment Details
-                </h4>
-                <div className="space-y-2 text-sm">
-                  {appointmentData.screeningType && (
-                    <div className="flex items-center gap-2">
-                      <Stethoscope className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium">
-                        {appointmentData.screeningType}
-                      </span>
-                    </div>
-                  )}
-                  {appointmentData.center && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-blue-600" />
-                      <span>{appointmentData.center}</span>
-                    </div>
-                  )}
-                  {appointmentData.date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-blue-600" />
-                      <span>
-                        {new Date(appointmentData.date).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-blue-700" />
+                  <span className="font-medium text-blue-900">
+                    Appointment Details
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="h-4 w-4" />
+                    <span>{appointmentData.screeningType.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>{appointmentData.center.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>
+                      {new Date(
+                        appointmentData.appointmentDate,
+                      ).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-sm text-blue-900 flex items-center gap-2">
+                  <ArrowRight className="h-4 w-4" />
+                  <span>
+                    Your appointment has been scheduled. You can manage or
+                    reschedule it from the appointments page.
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Next Steps */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-900 mb-2">What's Next?</h4>
-              <ul className="space-y-1 text-sm text-blue-800">
-                <li>
-                  • You'll receive a check-in code before your appointment
-                </li>
-                <li>• Present your QR code at the screening center</li>
-                <li>• Results will be available after your screening</li>
-                <li>
-                  • You can view your appointment details in your dashboard
-                </li>
-              </ul>
+            {/* Auto-redirect notice */}
+            <div className="text-center text-sm text-gray-500">
+              Redirecting to appointments in {redirectTimer} seconds...
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Action buttons */}
+            <div className="flex gap-3">
               <Button
                 onClick={() => navigate({ to: '/patient/appointments' })}
                 className="flex-1"
               >
-                View My Appointments
-                <ArrowRight className="h-4 w-4 ml-2" />
+                View Appointments
               </Button>
               <Button
                 variant="outline"
-                onClick={() => navigate({ to: '/patient' })}
-                className="flex-1"
+                onClick={() => navigate({ to: '/patient/book' })}
               >
-                Go to Dashboard
+                Book Another Screening
               </Button>
-            </div>
-
-            {/* Auto-redirect notice */}
-            <div className="text-center text-sm text-gray-500">
-              Redirecting to your appointments in {redirectTimer} seconds...
             </div>
           </CardContent>
         </Card>
@@ -285,53 +268,77 @@ export function PatientPaymentStatusPage({
     )
   }
 
-  // Failed/Abandoned state
+  // Abandoned / Failed / Pending states reuse common UI
+  const statusTitle =
+    payment.status === 'failed'
+      ? 'Payment Failed'
+      : payment.status === 'abandoned'
+        ? 'Payment Cancelled'
+        : 'Payment Pending'
+  const statusIcon =
+    payment.status === 'failed' ? (
+      <XCircle className="h-5 w-5" />
+    ) : payment.status === 'abandoned' ? (
+      <AlertTriangle className="h-5 w-5" />
+    ) : (
+      <Calendar className="h-5 w-5" />
+    )
+
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <Card className="border-red-200">
+      <Card
+        className={
+          payment.status === 'pending'
+            ? 'border-yellow-200'
+            : payment.status === 'failed'
+              ? 'border-red-200'
+              : 'border-orange-200'
+        }
+      >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <XCircle className="h-5 w-5" />
-            Payment {payment.status === 'failed' ? 'Failed' : 'Cancelled'}
+          <CardTitle
+            className={
+              payment.status === 'pending'
+                ? 'flex items-center gap-2 text-yellow-600'
+                : payment.status === 'failed'
+                  ? 'flex items-center gap-2 text-red-600'
+                  : 'flex items-center gap-2 text-orange-600'
+            }
+          >
+            {statusIcon}
+            {statusTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            {payment.status === 'failed'
-              ? 'Your payment could not be processed. Please try booking again or contact support if the issue persists.'
-              : "Your payment was cancelled. You can try booking again when you're ready."}
+            {payment.status === 'pending'
+              ? "Your payment is still being processed. We'll update the status automatically."
+              : payment.status === 'failed'
+                ? 'Your payment could not be processed. Your card was not charged.'
+                : 'You cancelled the payment process. No charges were made to your card.'}
           </p>
 
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Reference:</span>
-              <span className="font-mono">{payment.reference}</span>
+          {payment.status !== 'pending' && (
+            <div className="bg-gray-50 rounded-lg p-4 text-sm">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Amount:</span>
+                <span>₦{payment.amount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Reference:</span>
+                <span className="font-mono">{payment.reference}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Amount:</span>
-              <span>₦{payment.amount.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Status:</span>
-              <span className="capitalize text-red-600">{payment.status}</span>
-            </div>
-          </div>
+          )}
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={() => navigate({ to: '/patient/book' })}
-              className="flex-1"
-            >
-              Try Booking Again
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate({ to: '/patient' })}
-              className="flex-1"
-            >
-              Go to Dashboard
-            </Button>
-          </div>
+          <Button
+            onClick={() => refetch()}
+            variant="outline"
+            className="w-full"
+          >
+            <Loader2 className="h-4 w-4 mr-2" />
+            Check Status Again
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -2,8 +2,8 @@ import { PaymentStatusPage } from '@/components/DonorPage/PaymentStatus/PaymentS
 import { createFileRoute } from '@tanstack/react-router'
 
 function DonorPaymentStatusPage() {
-  const { ref, type, campaignId } = Route.useSearch()
-  return <PaymentStatusPage ref={ref} type={type} campaignId={campaignId} />
+  const { ref, campaignId } = Route.useSearch()
+  return <PaymentStatusPage paymentRef={ref} campaignId={campaignId} />
 }
 
 export const Route = createFileRoute('/donor/campaigns/payment-status')({
