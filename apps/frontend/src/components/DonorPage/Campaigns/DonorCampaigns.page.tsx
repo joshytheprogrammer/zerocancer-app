@@ -1,4 +1,3 @@
-import { Badge } from '@/components/shared/ui/badge'
 import { Button } from '@/components/shared/ui/button'
 import {
   Card,
@@ -15,41 +14,12 @@ import {
   DialogTitle,
 } from '@/components/shared/ui/dialog'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/shared/ui/dropdown-menu'
-import { Input } from '@/components/shared/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/shared/ui/table'
-import {
   useDeleteCampaign,
   useDonorCampaigns,
 } from '@/services/providers/donor.provider'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import {
-  AlertTriangle,
-  Eye,
-  MoreHorizontal,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react'
+import { AlertTriangle, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -57,6 +27,8 @@ import health from '@/assets/images/health.png'
 import location from '@/assets/images/location.png'
 import megaphone from '@/assets/images/megaphone.png'
 import sponsored from '@/assets/images/sponsored.png'
+import CampaignFilters from './CampaignFilters'
+import CampaignsTable from './CampaignsTable'
 
 // Helper function to format currency concisely
 const formatCurrency = (amount: number) => {
@@ -101,7 +73,7 @@ export function DonorCampaignsPage() {
   const [statusFilter, setStatusFilter] = useState<
     'ACTIVE' | 'COMPLETED' | 'DELETED' | undefined
   >(undefined)
-  const [page, setPage] = useState(1)
+  const [page] = useState(1)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [campaignToDelete, setCampaignToDelete] = useState<any>(null)
 
@@ -152,31 +124,6 @@ export function DonorCampaignsPage() {
       } catch (err) {
         toast.error('Failed to delete campaign.')
       }
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return (
-          <Badge className="bg-green-100 text-green-700 border border-green-200">
-            Active
-          </Badge>
-        )
-      case 'COMPLETED':
-        return (
-          <Badge className="bg-blue-100 text-blue-700 border border-blue-200">
-            Completed
-          </Badge>
-        )
-      case 'DELETED':
-        return (
-          <Badge className="bg-red-100 text-red-700 border border-red-200">
-            Deleted
-          </Badge>
-        )
-      default:
-        return <Badge variant="secondary">{status}</Badge>
     }
   }
 
@@ -246,132 +193,18 @@ export function DonorCampaignsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="p-4 flex items-center gap-4">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search campaigns by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={statusFilter || 'ALL'}
-              onValueChange={(value) =>
-                setStatusFilter(value === 'ALL' ? undefined : (value as any))
-              }
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Statuses</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="DELETED">Deleted</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Campaign Name</TableHead>
-                  <TableHead>Sponsored Tests</TableHead>
-                  <TableHead>Donation</TableHead>
-                  <TableHead>Sponsored Patients</TableHead>
-                  <TableHead>Date Created</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-64 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-64 text-center text-red-500"
-                    >
-                      Error loading campaigns.
-                    </TableCell>
-                  </TableRow>
-                ) : campaigns.length > 0 ? (
-                  campaigns.map((campaign) => (
-                    <TableRow key={campaign.id} className="hover:bg-gray-50/50">
-                      <TableCell className="font-medium">
-                        {campaign.title}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {campaign.screeningTypes?.length > 0
-                          ? campaign.screeningTypes
-                              .map((st) => st.name)
-                              .join(', ')
-                          : 'All Types'}
-                      </TableCell>
-                      <TableCell>
-                        ₦{campaign.fundingAmount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        {campaign.patientAllocations.patientsHelped}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(campaign.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link
-                                to="/donor/campaigns/$campaignId"
-                                params={{ campaignId: campaign.id }}
-                                className="cursor-pointer"
-                              >
-                                <Eye className="mr-2 h-4 w-4" /> View Details
-                              </Link>
-                            </DropdownMenuItem>
-                            {campaign.status === 'ACTIVE' && (
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteCampaign(campaign)}
-                                className="text-red-500 cursor-pointer"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-64 text-center">
-                      <p className="font-medium">No campaigns found.</p>
-                      <p className="text-sm text-gray-500">
-                        Create your first campaign to get started.
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <CampaignFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
+          <CampaignsTable
+            campaigns={campaigns}
+            isLoading={!!isLoading}
+            error={error}
+            onDelete={handleDeleteCampaign}
+          />
         </CardContent>
       </Card>
 

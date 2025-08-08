@@ -3,7 +3,6 @@ import { Button } from '@/components/shared/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card'
@@ -20,14 +19,6 @@ import { Label } from '@/components/shared/ui/label'
 import { Progress } from '@/components/shared/ui/progress'
 import { Separator } from '@/components/shared/ui/separator'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/shared/ui/table'
-import {
   useDeleteCampaign,
   useDonorCampaign,
   useFundCampaign,
@@ -39,20 +30,13 @@ import {
   AlertTriangle,
   ArrowLeft,
   CalendarDays,
-  CircleHelp,
-  ClipboardList,
   Download,
   Edit,
-  Flag,
   Info,
-  Link as LinkIcon,
-  MessageSquareHeart,
-  MoreHorizontal,
   Paperclip,
   Plus,
   Share2,
   Trash2,
-  TrendingUp,
   User,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -63,6 +47,8 @@ import locationIcon from '@/assets/images/health.png'
 import screeningIcon from '@/assets/images/screening.png'
 import sponsoredIcon from '@/assets/images/sponsored.png'
 import { formatCurrency } from '@/lib/utils'
+import CampaignImpactList from './components/CampaignImpactList'
+import DonationLogTable from './components/DonationLogTable'
 
 interface CampaignDetailsPageProps {
   campaignId: string
@@ -387,79 +373,9 @@ export function CampaignDetailsPage({ campaignId }: CampaignDetailsPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Donation Log</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Amount Donated</TableHead>
-                    <TableHead>Sponsored Patients</TableHead>
-                    <TableHead>Date Added</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {donationLog.map((log, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
-                        {log.amount}
-                      </TableCell>
-                      <TableCell>{log.sponsored}</TableCell>
-                      <TableCell>{log.date}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="text-green-600 border-green-600"
-                        >
-                          {log.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <DonationLogTable items={donationLog} />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Campaign Impact</CardTitle>
-              <Link
-                to="/donor/campaigns/$campaignId"
-                params={{ campaignId }}
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                See All
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {campaignImpact.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-4 p-3 rounded-lg bg-slate-50"
-                >
-                  <div className="bg-slate-200 p-2 rounded-full">
-                    <MessageSquareHeart className="h-5 w-5 text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {item.message}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <CampaignImpactList campaignId={campaignId} items={campaignImpact} />
         </div>
 
         {/* Right Column (Sidebar) */}
@@ -473,7 +389,7 @@ export function CampaignDetailsPage({ campaignId }: CampaignDetailsPageProps) {
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <InfoRow
-                icon={ClipboardList}
+                icon={Info}
                 label="Description"
                 value={campaign.description}
               />
