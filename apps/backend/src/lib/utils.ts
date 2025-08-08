@@ -1,7 +1,6 @@
 import { JsonObject } from "@prisma/client/runtime/library";
 import { TDonationCampaign, TtriggerMatchingParams } from "@zerocancer/shared";
 import bcrypt from "bcryptjs";
-// import { createComputeClient } from "./compute-client";
 import { env } from "hono/adapter";
 import { getDB } from "./db";
 import { sendNotificationEmail } from "./email";
@@ -112,16 +111,7 @@ export async function triggerWaitlistMatching(
   c: any,
   customConfig?: TtriggerMatchingParams
 ) {
-  /**
-   * Create a compute client for triggering the matching algorithm.
-   * 
-    const computeClient = createComputeClient(c);
-    // Trigger the algorithm with custom config (non-blocking)
-    await computeClient.triggerMatching(customConfig);
-   * 
-   * 
-   */
-
+  // Removed compute client integration on 2025-08-08
   await waitlistMatcherAlg(c, customConfig);
 
   return {

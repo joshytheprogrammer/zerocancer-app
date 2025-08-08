@@ -130,7 +130,7 @@ Frontend Request → Backend (Edge) → Worker Client → Worker (Node.js) → D
 - PDF generation with pdfkit
 - Image processing with sharp
 
-## 📊 **Current Implementation Status**
+## Implementation Status
 
 | Component               | Status      | Location                                      |
 | ----------------------- | ----------- | --------------------------------------------- |
@@ -144,3 +144,25 @@ Frontend Request → Backend (Edge) → Worker Client → Worker (Node.js) → D
 | **Testing**             | 🔄 Pending  | Need local deployment                         |
 
 **Ready for testing and Phase 3 implementation!** 🎉
+
+## Current Direction
+
+- Worker/compute split is deferred. The backend (Edge) continues to serve all APIs.
+- Schema sync script now only syncs if an optional compute target exists.
+
+## Recent Changes
+
+- Removed worker build script from root package.json.
+- Kept `apps/backend` as the single runtime target.
+
+## Next Steps
+
+- Focus on backend performance within Edge constraints.
+- Consider batching and pagination for analytics endpoints.
+
+- 2025-08-08: Removed the separate compute client and worker split. Single backend now handles all APIs.
+
+Current focus:
+
+- Optimize backend endpoints (pagination, batching, indexes).
+- Keep frontend route wrappers thin; move heavy UI/logic into components.

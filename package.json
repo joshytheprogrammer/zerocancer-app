@@ -18,9 +18,7 @@
     "backend:dev": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend dev",
     "frontend:dev": "pnpm --filter ./apps/frontend dev",
     "prisma:generate": "pnpm --filter ./apps/backend prisma:generate",
-    "sync-schemas": "node scripts/sync-prisma-schemas.js",
     "build-backend": "pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/backend prisma:generate && pnpm --filter ./apps/backend build",
-    "build-worker": "pnpm sync-schemas && pnpm --filter @zerocancer/shared build && pnpm --filter ./apps/worker prisma:generate && pnpm --filter ./apps/worker build",
     "build:production": "pnpm build && pnpm build:copy-frontend",
     "start:production": "cd apps/backend && pnpm dlx wrangler deploy",
     "test:production": "pnpm build:production && cd apps/backend && pnpm dlx wrangler dev"
