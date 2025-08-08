@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export const Route = createFileRoute('/donation/payment-status')({
+export const Route = createFileRoute('/(public)/donation/payment-status')({
   component: DonationPaymentStatusPage,
   validateSearch: (search: Record<string, unknown>) => {
     return {
