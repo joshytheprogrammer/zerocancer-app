@@ -14,15 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shared/ui/dialog'
-import { Input } from '@/components/shared/ui/input'
 import { Label } from '@/components/shared/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -44,13 +36,13 @@ import {
   ChevronRight,
   DollarSign,
   Heart,
-  Search,
   Target,
   TrendingUp,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import CampaignFilters from './CampaignFilters'
 
 export type CampaignStatus = 'ACTIVE' | 'COMPLETED' | 'DELETED'
 
@@ -245,48 +237,13 @@ export function AdminCampaignsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search campaigns..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <Select
-              value={statusFilter}
-              onValueChange={(value) =>
-                setStatusFilter(value as CampaignStatus | 'ALL')
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Statuses</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="DELETED">Deleted</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Clear Filters */}
-            <Button variant="outline" onClick={clearFilters}>
-              Clear Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <CampaignFilters
+        search={search}
+        statusFilter={statusFilter}
+        setSearch={setSearch}
+        setStatusFilter={setStatusFilter}
+        onClear={clearFilters}
+      />
 
       {/* Campaigns Table */}
       <Card>

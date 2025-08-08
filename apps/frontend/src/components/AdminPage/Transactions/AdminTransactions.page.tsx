@@ -42,6 +42,8 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
+import TransactionFilters from './TransactionFilters'
+import TransactionsStats from './TransactionsStats'
 
 export function AdminTransactionsPage() {
   type TransactionType = 'DONATION' | 'APPOINTMENT' | 'PAYOUT' | 'REFUND'
@@ -182,172 +184,29 @@ export function AdminTransactionsPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <DollarSign className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Volume
-              </p>
-              <p className="text-2xl font-bold">
-                {formatCurrency(totalAmount)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Completed
-              </p>
-              <p className="text-2xl font-bold">
-                {completedTransactions.length}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(completedAmount)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Clock className="h-8 w-8 text-yellow-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Pending
-              </p>
-              <p className="text-2xl font-bold">{pendingTransactions.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <XCircle className="h-8 w-8 text-red-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Failed
-              </p>
-              <p className="text-2xl font-bold">{failedTransactions.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Financial Breakdown */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Heart className="h-8 w-8 text-red-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Donations Revenue
-              </p>
-              <p className="text-2xl font-bold">
-                {formatCurrency(donationAmount)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Calendar className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Appointments Revenue
-              </p>
-              <p className="text-2xl font-bold">
-                {formatCurrency(appointmentAmount)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats */}
+      <TransactionsStats
+        totalAmount={totalAmount}
+        completedCount={completedTransactions.length}
+        completedAmount={completedAmount}
+        pendingCount={pendingTransactions.length}
+        failedCount={failedTransactions.length}
+        donationAmount={donationAmount}
+        appointmentAmount={appointmentAmount}
+      />
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
-            {/* Type Filter */}
-            <div>
-              <Label htmlFor="type-filter">Transaction Type</Label>
-              <Select
-                value={typeFilter}
-                onValueChange={(value) =>
-                  setTypeFilter(value as TransactionType | 'ALL')
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="DONATION">Donations</SelectItem>
-                  <SelectItem value="APPOINTMENT">Appointments</SelectItem>
-                  <SelectItem value="PAYOUT">Payouts</SelectItem>
-                  <SelectItem value="REFUND">Refunds</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <Label htmlFor="status-filter">Status</Label>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) =>
-                  setStatusFilter(value as TransactionStatus | 'ALL')
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Statuses</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="FAILED">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Date From Filter */}
-            <div>
-              <Label htmlFor="date-from">Date From</Label>
-              <Input
-                id="date-from"
-                type="date"
-                value={dateFromFilter}
-                onChange={(e) => setDateFromFilter(e.target.value)}
-              />
-            </div>
-
-            {/* Date To Filter */}
-            <div>
-              <Label htmlFor="date-to">Date To</Label>
-              <Input
-                id="date-to"
-                type="date"
-                value={dateToFilter}
-                onChange={(e) => setDateToFilter(e.target.value)}
-              />
-            </div>
-
-            {/* Clear Filters */}
-            <div className="flex items-end">
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <TransactionFilters
+        typeFilter={typeFilter}
+        statusFilter={statusFilter}
+        dateFromFilter={dateFromFilter}
+        dateToFilter={dateToFilter}
+        setTypeFilter={setTypeFilter as any}
+        setStatusFilter={setStatusFilter as any}
+        setDateFromFilter={setDateFromFilter}
+        setDateToFilter={setDateToFilter}
+        onClear={clearFilters}
+      />
 
       {/* Transactions Table */}
       <Card>

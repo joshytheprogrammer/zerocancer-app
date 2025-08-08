@@ -6,15 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card'
-import { Input } from '@/components/shared/ui/input'
-import { Label } from '@/components/shared/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -36,6 +27,7 @@ import {
   User,
 } from 'lucide-react'
 import { useState } from 'react'
+import AppointmentFilters from './AppointmentFilters'
 
 export type AppointmentStatus =
   | 'SCHEDULED'
@@ -183,96 +175,19 @@ export function AdminAppointmentsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-6">
-            {/* Status Filter */}
-            <div>
-              <Label htmlFor="status-filter">Status</Label>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) =>
-                  setStatusFilter(value as AppointmentStatus | 'ALL')
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Statuses</SelectItem>
-                  <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Center Filter */}
-            <div>
-              <Label htmlFor="center-filter">Center ID</Label>
-              <Input
-                id="center-filter"
-                placeholder="Filter by center ID..."
-                value={centerFilter}
-                onChange={(e) => setCenterFilter(e.target.value)}
-              />
-            </div>
-
-            {/* Donation Type Filter */}
-            <div>
-              <Label htmlFor="donation-filter">Type</Label>
-              <Select
-                value={donationFilter}
-                onValueChange={(value) =>
-                  setDonationFilter(value as 'ALL' | 'DONATION' | 'SELF_PAY')
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="DONATION">Donations</SelectItem>
-                  <SelectItem value="SELF_PAY">Self Pay</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Date From Filter */}
-            <div>
-              <Label htmlFor="date-from">Date From</Label>
-              <Input
-                id="date-from"
-                type="date"
-                value={dateFromFilter}
-                onChange={(e) => setDateFromFilter(e.target.value)}
-              />
-            </div>
-
-            {/* Date To Filter */}
-            <div>
-              <Label htmlFor="date-to">Date To</Label>
-              <Input
-                id="date-to"
-                type="date"
-                value={dateToFilter}
-                onChange={(e) => setDateToFilter(e.target.value)}
-              />
-            </div>
-
-            {/* Clear Filters */}
-            <div className="flex items-end">
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AppointmentFilters
+        statusFilter={statusFilter}
+        centerFilter={centerFilter}
+        donationFilter={donationFilter}
+        dateFromFilter={dateFromFilter}
+        dateToFilter={dateToFilter}
+        setStatusFilter={setStatusFilter}
+        setCenterFilter={setCenterFilter}
+        setDonationFilter={setDonationFilter}
+        setDateFromFilter={setDateFromFilter}
+        setDateToFilter={setDateToFilter}
+        onClear={clearFilters}
+      />
 
       {/* Appointments Table */}
       <Card>

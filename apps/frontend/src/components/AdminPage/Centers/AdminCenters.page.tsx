@@ -14,15 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shared/ui/dialog'
-import { Input } from '@/components/shared/ui/input'
 import { Label } from '@/components/shared/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -36,9 +28,10 @@ import {
   useAdminCenters,
   useUpdateCenterStatus,
 } from '@/services/providers/admin.provider'
-import { MapPin, Search, Stethoscope, Users } from 'lucide-react'
+import { MapPin, Stethoscope, Users } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import CenterFilters from './CenterFilters'
 
 export type CenterStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
 
@@ -122,6 +115,13 @@ export function AdminCentersPage() {
     }
   }
 
+  const resetFilters = () => {
+    setSearch('')
+    setStatusFilter('ALL')
+    setStateFilter('')
+    setPage(1)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -133,63 +133,15 @@ export function AdminCentersPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search centers..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <Select
-              value={statusFilter}
-              onValueChange={(value) =>
-                setStatusFilter(value as CenterStatus | 'ALL')
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Statuses</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="INACTIVE">Inactive</SelectItem>
-                <SelectItem value="SUSPENDED">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* State Filter */}
-            <Input
-              placeholder="Filter by state..."
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-            />
-
-            {/* Clear Filters */}
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('ALL')
-                setStateFilter('')
-                setPage(1)
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <CenterFilters
+        search={search}
+        statusFilter={statusFilter}
+        stateFilter={stateFilter}
+        setSearch={setSearch}
+        setStatusFilter={setStatusFilter}
+        setStateFilter={setStateFilter}
+        reset={resetFilters}
+      />
 
       {/* Centers Table */}
       <Card>

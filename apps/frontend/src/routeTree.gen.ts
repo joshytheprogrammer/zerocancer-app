@@ -13,6 +13,7 @@ import { Route as PatientRouteRouteImport } from './routes/patient/route'
 import { Route as DonorRouteRouteImport } from './routes/donor/route'
 import { Route as CenterRouteRouteImport } from './routes/center/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as publicRouteRouteImport } from './routes/(public)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as PatientIndexRouteImport } from './routes/patient/index'
 import { Route as DonorIndexRouteImport } from './routes/donor/index'
@@ -84,6 +85,10 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const publicRouteRoute = publicRouteRouteImport.update({
+  id: '/(public)',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
   getParentRoute: () => rootRouteImport,
@@ -109,9 +114,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const publicIndexRoute = publicIndexRouteImport.update({
-  id: '/(public)/',
+  id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicRouteRoute,
 } as any)
 const PatientProfileRoute = PatientProfileRouteImport.update({
   id: '/profile',
@@ -298,9 +303,9 @@ const DonorCampaignsCampaignIdRoute =
   } as any)
 const publicDonationPaymentStatusRoute =
   publicDonationPaymentStatusRouteImport.update({
-    id: '/(public)/donation/payment-status',
+    id: '/donation/payment-status',
     path: '/donation/payment-status',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => publicRouteRoute,
   } as any)
 const authStaffLoginRoute = authStaffLoginRouteImport.update({
   id: '/staff/login',
@@ -449,6 +454,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(auth)': typeof authRouteRouteWithChildren
+  '/(public)': typeof publicRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/center': typeof CenterRouteRouteWithChildren
   '/donor': typeof DonorRouteRouteWithChildren
@@ -613,6 +619,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/(auth)'
+    | '/(public)'
     | '/admin'
     | '/center'
     | '/donor'
@@ -670,12 +677,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   authRouteRoute: typeof authRouteRouteWithChildren
+  publicRouteRoute: typeof publicRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CenterRouteRoute: typeof CenterRouteRouteWithChildren
   DonorRouteRoute: typeof DonorRouteRouteWithChildren
   PatientRouteRoute: typeof PatientRouteRouteWithChildren
-  publicIndexRoute: typeof publicIndexRoute
-  publicDonationPaymentStatusRoute: typeof publicDonationPaymentStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -706,6 +712,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)': {
+      id: '/(public)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof publicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)': {
@@ -748,7 +761,7 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/patient/profile': {
       id: '/patient/profile'
@@ -1007,7 +1020,7 @@ declare module '@tanstack/react-router' {
       path: '/donation/payment-status'
       fullPath: '/donation/payment-status'
       preLoaderRoute: typeof publicDonationPaymentStatusRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/(auth)/staff/login': {
       id: '/(auth)/staff/login'
@@ -1091,6 +1104,20 @@ const authRouteRouteChildren: authRouteRouteChildren = {
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
+)
+
+interface publicRouteRouteChildren {
+  publicIndexRoute: typeof publicIndexRoute
+  publicDonationPaymentStatusRoute: typeof publicDonationPaymentStatusRoute
+}
+
+const publicRouteRouteChildren: publicRouteRouteChildren = {
+  publicIndexRoute: publicIndexRoute,
+  publicDonationPaymentStatusRoute: publicDonationPaymentStatusRoute,
+}
+
+const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
+  publicRouteRouteChildren,
 )
 
 interface AdminRouteRouteChildren {
@@ -1220,12 +1247,11 @@ const PatientRouteRouteWithChildren = PatientRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
+  publicRouteRoute: publicRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CenterRouteRoute: CenterRouteRouteWithChildren,
   DonorRouteRoute: DonorRouteRouteWithChildren,
   PatientRouteRoute: PatientRouteRouteWithChildren,
-  publicIndexRoute: publicIndexRoute,
-  publicDonationPaymentStatusRoute: publicDonationPaymentStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

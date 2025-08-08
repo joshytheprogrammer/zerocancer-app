@@ -41,13 +41,14 @@ import {
   Edit,
   Package,
   Plus,
-  Search,
   ShoppingCart,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import StoreAnalytics from './StoreAnalytics'
+import StoreSearch from './StoreSearch'
 
 // Form schemas
 const productSchema = z.object({
@@ -207,87 +208,23 @@ export function AdminStorePage() {
       </div>
 
       {/* Analytics Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Package className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Products
-              </p>
-              <p className="text-2xl font-bold">{totalProducts}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <DollarSign className="h-8 w-8 text-green-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Inventory Value
-              </p>
-              <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Boxes className="h-8 w-8 text-purple-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Stock
-              </p>
-              <p className="text-2xl font-bold">{totalStock}</p>
-              <p className="text-xs text-muted-foreground">units</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                Stock Alerts
-              </p>
-              <p className="text-2xl font-bold">
-                {outOfStockProducts + lowStockProducts}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {outOfStockProducts} out, {lowStockProducts} low
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StoreAnalytics
+        totalProducts={totalProducts}
+        totalValue={totalValue}
+        totalStock={totalStock}
+        outOfStockProducts={outOfStockProducts}
+        lowStockProducts={lowStockProducts}
+      />
 
       {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Product Search</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex space-x-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearch('')
-                setPage(1)
-              }}
-            >
-              Clear
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <StoreSearch
+        search={search}
+        setSearch={setSearch}
+        onClear={() => {
+          setSearch('')
+          setPage(1)
+        }}
+      />
 
       {/* Products Table */}
       <Card>
