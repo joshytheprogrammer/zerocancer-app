@@ -20,13 +20,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import AppointmentDatePicker from './components/AppointmentDatePicker'
-import CenterSearchSelect from './components/CenterSearchSelect'
-import TimeSlotsPicker from './components/TimeSlotsPicker'
+// Use the new shared components for consistency
+import CenterCombobox from './components/CenterCombobox'
+import SchedulePicker from './components/SchedulePicker'
 
 // Zod schema for form validation
 const bookingSchema = z.object({
@@ -47,7 +46,6 @@ export function PatientPayBookingPage({
   screeningTypeId,
 }: PatientPayBookingPageProps) {
   const navigate = useNavigate()
-  const [searchQuery, setSearchQuery] = useState('')
 
   const form = useForm<FormData>({
     resolver: zodResolver(bookingSchema),
@@ -80,13 +78,9 @@ export function PatientPayBookingPage({
       return center.services?.some((service) => service.id === screeningTypeId)
     }) || []
 
-  // Filter centers based on search query
-  const filteredCenters = availableCenters // CenterSearchSelect will handle filtering
-
   const bookSelfPayAppointmentMutation = useBookSelfPayAppointment()
 
   function onSubmit(values: FormData) {
-    // Generate a dummy payment reference if not provided
     const paymentReference =
       values.paymentReference ||
       'PAY-' + Math.random().toString(36).substring(2, 10).toUpperCase()
@@ -100,29 +94,20 @@ export function PatientPayBookingPage({
       screeningTypeId: values.screeningTypeId,
       centerId: values.centerId,
       paymentReference,
-      // Send combined datetime instead of separate date and time
       appointmentDateTime: appointmentDateTime.toISOString(),
     }
 
-    console.log('Booking data being sent:', formattedValues)
-
     bookSelfPayAppointmentMutation.mutate(formattedValues, {
       onSuccess: (data) => {
-        console.log('Appointment booking response:', data)
-
-        // Check if payment is required (same pattern as donor campaigns)
         if (data.data.payment?.authorizationUrl) {
           toast.success('Appointment created! Redirecting to payment...')
           window.location.href = data.data.payment.authorizationUrl
         } else {
-          // Fallback for appointments that don't require payment
           toast.success('Appointment booked successfully!')
           navigate({ to: '/patient/appointments' })
         }
       },
       onError: (error: any) => {
-        console.error('Booking error:', error)
-        console.error('Error response:', error?.response?.data)
         toast.error(
           error?.response?.data?.error ||
             error?.response?.data?.message ||
@@ -132,16 +117,69 @@ export function PatientPayBookingPage({
     })
   }
 
+  if (centersLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading available centers...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (centersError) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-600">
+              Error Loading Centers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-2">
+              There was an error loading centers.
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Error: {centersError?.message || 'Unknown error'}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate({ to: '/patient/book' })}
+              >
+                Back to Booking
+              </Button>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <Card className="w-full max-w-xl">
-        <CardHeader>
-          <CardTitle>Book Self-Pay Appointment</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {!screeningTypeId && (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header to align with donation flow */}
+      <div className="bg-gradient-to-r from-pink-50 to-blue-50 p-6 rounded-lg border">
+        <h1 className="text-2xl font-bold mb-1">Book a Self-Pay Appointment</h1>
+        <p className="text-gray-600">
+          Select a center and schedule a time that works for you. You will be
+          redirected to pay securely if required.
+        </p>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {!screeningTypeId && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Screening Type</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <FormField
                   control={form.control}
                   name="screeningTypeId"
@@ -158,119 +196,78 @@ export function PatientPayBookingPage({
                     </FormItem>
                   )}
                 />
-              )}
+              </CardContent>
+            </Card>
+          )}
 
+          {/* Center Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Select a Health Center</CardTitle>
+            </CardHeader>
+            <CardContent>
               <FormField
                 control={form.control}
                 name="centerId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Screening Center
-                      {screeningTypeId && availableCenters.length > 0 && (
-                        <span className="text-sm font-normal text-muted-foreground ml-2">
-                          ({availableCenters.length} center
-                          {availableCenters.length !== 1 ? 's' : ''} available)
-                        </span>
-                      )}
+                      Available Centers ({availableCenters.length} options)
                     </FormLabel>
                     <FormControl>
-                      <CenterSearchSelect
-                        centers={filteredCenters}
+                      <CenterCombobox
+                        centers={availableCenters}
                         value={field.value}
-                        onChange={field.onChange}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        loading={centersLoading}
-                        error={centersError}
+                        onChange={(id) => field.onChange(id)}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
 
-              <FormField
-                control={form.control}
-                name="appointmentDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Appointment Date</FormLabel>
-                    <FormControl>
-                      <AppointmentDatePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Date and Time Selection */}
+          {form.watch('centerId') && (
+            <SchedulePicker
+              date={form.watch('appointmentDate')}
+              onDateChange={(v) =>
+                form.setValue('appointmentDate', v, { shouldValidate: true })
+              }
+              time={form.watch('appointmentTime')}
+              onTimeChange={(v) =>
+                form.setValue('appointmentTime', v, { shouldValidate: true })
+              }
+            />
+          )}
 
-              <FormField
-                control={form.control}
-                name="appointmentTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Appointment Time</FormLabel>
-                    <FormControl>
-                      <TimeSlotsPicker
-                        slots={timeSlots}
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 cursor-pointer"
-                disabled={bookSelfPayAppointmentMutation.isPending}
-              >
-                {bookSelfPayAppointmentMutation.isPending && (
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    ></path>
-                  </svg>
-                )}
-                {bookSelfPayAppointmentMutation.isPending
-                  ? 'Booking...'
-                  : 'Book Appointment'}
-              </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer"
+              disabled={bookSelfPayAppointmentMutation.isPending}
+            >
+              {bookSelfPayAppointmentMutation.isPending && (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              )}
+              {bookSelfPayAppointmentMutation.isPending
+                ? 'Booking...'
+                : 'Book Appointment'}
+            </Button>
 
-              {/* CTA: Link to donation-based options */}
-              <div className="-mt-2">
-                <Button
-                  type="button"
-                  variant="link"
-                  className="w-full text-sm"
-                  onClick={() => navigate({ to: '/patient/book' })}
-                >
-                  Prefer a sponsored screening? See donation options
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            {/* CTA: Link to donation-based options */}
+            <Button
+              type="button"
+              variant="link"
+              className="w-full text-sm"
+              onClick={() => navigate({ to: '/patient/book' })}
+            >
+              Prefer a sponsored screening? See donation options
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   )
 }

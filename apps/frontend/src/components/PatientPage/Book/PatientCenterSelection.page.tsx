@@ -22,13 +22,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Gift, Loader2 } from 'lucide-react'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import AppointmentDatePicker from './components/AppointmentDatePicker'
-import CenterCardsGrid from './components/CenterCardsGrid'
-import TimeSlotsPicker from './components/TimeSlotsPicker'
+import CenterCombobox from './components/CenterCombobox'
+import SchedulePicker from './components/SchedulePicker'
 
 // Zod schema for center selection form
 const centerSelectionSchema = z.object({
@@ -49,7 +47,6 @@ export function PatientCenterSelectionPage({
   screeningTypeId,
 }: PatientCenterSelectionPageProps) {
   const navigate = useNavigate()
-  const [selectedCenter, setSelectedCenter] = useState<any>(null)
 
   const form = useForm<FormData>({
     resolver: zodResolver(centerSelectionSchema),
@@ -70,7 +67,7 @@ export function PatientCenterSelectionPage({
     data: centersData,
     isLoading: centersLoading,
     error: centersError,
-  } = useQuery(useEligibleCenters(allocationId || '', 1, 20))
+  } = useQuery(useEligibleCenters(allocationId || '', 1, 50))
 
   const selectCenterMutation = useSelectCenter()
 
@@ -98,24 +95,12 @@ export function PatientCenterSelectionPage({
   const centers = centersData?.data?.centers || []
   const screeningType = screeningTypeData?.data
 
-  // Generate time slots (9 AM to 5 PM, every hour)
-  const timeSlots = Array.from({ length: 9 }, (_, i) => {
-    const hour = i + 9
-    return {
-      value: `${hour.toString().padStart(2, '0')}:00`,
-      label: `${hour === 12 ? '12' : hour > 12 ? hour - 12 : hour}:00 ${
-        hour >= 12 ? 'PM' : 'AM'
-      }`,
-    }
-  })
-
   function onSubmit(values: FormData) {
     if (!allocationId) {
       toast.error('Missing allocation information')
       return
     }
 
-    // Combine date and time into a single datetime
     const appointmentDateTime = new Date(values.appointmentDate)
     const [hours, minutes] = values.appointmentTime.split(':')
     appointmentDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
@@ -185,41 +170,6 @@ export function PatientCenterSelectionPage({
     )
   }
 
-  if (!centersLoading && centers.length === 0) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <Card className="border-orange-200">
-          <CardHeader>
-            <CardTitle className="text-orange-600">
-              No Centers Available
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-2">
-              No centers are currently available for your allocated screening.
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
-              Allocation ID: {allocationId}
-              <br />
-              Screening Type ID: {screeningTypeId}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => navigate({ to: '/patient/book' })}
-              >
-                Back to Booking
-              </Button>
-              <Button onClick={() => window.location.reload()}>
-                Try Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -236,7 +186,6 @@ export function PatientCenterSelectionPage({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Center Selection */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -253,12 +202,12 @@ export function PatientCenterSelectionPage({
                       Available Centers ({centers.length} options)
                     </FormLabel>
                     <FormControl>
-                      <CenterCardsGrid
+                      {/* Replace cards grid with combobox + filters */}
+                      <CenterCombobox
                         centers={centers}
                         value={field.value}
-                        onSelect={(c) => {
-                          field.onChange(c.id)
-                          setSelectedCenter(c)
+                        onChange={(id) => {
+                          field.onChange(id)
                         }}
                       />
                     </FormControl>
@@ -269,58 +218,19 @@ export function PatientCenterSelectionPage({
             </CardContent>
           </Card>
 
-          {/* Date and Time Selection */}
-          {selectedCenter && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Schedule Your Appointment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Date Selection */}
-                  <FormField
-                    control={form.control}
-                    name="appointmentDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Appointment Date</FormLabel>
-                        <FormControl>
-                          <AppointmentDatePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Time Selection */}
-                  <FormField
-                    control={form.control}
-                    name="appointmentTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Appointment Time</FormLabel>
-                        <FormControl>
-                          <TimeSlotsPicker
-                            slots={timeSlots}
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+          {form.watch('centerId') && (
+            <SchedulePicker
+              date={form.watch('appointmentDate')}
+              onDateChange={(v) =>
+                form.setValue('appointmentDate', v, { shouldValidate: true })
+              }
+              time={form.watch('appointmentTime')}
+              onTimeChange={(v) =>
+                form.setValue('appointmentTime', v, { shouldValidate: true })
+              }
+            />
           )}
 
-          {/* Submit Button */}
           <div className="flex gap-4">
             <Button
               type="button"
@@ -332,7 +242,9 @@ export function PatientCenterSelectionPage({
             </Button>
             <Button
               type="submit"
-              disabled={selectCenterMutation.isPending || !selectedCenter}
+              disabled={
+                selectCenterMutation.isPending || !form.watch('centerId')
+              }
               className="flex-1 bg-pink-600 hover:bg-pink-700"
             >
               {selectCenterMutation.isPending ? (

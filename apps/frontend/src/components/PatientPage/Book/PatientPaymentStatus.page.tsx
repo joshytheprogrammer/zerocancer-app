@@ -38,6 +38,7 @@ export function PatientPaymentStatusPage({
   } = useQuery(useVerifyPayment(paymentRef))
 
   const payment = paymentData?.data
+  console.log(payment, 1112)
 
   // Auto-redirect timer for successful payments
   useEffect(() => {
@@ -156,7 +157,7 @@ export function PatientPaymentStatusPage({
 
   // Success state
   if (payment.status === 'success') {
-    const paymentContext = payment.context as any
+    const paymentContext = payment.context //as any
     const isAppointmentBooking = paymentContext?.type === 'appointment_booking'
     const appointmentData = isAppointmentBooking
       ? paymentContext?.appointment
@@ -217,17 +218,17 @@ export function PatientPaymentStatusPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
                   <div className="flex items-center gap-2">
                     <Stethoscope className="h-4 w-4" />
-                    <span>{appointmentData.screeningType.name}</span>
+                    <span>{appointmentData.screeningTypeName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    <span>{appointmentData.center.name}</span>
+                    <span>{appointmentData.centerName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>
                       {new Date(
-                        appointmentData.appointmentDate,
+                        appointmentData.appointmentDateTime,
                       ).toLocaleDateString()}
                     </span>
                   </div>

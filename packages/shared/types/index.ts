@@ -943,7 +943,11 @@ export type TPaymentVerificationResponse = TDataResponse<{
   reference: string;
   amount: number;
   status: "success" | "failed" | "abandoned" | "pending";
-  paymentType: "anonymous_donation" | "campaign_creation" | "campaign_funding";
+  paymentType:
+    | "anonymous_donation"
+    | "campaign_creation"
+    | "campaign_funding"
+    | "appointment_booking";
   paidAt: string | null;
   channel: string;
   currency: string;
@@ -970,6 +974,21 @@ export type TPaymentContext =
       campaignId: string;
       campaign: TDonationCampaign | null;
       fundingAmount: number;
+    }
+  | {
+      type: "appointment_booking";
+      appointmentId: string;
+      appointment: {
+        id: string;
+        patientId: string;
+        patientName: string;
+        status: string;
+        centerId: string;
+        centerName: string;
+        appointmentDateTime: string; // Combined date and time
+        screeningTypeId: string;
+        screeningTypeName: string;
+      } | null;
     };
 
 export type TValidateStaffInviteResponse = TDataResponse<{

@@ -1219,6 +1219,12 @@ donationApp.get("/verify-payment/:reference", async (c) => {
           patient: {
             select: { id: true, fullName: true },
           },
+          center: {
+            select: { id: true, centerName: true },
+          },
+          screeningType: {
+            select: { id: true, name: true },
+          },
         },
       });
 
@@ -1228,11 +1234,16 @@ donationApp.get("/verify-payment/:reference", async (c) => {
         appointment: appointment
           ? {
               id: appointment.id,
-              patientId: appointment.patient.id,
+              patientId: appointment.patientId,
               patientName: appointment.patient.fullName,
               status: appointment.status,
-              checkInCode: appointment.checkInCode,
-              checkInCodeExpiresAt: appointment.checkInCodeExpiresAt,
+              centerId: appointment.centerId,
+              centerName: appointment.center.centerName,
+              appointmentDateTime: appointment.appointmentDateTime,
+              screeningTypeId: appointment.screeningTypeId,
+              screeningTypeName: appointment.screeningType?.name || null,
+              // checkInCode: appointment.checkInCode,
+              // checkInCodeExpiresAt: appointment.checkInCodeExpiresAt,
             }
           : null,
       };
