@@ -2,7 +2,7 @@
 
 This document covers the two webhooks designed to be triggered by automated cron jobs:
 
-1. **Monthly Center Payout Webhook** - Processes monthly payments to cancer centers
+1. **Monthly Center Payout Webhook** - Processes monthly payments to cancer centers (NOTE: this feature hasn't been implemented)
 2. **Waitlist Matching Webhook** - Runs the patient matching algorithm every 18 hours
 
 ## 1. Monthly Center Payout Webhook
